@@ -1,0 +1,51 @@
+<project name="BiVeS" default="compile" basedir=".">
+	<description>
+		Bives Diff Generation Toolkit
+	</description>
+	
+	<property name="app.name" value="BiVeS" />
+	<property name="app.version" value="0.8" />
+	<property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="dist" location="dist" />
+	<property name="lib" location="lib" />
+	
+	<path id="compile.classpath">
+		<fileset dir="${lib}">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	
+	
+	<target name="init">
+		<tstamp />
+		<mkdir dir="${build}" />
+		<copy todir="${build}">
+			<fileset dir="${src}" includes="**/*.xml,**/*.properties,**/*.txt,**/*.ico" />
+		</copy>
+		
+	</target>
+	
+	<target name="compile" depends="init" description="compile the source ">
+		<javac srcdir="${src}" destdir="${build}">
+			<classpath refid="compile.classpath" />
+		</javac>
+	</target>
+	
+	<target name="dist" depends="compile" description="generate the distribution">
+		<mkdir dir="${dist}" />
+		<manifest file="build/MANIFEST.MF">
+			<attribute name="Main-Class" value="de.unirostock.sems.bives.Main" />
+		</manifest>
+		<jar jarfile="${dist}/${app.name}-${app.version}.jar" basedir="${build}" manifest="build/MANIFEST.MF">
+			<zipgroupfileset dir="lib" includes="*.jar" excludes=""/>
+			<zipfileset dir="res" includes="*xsl" prefix="res"/>
+		</jar>
+	</target>
+	
+	<target name="clean" description="clean up">
+		<delete dir="${build}" />
+		<delete dir="${dist}" />
+	</target>
+	
+</project>
