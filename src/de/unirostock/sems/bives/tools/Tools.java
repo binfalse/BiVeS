@@ -216,11 +216,11 @@ UnsupportedEncodingException  {
   		String ret = ""; 
 			if (a == null)
 			{
-				ret += "inserted math: <span class='inserted'>" + Tools.printSubDoc (b) + "</span>";
+				ret += "inserted math: <span class='inserted'>" + transformMathML (b) + "</span>";
 			}
 			else if (b == null)
 			{
-				ret += "deleted math: <span class='deleted'>" + Tools.printSubDoc (a) + "</span>";
+				ret += "deleted math: <span class='deleted'>" + transformMathML (a) + "</span>";
 			}
 			else if (a.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED))
 			{
