@@ -43,6 +43,17 @@
 		</jar>
 	</target>
 	
+	<target name="sign" depends="dist" description="sign a dist">
+		<checksum file="${dist}/${app.name}-${app.version}.jar" forceOverwrite="yes"/>
+		<move file="${dist}/${app.name}-${app.version}.jar.MD5" tofile="${dist}/${app.name}-${app.version}.jar.md5"/>
+		<exec executable="gpg">
+			<arg value="--output"/>
+			<arg value="${dist}/${app.name}-${app.version}.jar.md5.sign"/>
+			<arg value="-abs"/>
+			<arg value="${dist}/${app.name}-${app.version}.jar.md5"/>
+		</exec>
+	</target>
+	
 	<target name="clean" description="clean up">
 		<delete dir="${build}" />
 		<delete dir="${dist}" />
