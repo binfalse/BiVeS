@@ -59,40 +59,29 @@ public class ChemicalReactionNetwork
 	public String getGraphML () throws ParserConfigurationException
 	{
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-	DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-	Document graphDocument = docBuilder.newDocument();
-	Element graphRoot = addGraphMLPreamble (graphDocument);
-	
-	for (CRNSpecies s : species)
-		s.createGraphMl (graphDocument, graphRoot);
-	
-	for (CRNReaction r : reactions)
-		r.createGraphMl (graphDocument, graphRoot);
-	
+		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
+		Document graphDocument = docBuilder.newDocument();
+		Element graphRoot = addGraphMLPreamble (graphDocument);
 
-	try
-	{
-		return Tools.prettyPrintDocument (graphDocument, new OutputStream()
+		for (CRNSpecies s : species)
+			s.createGraphMl (graphDocument, graphRoot);
+
+		for (CRNReaction r : reactions)
+			r.createGraphMl (graphDocument, graphRoot);
+
+		try
 		{
-		  private StringBuilder string = new StringBuilder();
-		  
-		  @Override
-		  public void write(int b) throws IOException {
-		      this.string.append((char) b );
-		  }
-
-		  //Netbeans IDE automatically overrides this toString()
-		  public String toString(){
-		      return this.string.toString();
-		  }
-}).toString ();
-	}
-	catch (IOException | TransformerException e)
-	{
-
-		LOGGER.error ("error printing graphml", e);
-	}
-	return null;
+			return Tools.prettyPrintDocument (graphDocument);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		catch (TransformerException e)
+		{
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 

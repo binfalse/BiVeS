@@ -143,6 +143,11 @@ public class Tools
 	
 	}
 	
+	public static String prettyPrintDocument(Document doc) throws IOException, TransformerException
+	{
+		return prettyPrintDocument (doc, new SimpleOutputStream ()).toString ();
+  }
+	
 	public static OutputStream prettyPrintDocument(Document doc, OutputStream out) throws IOException, TransformerException
 	{
     TransformerFactory tf = TransformerFactory.newInstance();
@@ -278,11 +283,11 @@ UnsupportedEncodingException  {
 		if (nameA != null || nameB != null)
 		{
 			if (nameA == null)
-				return "(<span class='inserted'>"+nameB+"</span><br/>)";
+				return "(<span class='inserted'>"+nameB+"</span>)";
 			else if (nameB == null)
-				return "(<span class='deleted'>"+nameA+"</span><br/>)";
+				return "(<span class='deleted'>"+nameA+"</span>)";
 			else if (!nameA.equals (nameB))
-				return "(<span class='deleted'>"+nameA+"</span> &rarr; <span class='inserted'>"+nameB+"</span><br/>)";
+				return "(<span class='deleted'>"+nameA+"</span> &rarr; <span class='inserted'>"+nameB+"</span>)";
 			else
 				return "("+nameA+")";
 		}

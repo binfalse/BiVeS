@@ -89,13 +89,16 @@ public abstract class CRNNode implements DiffReporter
 		Element element = graphDocument.createElement ("node");
 
 		element.setAttribute ("id", id);
+		
+		String name = "name";
 		if (nameA != null)
-			element.setAttribute ("name", nameA);
+			name = nameA;
 		else if (nameB != null)
-			element.setAttribute ("name", nameB);
+			name = nameB;
 		else
-			element.setAttribute ("name", id);
-			
+			name = id;
+		
+		element.setAttribute ("name", name);	
 
 		String mod = ChemicalReactionNetwork.resolvModification (modification, treeA, treeB);
 		if (mod != null)
@@ -108,7 +111,7 @@ public abstract class CRNNode implements DiffReporter
 		
 		Element nameElement = graphDocument.createElement ("data");
 		nameElement.setAttribute ("key", "name");
-		nameElement.appendChild (graphDocument.createTextNode (nameA));
+		nameElement.appendChild (graphDocument.createTextNode (name));
 		element.appendChild (nameElement);
 		
 		
