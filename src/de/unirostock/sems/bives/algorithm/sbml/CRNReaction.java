@@ -146,7 +146,7 @@ public class CRNReaction
 		String sub = "";
 		if (reactants.size () > 0)
 		{
-			for (CRNNode reactant : reactants.keySet ())
+			for (CRNEdge reactant: reactants.values ())
 			{
 				sub += reactant.reportHTML (cssclass) + " + ";
 			}
@@ -159,9 +159,9 @@ public class CRNReaction
 		if (products.size () > 0)
 		{
 			sub = "";
-			for (CRNNode reactant : products.keySet ())
+			for (CRNEdge product: products.values ())
 			{
-				sub += reactant.reportHTML (cssclass) + " + ";
+				sub += product.reportHTML (cssclass) + " + ";
 			}
 			if (sub.length () > 3)
 				ret += sub.substring (0, sub.length () - 2);

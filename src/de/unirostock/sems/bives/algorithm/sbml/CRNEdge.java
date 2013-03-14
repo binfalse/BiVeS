@@ -143,6 +143,7 @@ public class CRNEdge implements DiffReporter
 	@Override
 	public String reportHTML (String cssclass)
 	{
+		
 		if (type == MODIFIER)
 		{
 			if (treeA == null)
@@ -163,6 +164,8 @@ public class CRNEdge implements DiffReporter
 			if (a == null)
 				a = source.getTreeB ();
 			
+		System.out.println ("edge: " + type + " " + (treeA == null) + (treeB == null) + " " + a.getId ());
+		
 			if (treeA == null)
 				return "<span class='inserted "+cssclass+"'>" + a.getId () + "</span>";
 			if (treeB == null)
