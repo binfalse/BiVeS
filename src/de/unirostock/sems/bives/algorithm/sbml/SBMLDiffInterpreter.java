@@ -482,7 +482,7 @@ public class SBMLDiffInterpreter
 								if (spec == null)
 									spec = entityMapper.get ("sc" + reactant2.getAttribute ("species"));
 								
-								CRNEdge edge = new CRNEdge (spec, react, reactant2.getModification (), null, null, reactant2, null);
+								CRNEdge edge = new CRNEdge (spec, react, CRNEdge.REACTANT, reactant2.getModification (), null, null, reactant2, null);
 								react.addReactant (spec, edge);
 							}
 						}
@@ -492,7 +492,7 @@ public class SBMLDiffInterpreter
 							if (spec == null)
 								spec = entityMapper.get ("sc" + reactant.getAttribute ("species"));
 							
-							CRNEdge edge = new CRNEdge (spec, react, reactant.getModification (), null, null, reactant, null);
+							CRNEdge edge = new CRNEdge (spec, react, CRNEdge.REACTANT, reactant.getModification (), null, null, reactant, null);
 							react.addReactant (spec, edge);
 						}
 					}
@@ -513,7 +513,7 @@ public class SBMLDiffInterpreter
 								if (spec == null)
 									spec = entityMapper.get ("sc" + product2.getAttribute ("species"));
 								
-								CRNEdge edge = new CRNEdge (react, spec, product2.getModification (), null, null, product2, null);
+								CRNEdge edge = new CRNEdge (react, spec, CRNEdge.PRODUCT, product2.getModification (), null, null, product2, null);
 								react.addReactant (spec, edge);
 							}
 						}
@@ -523,7 +523,7 @@ public class SBMLDiffInterpreter
 							if (spec == null)
 								spec = entityMapper.get ("sc" + product.getAttribute ("species"));
 	
-							CRNEdge edge = new CRNEdge (react, spec, product.getModification (), null, null, product, null);
+							CRNEdge edge = new CRNEdge (react, spec, CRNEdge.PRODUCT, product.getModification (), null, null, product, null);
 							react.addProduct (spec, edge);
 						}
 					}
@@ -548,7 +548,7 @@ public class SBMLDiffInterpreter
 								if (sbo == null)
 									sbo = "unknown";
 								
-								CRNEdge edge = new CRNEdge (spec, react, modifier2.getModification (), sbo, null, modifier2, null);
+								CRNEdge edge = new CRNEdge (spec, react, CRNEdge.MODIFIER, modifier2.getModification (), sbo, null, modifier2, null);
 								react.addReactant (spec, edge);
 							}
 						}
@@ -562,7 +562,7 @@ public class SBMLDiffInterpreter
 							if (sbo == null)
 								sbo = "unknown";
 	
-							CRNEdge edge = new CRNEdge (spec, react,modifier.getModification (), sbo, null, modifier, null);
+							CRNEdge edge = new CRNEdge (spec, react, CRNEdge.MODIFIER, modifier.getModification (), sbo, null, modifier, null);
 							react.addModifier (spec, edge);
 						}
 					}
@@ -642,7 +642,7 @@ public class SBMLDiffInterpreter
 								CRNEdge edge = react.getReactant (spec);
 								if (edge == null)
 								{
-									edge = new CRNEdge (spec, react, reactant2.getModification (), null, null, null, reactant2);
+									edge = new CRNEdge (spec, react, CRNEdge.REACTANT, reactant2.getModification (), null, null, null, reactant2);
 									react.addReactant (spec, edge);
 								}
 								else
@@ -662,7 +662,7 @@ public class SBMLDiffInterpreter
 							CRNEdge edge = react.getReactant (spec);
 							if (edge == null)
 							{
-								edge = new CRNEdge (spec, react, reactant.getModification (), null, null, null, reactant);
+								edge = new CRNEdge (spec, react, CRNEdge.REACTANT, reactant.getModification (), null, null, null, reactant);
 								react.addReactant (spec, edge);
 							}
 							else
@@ -692,7 +692,7 @@ public class SBMLDiffInterpreter
 								CRNEdge edge = react.getProduct (spec);
 								if (edge == null)
 								{
-									edge = new CRNEdge (react, spec, product2.getModification (), null, null, null, product2);
+									edge = new CRNEdge (react, spec, CRNEdge.PRODUCT, product2.getModification (), null, null, null, product2);
 									react.addProduct (spec, edge);
 								}
 								else
@@ -711,7 +711,7 @@ public class SBMLDiffInterpreter
 							CRNEdge edge = react.getProduct (spec);
 							if (edge == null)
 							{
-								edge = new CRNEdge (react, spec, product.getModification (), null, null, null, product);
+								edge = new CRNEdge (react, spec, CRNEdge.PRODUCT, product.getModification (), null, null, null, product);
 								react.addProduct (spec, edge);
 							}
 							else
@@ -751,7 +751,7 @@ public class SBMLDiffInterpreter
 								if (edge == null)
 								{
 									System.out.println ("adde new mod to react " + reactionID);
-									edge = new CRNEdge (spec, react, modifier2.getModification (), null, sbo, null, modifier2);
+									edge = new CRNEdge (spec, react, CRNEdge.MODIFIER, modifier2.getModification (), null, sbo, null, modifier2);
 									react.addModifier (spec, edge);
 								}
 								else
@@ -776,7 +776,7 @@ public class SBMLDiffInterpreter
 							if (edge == null)
 							{
 								System.out.println ("adde new mod to react " + reactionID);
-								edge = new CRNEdge (spec, react, modifier.getModification (), null, sbo, null, modifier);
+								edge = new CRNEdge (spec, react, CRNEdge.MODIFIER, modifier.getModification (), null, sbo, null, modifier);
 								react.addModifier (spec, edge);
 							}
 							else

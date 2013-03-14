@@ -18,6 +18,10 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
  */
 public class CRNEdge implements DiffReporter
 {
+	public static final int REACTANT = 1;
+	public static final int PRODUCT = 2;
+	public static final int MODIFIER = 3;
+	
 	private final static Logger LOGGER = Logger.getLogger(CRNEdge.class.getName());
 	private CRNNode source;
 	private CRNNode target;
@@ -25,9 +29,11 @@ public class CRNEdge implements DiffReporter
 	private String modA;
 	private String modB;
 	private DocumentNode treeA, treeB;
+	private int type;
 	
-	public CRNEdge (CRNNode source, CRNNode target, int modification, String modA, String modB, DocumentNode treeA, DocumentNode treeB)
+	public CRNEdge (CRNNode source, CRNNode target, int type, int modification, String modA, String modB, DocumentNode treeA, DocumentNode treeB)
 	{
+		this.type = type;
 		this.source = source;
 		this.target = target;
 		this.modification = modification;
@@ -65,7 +71,7 @@ public class CRNEdge implements DiffReporter
 	
 	
 
-	public void createGraphMl (Document graphDocument, Element parent, boolean modifier)
+	public void createGraphMl (Document graphDocument, Element parent)
 	{
 		String mod = null;
 		if (treeA == null)
@@ -73,7 +79,7 @@ public class CRNEdge implements DiffReporter
 		if (treeB == null)
 			mod = ChemicalReactionNetwork.DELETE;
 		
-		if (!modifier)
+		if (type != MODIFIER)
 		{
 			createGraphMl (graphDocument, parent, null, mod);
 			return;
@@ -137,16 +143,44 @@ public class CRNEdge implements DiffReporter
 	@Override
 	public String reportHTML (String cssclass)
 	{
-		if (treeA == null)
-			return "<span class='inserted "+cssclass+"'>" + treeB.getAttribute ("species") + " ("+ChemicalReactionNetwork.resolvModSBO (modB)+")</span>";
-		if (treeB == null)
-			return "<span class='deleted "+cssclass+"'>" + treeA.getAttribute ("species") + " ("+ChemicalReactionNetwork.resolvModSBO (modA)+")</span>";
-		
-		String sboA = ChemicalReactionNetwork.resolvModSBO (modA);
-		String sboB = ChemicalReactionNetwork.resolvModSBO (modB);
-		if (sboA.equals (sboB))
-			return treeA.getAttribute ("species") + " ("+sboA+")";
+		if (type == MODIFIER)
+		{
+			if (treeA == null)
+				return "<span class='inserted "+cssclass+"'>" + treeB.getAttribute ("species") + " ("+ChemicalReactionNetwork.resolvModSBO (modB)+")</span>";
+			if (treeB == null)
+				return "<span class='deleted "+cssclass+"'>" + treeA.getAttribute ("species") + " ("+ChemicalReactionNetwork.resolvModSBO (modA)+")</span>";
+			
+			String sboA = ChemicalReactionNetwork.resolvModSBO (modA);
+			String sboB = ChemicalReactionNetwork.resolvModSBO (modB);
+			if (sboA.equals (sboB))
+				return treeA.getAttribute ("species") + " ("+sboA+")";
+			else
+				return treeA.getAttribute ("species") + " (<span class='deleted "+cssclass+"'>"+sboA+"</span> &rarr; <span class='inserted "+cssclass+"'>"+sboB+"</span>)";
+		}
+		else if (type == REACTANT)
+		{
+			DocumentNode a = source.getTreeA ();
+			if (a == null)
+				a = source.getTreeB ();
+			
+			if (treeA == null)
+				return "<span class='inserted "+cssclass+"'>" + a.getId () + "</span>";
+			if (treeB == null)
+				return "<span class='deleted "+cssclass+"'>" + a.getId () + "</span>";
+			return a.getId ();
+		}
 		else
-			return treeA.getAttribute ("species") + " (<span class='deleted "+cssclass+"'>"+sboA+"</span> &rarr; <span class='inserted "+cssclass+"'>"+sboB+"</span>)";
+		{
+			// PRODUCT
+			DocumentNode a = target.getTreeA ();
+			if (a == null)
+				a = target.getTreeB ();
+			
+			if (treeA == null)
+				return "<span class='inserted "+cssclass+"'>" + a.getId () + "</span>";
+			if (treeB == null)
+				return "<span class='deleted "+cssclass+"'>" + a.getId () + "</span>";
+			return a.getId ();
+		}
 	}
 }

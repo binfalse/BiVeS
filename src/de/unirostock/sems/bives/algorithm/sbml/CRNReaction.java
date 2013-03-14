@@ -123,13 +123,13 @@ public class CRNReaction
 		}
 		
 		for (CRNEdge e : reactants.values ())
-			e.createGraphMl (graphDocument, parent, false);
+			e.createGraphMl (graphDocument, parent);
 		
 		for (CRNEdge e : products.values ())
-			e.createGraphMl (graphDocument, parent, false);
+			e.createGraphMl (graphDocument, parent);
 		
 		for (CRNEdge e : modifiers.values ())
-			e.createGraphMl (graphDocument, parent, true);
+			e.createGraphMl (graphDocument, parent);
 	}
 
 	@Override

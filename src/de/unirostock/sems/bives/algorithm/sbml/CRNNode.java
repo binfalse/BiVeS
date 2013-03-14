@@ -52,6 +52,16 @@ public abstract class CRNNode implements DiffReporter
 		this.nameB = name;
 	}
 	
+	public DocumentNode getTreeA ()
+	{
+		return this.treeA;
+	}
+	
+	public DocumentNode getTreeB ()
+	{
+		return this.treeB;
+	}
+	
 	public void setTreeA (DocumentNode treeA)
 	{
 		this.treeA = treeA;
