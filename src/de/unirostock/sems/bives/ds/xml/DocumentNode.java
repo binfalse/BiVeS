@@ -98,6 +98,19 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 		return id;
 	}
 	
+	public static DocumentNode getDummyNode ()
+	{
+		return new DocumentNode ();
+	}
+	
+	private DocumentNode ()
+	{
+		super (TreeNode.DOC_NODE, null);
+		attributes = new HashMap<String, String> ();
+		children = new Vector<TreeNode> ();
+		childrenByTag = new HashMap<String, Vector<TreeNode>> ();
+	}
+	
 	/**
 	 * Instantiates a new document node.
 	 *
@@ -147,7 +160,8 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 		if (id != null)
 		{
 			if (idMapper.getNode (id) != null)
-				throw new BivesDocumentParseException ("multiple entities w/ same id: " + id);
+				doc.setIdsNotUnique ();
+				//throw new BivesDocumentParseException ("multiple entities w/ same id: " + id);
 			idMapper.putNode (id, this);
 		}
 		
@@ -309,7 +323,10 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 	
 	public Vector<TreeNode> getChildrenWithTag (String tag)
 	{
-		return childrenByTag.get (tag);
+		Vector<TreeNode> ret = childrenByTag.get (tag);
+		if (ret == null)
+			return new Vector<TreeNode> ();
+		return ret;
 	}
 	
 	public HashMap<String, Vector<TreeNode>> getChildrenTagMap ()

@@ -50,10 +50,8 @@ public class SBMLGraphProducer
 	
 	private final static Logger LOGGER = Logger.getLogger(SBMLGraphProducer.class.getName());
 	
-	public SBMLGraphProducer (ConnectionManager conMgmt, TreeDocument docA,
-		TreeDocument docB) throws ParserConfigurationException
+	public SBMLGraphProducer () throws ParserConfigurationException
 	{
-		super (conMgmt, docA, docB);
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 			graphDocument = docBuilder.newDocument();
@@ -61,6 +59,12 @@ public class SBMLGraphProducer
 			entityMapper = new HashMap<String, String> ();
 			maxSpecies = 0;
 			maxReaction = 0;
+	}
+	
+	public void init (ConnectionManager conMgmt, TreeDocument docA,
+		TreeDocument docB)
+	{
+		super.init (conMgmt, docA, docB);
 	}
 	
 

@@ -37,6 +37,10 @@ public class IdConnector
 	 */
 	public void findConnections (boolean requireSameLabel)
 	{
+		// we can only map by ids if they are unique...
+		if (!docA.uniqueIds () || !docB.uniqueIds ())
+			return;
+		
 		Set<String> ids = docA.getOccuringIds ();
 		
 		for (String id : ids)

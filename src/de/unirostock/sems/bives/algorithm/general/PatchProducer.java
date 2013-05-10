@@ -32,17 +32,22 @@ public class PatchProducer
 	private Patch patch;
 	private boolean fullDiff;
 	
-	public PatchProducer (ConnectionManager conMgmt, TreeDocument docA, TreeDocument docB)
+	public PatchProducer ()
 	{
-		super (conMgmt, docA, docB);
-		fullDiff = true;
 		LOGGER.info ("creating patch producer");
 	}
 	
-	public PatchProducer (ConnectionManager conMgmt, TreeDocument docA, TreeDocument docB, boolean fullDiff)
+	/*public PatchProducer (ConnectionManager conMgmt, TreeDocument docA, TreeDocument docB, boolean fullDiff)
 	{
 		super (conMgmt, docA, docB);
 		this.fullDiff = fullDiff;
+		LOGGER.info ("creating patch producer");
+	}*/
+	
+	public void init (ConnectionManager conMgmt, TreeDocument docA, TreeDocument docB)
+	{
+		super.init (conMgmt, docA, docB);
+		fullDiff = true;
 		LOGGER.info ("creating patch producer");
 	}
 

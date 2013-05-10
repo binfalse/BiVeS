@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.Iterator;
+import java.util.Vector;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
@@ -24,6 +25,7 @@ import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.algorithm.Producer;
+import de.unirostock.sems.bives.algorithm.cellml.CellMLConnector;
 import de.unirostock.sems.bives.algorithm.general.PatchProducer;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
 import de.unirostock.sems.bives.algorithm.general.XyWeighter;
@@ -43,6 +45,26 @@ import de.unirostock.sems.bives.ds.xml.TreeDocument;
 public class Main
 {
 	
+	public static void usage (String msg)
+	{
+		System.out.println (msg);
+		System.out.println ();
+
+		System.out.println ("ARGUMENTS:");
+		System.out.println ("\t[option] fileA.xml fileB.xml");
+		System.out.println ();
+		System.out.println ("OPTIONS:");
+		System.out.println ("\t[none]\t\texpect XML file and print patch");
+		System.out.println ("\t--sbml-patch\texpect SBML encoded model and print patch");
+		System.out.println ("\t--sbml-graph\texpect SBML encoded model and print diff graph");
+		System.out.println ("\t--cellml-patch\texpect CellML encoded model and print patch");
+		System.out.println ();
+		System.out.println ("[FILE1] and [FILE2] define XML files to compare");
+		System.out.println ();
+		
+		System.exit (2);
+	}
+	
 	/**
 	 * @param args
 	 * @throws ParserConfigurationException 
@@ -54,21 +76,51 @@ public class Main
 	{
     PropertyConfigurator.configure("log4j.prop");
 
-		//args = new String [] {"test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
+		//args = new String [] {"--sbml-graph", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
     
-    if (args.length != 2)
+    String file1 = null, file2 = null;
+    Connector con = new XyDiffConnector ();
+    Producer producer = new PatchProducer ();
+    
+    if (args.length < 2)
     {
-    	System.out.println ("need exactly 2 xml files as arguments.");
-    	return;
+    	usage ("need at least 2 xml files as arguments.");
+    }
+    
+    for (int i = 0; i < args.length; i++)
+    {
+    	if (args[i].equals ("--sbml-patch"))
+    	{
+    		con = new SBMLConnector ();
+    		producer = new PatchProducer ();
+    	}
+    	else if (args[i].equals ("--sbml-graph"))
+    	{
+    		con = new SBMLConnector ();
+    		producer = new SBMLGraphProducer ();
+    	}
+    	else if (args[i].equals ("--cellml-patch"))
+    	{
+    		con = new CellMLConnector ();
+    		producer = new PatchProducer ();
+    	}
+    	else if (file1 == null)
+    		file1 = args[i];
+    	else if (file2 == null)
+    		file2 = args[i];
+    	else
+    	{
+    		usage ("do not understand");
+    	}
     }
 		
 		DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
 			.newDocumentBuilder ();
 		
-		TreeDocument td = new TreeDocument (builder.parse (new FileInputStream (args[0])), new XyWeighter ());
-		TreeDocument td2 = new TreeDocument (builder.parse (new FileInputStream (args[1])), new XyWeighter ());
+		TreeDocument td = new TreeDocument (builder.parse (new FileInputStream (file1)), new XyWeighter ());
+		TreeDocument td2 = new TreeDocument (builder.parse (new FileInputStream (file2)), new XyWeighter ());
 
-		Connector con = new SBMLConnector ();
+		//Connector con = new SBMLConnector ();
 		con.init (td, td2);
 		con.findConnections ();
 		
@@ -78,9 +130,9 @@ public class Main
 		td2.getRoot ().resetModifications ();
 		td2.getRoot ().evaluate (con.getConnections ());
 
-		Producer patcher = new PatchProducer (con.getConnections (), td, td2);
-		System.out.println (patcher.produce ());
-		
+		//Producer patcher = new PatchProducer (con.getConnections (), td, td2);
+		producer.init (con.getConnections (), td, td2);
+		System.out.println (producer.produce ());
 		
 	}
 	

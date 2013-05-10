@@ -30,6 +30,7 @@ public class TreeDocument
 	private MultiNodeMapper<DocumentNode> tagMapper;
 	private boolean ordered;
 	private Vector<TreeNode> subtreesBySize;
+	private boolean uniqueIds;
 
 	public TreeDocument (Document d, Weighter w) throws BivesDocumentParseException
 	{
@@ -43,6 +44,7 @@ public class TreeDocument
 		root = new DocumentNode (d.getDocumentElement (), null, this, w, 1, 0, pathMapper, idMapper, hashMapper, tagMapper, subtreesBySize);
 		Collections.sort (subtreesBySize, new TreeNode.TreeNodeComparatorBySubtreeSize ());
 		ordered = true;
+		uniqueIds = true;
 	}
 	public TreeDocument (Document d, Weighter w, boolean ordered) throws BivesDocumentParseException
 	{
@@ -56,6 +58,22 @@ public class TreeDocument
 		root = new DocumentNode (d.getDocumentElement (), null, this, w, 1, 0, pathMapper, idMapper, hashMapper, tagMapper, subtreesBySize);
 		Collections.sort (subtreesBySize, new TreeNode.TreeNodeComparatorBySubtreeSize ());
 		this.ordered = ordered;
+		uniqueIds = true;
+	}
+	
+	public void setIdsNotUnique ()
+	{
+		uniqueIds = false;
+	}
+	
+	/**
+	 * Are occurring IDs unique?
+	 *
+	 * @return true, if IDs are unique
+	 */
+	public boolean uniqueIds ()
+	{
+		return uniqueIds;
 	}
 	
 	public void setResetAllModifications ()
@@ -100,7 +118,9 @@ public class TreeDocument
 	
 	public TreeNode getNodeById (String id)
 	{
-		return idMapper.getNode (id);
+		if (uniqueIds)
+			return idMapper.getNode (id);
+		return null;
 	}
 	
 	public TreeNode getNodeByPath (String path)
@@ -115,7 +135,9 @@ public class TreeDocument
 	
 	public Set<String> getOccuringIds ()
 	{
-		return idMapper.getIds ();
+		if (uniqueIds)
+			return idMapper.getIds ();
+		return null;
 	}
 	
 	public Set<String> getOccuringTags ()

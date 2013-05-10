@@ -42,7 +42,8 @@ public class XMLPatcher
 		con.init (td, td2);
 		con.findConnections ();
 		
-		Producer patcher = new PatchProducer (con.getConnections (), td, td2);
+		Producer patcher = new PatchProducer ();
+		patcher.init (con.getConnections (), td, td2);
 		System.out.println (patcher.produce ());
 		
 	}

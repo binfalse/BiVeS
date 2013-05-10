@@ -16,7 +16,11 @@ public abstract class Producer
 	protected TreeDocument docA;
 	protected TreeDocument docB;
 	
-	public Producer (ConnectionManager conMgmt, TreeDocument docA, TreeDocument docB)
+	public Producer ()
+	{
+	}
+	
+	public void init (ConnectionManager conMgmt, TreeDocument docA, TreeDocument docB)
 	{
 		this.conMgmt = conMgmt;
 		this.docA = docA;
