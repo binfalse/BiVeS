@@ -23,11 +23,11 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
@@ -41,7 +41,6 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
  */
 public class Patch
 {
-	private final static Logger LOGGER = Logger.getLogger(Patch.class.getName());
 	
 	private Document xmlDoc;
 	private Element insert, delete, update, move, copy, glue;

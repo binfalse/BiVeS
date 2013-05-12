@@ -19,10 +19,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Interpreter;
@@ -42,7 +42,6 @@ public class CellMLDiffInterpreter
 {
 	private CellMLReport report;
 	
-	private final static Logger LOGGER = Logger.getLogger(CellMLDiffInterpreter.class.getName());
 	
 	public CellMLDiffInterpreter (ConnectionManager conMgmt, TreeDocument docA,
 		TreeDocument docB) throws ParserConfigurationException

@@ -30,12 +30,12 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
 
+import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 
@@ -46,7 +46,6 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
  */
 public class Tools
 {
-	private final static Logger LOGGER = Logger.getLogger(Tools.class.getName());
 	public static String hash (String msg)
 	{
 		MessageDigest md;

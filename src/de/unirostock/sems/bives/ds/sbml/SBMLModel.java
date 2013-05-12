@@ -23,7 +23,9 @@ public class SBMLModel
 	private HashMap<String, SBMLFunctionDefinition> listOfFunctionDefinitions;
 	private HashMap<String, SBMLUnitDefinition> listOfUnitDefinitions;
 	private HashMap<String, SBMLCompartment> listOfCompartments;
+	private HashMap<String, SBMLCompartmentType> listOfCompartmentTypes;
 	private HashMap<String, SBMLSpecies> listOfSpecies;
+	private HashMap<String, SBMLSpeciesType> listOfSpeciesTypes;
 	private HashMap<String, SBMLParameter> listOfParameters;
 	private Vector<SBMLInitialAssignment> listOfInitialAssignments;
 	private Vector<SBMLRule> listOfRules;
@@ -57,6 +59,7 @@ public class SBMLModel
 		listOfFunctionDefinitions = new  HashMap<String, SBMLFunctionDefinition> ();
 		listOfUnitDefinitions = new  HashMap<String, SBMLUnitDefinition> ();
 		listOfCompartments = new  HashMap<String, SBMLCompartment> ();
+		listOfCompartmentTypes = new  HashMap<String, SBMLCompartmentType> ();
 		listOfSpecies = new  HashMap<String, SBMLSpecies> ();
 		listOfParameters = new  HashMap<String, SBMLParameter> ();
 		listOfInitialAssignments = new  Vector<SBMLInitialAssignment> ();
@@ -77,8 +80,10 @@ public class SBMLModel
 		// sequence important!
 		parseFunctions (modelRoot);
 		parseUnits (modelRoot);
+		parseCompartmentTypes (modelRoot);
 		parseCompartments (modelRoot);
 		parseParameters(modelRoot);
+		parseSpeciesTypes (modelRoot);
 		parseSpecies (modelRoot);
 		parseReactions (modelRoot);
 		parseInitialAssignments (modelRoot);
@@ -264,6 +269,22 @@ public class SBMLModel
 		}
 	}
 
+	private void parseSpeciesTypes (DocumentNode root) throws BivesSBMLParseException
+	{
+		Vector<TreeNode> loss = root.getChildrenWithTag ("listOfSpeciesTypes");
+		for (int i = 0; i < loss.size (); i++)
+		{
+			DocumentNode los = (DocumentNode) loss.elementAt (i);
+			
+			Vector<TreeNode> node = los.getChildrenWithTag ("speciesType");
+			for (int j = 0; j < node.size (); j++)
+			{
+				SBMLSpeciesType n = new SBMLSpeciesType ((DocumentNode) node.elementAt (j), this);
+				listOfSpeciesTypes.put (n.getID (), n);
+			}
+		}
+	}
+
 	private void parseParameters (DocumentNode root) throws BivesSBMLParseException
 	{
 		Vector<TreeNode> loss = root.getChildrenWithTag ("listOfParameters");
@@ -292,6 +313,22 @@ public class SBMLModel
 			{
 				SBMLCompartment c = new SBMLCompartment ((DocumentNode) compartments.elementAt (j), this);
 				listOfCompartments.put (c.getID (), c);
+			}
+		}
+	}
+
+	private void parseCompartmentTypes (DocumentNode root) throws BivesSBMLParseException
+	{
+		Vector<TreeNode> loss = root.getChildrenWithTag ("listOfCompartmentTypes");
+		for (int i = 0; i < loss.size (); i++)
+		{
+			DocumentNode los = (DocumentNode) loss.elementAt (i);
+			
+			Vector<TreeNode> node = los.getChildrenWithTag ("compartmentType");
+			for (int j = 0; j < node.size (); j++)
+			{
+				SBMLCompartmentType n = new SBMLCompartmentType ((DocumentNode) node.elementAt (j), this);
+				listOfCompartmentTypes.put (n.getID (), n);
 			}
 		}
 	}
@@ -342,6 +379,11 @@ public class SBMLModel
 		return listOfUnitDefinitions.get (kind);
 	}
 	
+	public SBMLCompartmentType getCompartmentType (String id)
+	{
+		return listOfCompartmentTypes.get (id);
+	}
+	
 	public SBMLCompartment getCompartment (String id)
 	{
 		return listOfCompartments.get (id);
@@ -350,6 +392,11 @@ public class SBMLModel
 	public SBMLSpecies getSpecies (String id)
 	{
 		return listOfSpecies.get (id);
+	}
+	
+	public SBMLSpeciesType getSpeciesType (String id)
+	{
+		return listOfSpeciesTypes.get (id);
 	}
 	
 	public SBMLParameter getParameter (String id)

@@ -70,7 +70,7 @@ public class SBMLParameter
 			}
 		}
 		else
-			constant = false; // level <= 2
+			constant = true; // level <= 2
 		
 	}
 

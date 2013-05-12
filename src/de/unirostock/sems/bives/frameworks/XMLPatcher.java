@@ -8,7 +8,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.log4j.PropertyConfigurator;
 import org.xml.sax.SAXException;
 
 import de.unirostock.sems.bives.algorithm.Connector;
@@ -24,7 +23,6 @@ public class XMLPatcher
 
 	public static void main (String[] args) throws ParserConfigurationException, FileNotFoundException, SAXException, IOException
 	{
-    PropertyConfigurator.configure("src/log4j.prop");
 
 		args = new String [] {"BSA-ptinst-2012-11-11", "BSA-sigbprlysis-2012-11-11"};
 		args = new String [] {"Novak1997_CellCycle-R3.xml", "Novak1997_CellCycle-R37.xml"};

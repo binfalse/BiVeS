@@ -10,8 +10,8 @@ import java.util.Vector;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.log4j.Logger;
 
+import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Producer;
@@ -28,7 +28,6 @@ import de.unirostock.sems.bives.tools.Tools;
 public class PatchProducer
 	extends Producer
 {
-	private final static Logger LOGGER = Logger.getLogger(PatchProducer.class.getName());
 	private Patch patch;
 	private boolean fullDiff;
 	

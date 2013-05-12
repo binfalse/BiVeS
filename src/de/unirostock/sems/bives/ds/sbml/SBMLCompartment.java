@@ -20,6 +20,7 @@ public class SBMLCompartment
 	private double size; //optional
 	private SBMLUnitDefinition units; //optional
 	private boolean constant;
+	private SBMLCompartmentType compartmentType;
 
 	public SBMLCompartment (DocumentNode documentNode, SBMLModel sbmlModel) throws BivesSBMLParseException
 	{
@@ -30,6 +31,14 @@ public class SBMLCompartment
 			throw new BivesSBMLParseException ("Compartment "+id+" doesn't provide a valid id.");
 		
 		name = documentNode.getAttribute ("name");
+
+		String tmp = documentNode.getAttribute ("compartmentType");
+		if (tmp != null)
+		{
+			compartmentType = sbmlModel.getCompartmentType (tmp);
+			if (compartmentType == null)
+				throw new BivesSBMLParseException ("no valid compartmentType for species "+id+" defined: " + tmp);
+		}
 		
 		if (documentNode.getAttribute ("spatialDimensions") != null)
 		{

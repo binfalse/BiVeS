@@ -5,8 +5,8 @@ package de.unirostock.sems.bives.algorithm.cellml;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.sbml.jsbml.SBMLDocument;
-import org.sbml.jsbml.SBMLReader;
+//import org.sbml.jsbml.SBMLDocument;
+//import org.sbml.jsbml.SBMLReader;
 
 import de.unirostock.sems.bives.algorithm.ModelValidator;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;

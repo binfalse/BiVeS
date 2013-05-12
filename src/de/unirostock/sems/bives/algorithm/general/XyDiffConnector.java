@@ -8,8 +8,8 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 
+import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connector;
@@ -25,7 +25,6 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
 public class XyDiffConnector
 	extends Connector
 {
-	private final static Logger LOGGER = Logger.getLogger(XyDiffConnector.class.getName());
 	private final int MIN_CANDIDATEPARENT_LEVEL = 4;
 	private Connector preprocessor;
 

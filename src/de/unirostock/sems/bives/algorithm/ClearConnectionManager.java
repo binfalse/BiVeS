@@ -11,39 +11,41 @@ import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
+import de.unirostock.sems.bives.exception.BivesConnectionException;
 
 
 /**
  * @author Martin Scharm
  *
  */
-public class ConnectionManager
+public class ClearConnectionManager
 {
 	private Vector<Connection> connections;
-	private HashMap<TreeNode, Vector<Connection>> conByTree1, conByTree2;
+	private HashMap<TreeNode, Connection> conByTree1, conByTree2;
 	private TreeDocument docA, docB;
 	
-	public ConnectionManager (TreeDocument docA, TreeDocument docB)
+	public ClearConnectionManager (TreeDocument docA, TreeDocument docB)
 	{
 		this.docA = docA;
 		this.docB = docB;
 		connections = new Vector<Connection> ();
-		conByTree1 = new HashMap<TreeNode, Vector<Connection>> ();
-		conByTree2 = new HashMap<TreeNode, Vector<Connection>> ();
+		conByTree1 = new HashMap<TreeNode, Connection> ();
+		conByTree2 = new HashMap<TreeNode, Connection> ();
 	}
 	
 	/**
 	 * Instantiates a new connection manager as a copy of toCopy.
 	 *
 	 * @param toCopy the connection manager to copy
+	 * @throws BivesConnectionException 
 	 */
-	public ConnectionManager (ConnectionManager toCopy)
+	public ClearConnectionManager (ClearConnectionManager toCopy) throws BivesConnectionException
 	{
 		this.docA = toCopy.docA;
 		this.docB = toCopy.docB;
 		connections = new Vector<Connection> ();
-		conByTree1 = new HashMap<TreeNode, Vector<Connection>> ();
-		conByTree2 = new HashMap<TreeNode, Vector<Connection>> ();
+		conByTree1 = new HashMap<TreeNode, Connection> ();
+		conByTree2 = new HashMap<TreeNode, Connection> ();
 		for (Connection c : toCopy.connections)
 			addConnection (new Connection (c));
 	}
@@ -67,52 +69,28 @@ public class ConnectionManager
 	
 	
 	/**
-	 * Adds a new connection unless connection exists. If connection exists, the weights are summed. Same result as calling `addConnection (c, true)`.
+	 * Adds a new connection unless connection exists. If connection exists, the weights are summed. Throws exception if one of the nodes already connected.
 	 *
 	 * @param c the c connection to add
 	 * @return true, if c was added
+	 * @throws BivesConnectionException 
 	 */
-	public boolean addConnection (Connection c)
+	public boolean addConnection (Connection c) throws BivesConnectionException
 	{
-		return addConnection (c, true);
-	}
-	
-	/**
-	 * Adds a new connection. If checkExistence is true this method will first check if c.getTreeA () and c.getTreeB () are already connected by another connection.
-	 *
-	 * @param c the c
-	 * @param checkExistence the check whether the connection already exists
-	 * @return true, if connection was added
-	 */
-	private boolean addConnection (Connection c, boolean checkExistence)
-	{
-		// should we check for existing connection?
-		if (checkExistence)
-		{
-			Connection c2 = getConnectionOfNodes (c.getTreeA (), c.getTreeB ());
-			if (c2 != null)
-			{
-				c2.addWeight (c.getWeight ());
-				return false;
-			}
-		}
+		// checking for 1st tree
+		Connection cc = conByTree1.get (c.getTreeA ());
+		if (cc != null)
+			throw new BivesConnectionException ("node " + c.getTreeA ().getXPath () + " already connected. cannot add another connection");
+		// checking for 2nd tree
+		cc = conByTree2.get (c.getTreeB ());
+		if (cc != null)
+			throw new BivesConnectionException ("node " + c.getTreeB ().getXPath () + " already connected. cannot add another connection");
 		
+
 		// adding for 1st tree
-		Vector<Connection> vc = conByTree1.get (c.getTreeA ());
-		if (vc == null)
-		{
-			vc = new Vector<Connection> ();
-			conByTree1.put (c.getTreeA (), vc);
-		}
-		vc.add (c);
+		conByTree1.put (c.getTreeA (), c);
 		// same for 2nd tree
-		vc = conByTree2.get (c.getTreeB ());
-		if (vc == null)
-		{
-			vc = new Vector<Connection> ();
-			conByTree2.put (c.getTreeB (), vc);
-		}
-		vc.add (c);
+		conByTree2.put (c.getTreeB (), c);
 		// add this connection to vector
 		connections.add (c);
 		
@@ -129,7 +107,7 @@ public class ConnectionManager
 	 * @param cmgmt the ConnectionManager to join
 	 * @return the united connection manager, containing all connections
 	 */
-	public ConnectionManager union (ConnectionManager cmgmt)
+	public ClearConnectionManager union (ClearConnectionManager cmgmt)
 	{
 		if (docA != cmgmt.docA || docB != cmgmt.docB)
 		{
@@ -137,13 +115,29 @@ public class ConnectionManager
 			return null;
 		}
 		
-		ConnectionManager union = new ConnectionManager (docA, docB);
+		ClearConnectionManager union = new ClearConnectionManager (docA, docB);
 		
 		for (Connection c : connections)
-			union.addConnection (new Connection (c), true);
+		{
+			try
+			{
+				union.addConnection (new Connection (c));
+			}
+			catch (BivesConnectionException e)
+			{
+				LOGGER.warn ("got an exception while joining connection managers", e);
+			}
+		}
 		
 		for (Connection c : cmgmt.connections)
-			union.addConnection (new Connection (c), true);
+			try
+			{
+				union.addConnection (new Connection (c));
+			}
+			catch (BivesConnectionException e)
+			{
+				LOGGER.info ("got an exception while joining connection managers, connection probably already included from first cmgr.", e);
+			}
 		
 		return union;
 	}
@@ -158,7 +152,7 @@ public class ConnectionManager
 	 * @param cmgmt the cmgmt
 	 * @return the connection manager
 	 */
-	public ConnectionManager intersection (ConnectionManager cmgmt)
+	public ClearConnectionManager intersection (ClearConnectionManager cmgmt)
 	{
 		if (docA != cmgmt.docA || docB != cmgmt.docB)
 		{
@@ -166,12 +160,20 @@ public class ConnectionManager
 			return null;
 		}
 		
-		ConnectionManager intersection = new ConnectionManager (docA, docB);
+		ClearConnectionManager intersection = new ClearConnectionManager (docA, docB);
 		
 		for (Connection c : connections)
 		{
+			
 			if (cmgmt.getConnectionOfNodes (c.getTreeA (), c.getTreeB ()) != null)
-				intersection.addConnection (c, true);
+				try
+				{
+					intersection.addConnection (c);
+				}
+				catch (BivesConnectionException e)
+				{
+					LOGGER.error ("got an exception while intersecting connection managers. this shouldn't happen!", e);
+				}
 		}
 		
 		return intersection;
@@ -187,7 +189,7 @@ public class ConnectionManager
 	 * @param cmgmt the cmgmt
 	 * @return the connection manager
 	 */
-	public ConnectionManager setDiff (ConnectionManager cmgmt)
+	public ClearConnectionManager setDiff (ClearConnectionManager cmgmt)
 	{
 		if (docA != cmgmt.docA || docB != cmgmt.docB)
 		{
@@ -195,12 +197,19 @@ public class ConnectionManager
 			return null;
 		}
 		
-		ConnectionManager intersection = new ConnectionManager (docA, docB);
+		ClearConnectionManager intersection = new ClearConnectionManager (docA, docB);
 		
 		for (Connection c : connections)
 		{
 			if (cmgmt.getConnectionOfNodes (c.getTreeA (), c.getTreeB ()) == null)
-				intersection.addConnection (c, true);
+				try
+				{
+					intersection.addConnection (c);
+				}
+				catch (BivesConnectionException e)
+				{
+					LOGGER.error ("got an exception while ste-diffing connection managers. this shouldn't happen!", e);
+				}
 		}
 		
 		return intersection;
@@ -216,7 +225,7 @@ public class ConnectionManager
 	 * @param cmgmt the cmgmt
 	 * @return the connection manager
 	 */
-	public ConnectionManager symDiff (ConnectionManager cmgmt)
+	public ClearConnectionManager symDiff (ClearConnectionManager cmgmt)
 	{
 		return setDiff (cmgmt).union (cmgmt.setDiff (this));
 	}
@@ -226,47 +235,30 @@ public class ConnectionManager
 	 *
 	 * @param node the node to liberate
 	 */
-	public void dropConnections (TreeNode node)
+	public void dropConnection (TreeNode node)
 	{
-		// is this node from tree a?
-		Vector<Connection> vc = conByTree1.get (node);
-		if (vc != null)
+
+		Connection c = conByTree1.get (node);
+		if (c == null)
 		{
-			// for all connections of this node
-			for (Connection c : vc)
-			{
-				// remove the connection from vectore
-				connections.remove (c);
-				// and remove the connection from its mate
-				conByTree2.get (c.getTreeB ()).remove (c);
-			}
-			// in the end clear all connections of this node
-			vc.clear ();
+			c = conByTree2.get (node);
+			if (c != null)
+				conByTree2.remove (node);
 		}
+		else
+			conByTree1.remove (node);
 		
-		// and the same if the node is from tree b...
-		vc = conByTree2.get (node);
-		if (vc != null)
-		{
-			for (Connection c : vc)
-			{
-				connections.remove (c);
-				conByTree1.get (c.getTreeA ()).remove (c);
-			}
-			vc.clear ();
-		}
+		if (c != null)
+			connections.remove (c);
 	}
 	
 	public void dropConnection (Connection c)
 	{
-		connections.remove (c);
-
-		Vector<Connection> vc = conByTree1.get (c.getTreeA ());
-		if (vc != null)
-			vc.remove (c);
-		vc = conByTree2.get (c.getTreeB ());
-		if (vc != null)
-			vc.remove (c);
+		if (connections.remove (c))
+		{
+			conByTree1.remove (c.getTreeA ());
+			conByTree2.remove (c.getTreeB ());
+		}
 	}
 	
 	/**
@@ -275,35 +267,29 @@ public class ConnectionManager
 	 * @param node the node
 	 * @return the connections for node
 	 */
-	public Vector<Connection> getConnectionsForNode (TreeNode node)
+	public Connection getConnectionForNode (TreeNode node)
 	{
-		// might return null
-		Vector<Connection> vc = conByTree1.get (node);
-		if (vc != null)
-		{
-			if (vc.size () > 0)
-				return vc;
-			else
-				return null;
-		}
-		vc = conByTree2.get (node);
-		if (vc != null && vc.size () > 0)
-			return vc;
-		return null;
+		Connection c = conByTree1.get (node);
+		if (c != null)
+			return c;
+		
+		c = conByTree2.get (node);
+		return c;
 	}
 	
+	/**
+	 * Gets the connection of two certain nodes. Returns null if nodes are not connected.
+	 *
+	 * @param a the a
+	 * @param b the b
+	 * @return the connection of nodes
+	 */
 	public Connection getConnectionOfNodes (TreeNode a, TreeNode b)
 	{
-		// might return null
-		Vector<Connection> vc = conByTree1.get (a);
-		if (vc != null)
-		{
-			for (Connection c : vc)
-			{
-				if (c.getTreeB () == b)
-					return c;
-			}
-		}
+		Connection c = conByTree1.get (a);
+		if (c != null && c.getTreeB () == b)
+			return c;
+		
 		return null;
 	}
 	
@@ -317,12 +303,19 @@ public class ConnectionManager
 		return sb.toString ();
 	}
 	
+	/**
+	 * Gets the unmatched nodes in a subtree.
+	 *
+	 * @param subtree the subtree
+	 * @param unmatched the vector in which the unmatched nodes are collected
+	 * @return the the vector in which the unmatched nodes are collected
+	 */
 	public Vector<TreeNode> getUnmatched (TreeNode subtree, Vector<TreeNode> unmatched)
 	{
-		Vector<Connection> con = getConnectionsForNode (subtree);
-		if (con == null || con.size () < 1)
+		Connection c = getConnectionForNode (subtree);
+		if (c == null)
 			unmatched.add (subtree);
-		
+
 		if (subtree.getType () == TreeNode.DOC_NODE)
 		{
 			DocumentNode dn = (DocumentNode) subtree;
@@ -341,8 +334,8 @@ public class ConnectionManager
 	{
 		for (int c = vec.size () - 1; c >= 0; c--)
 		{
-			Vector<Connection> ccs = getConnectionsForNode (vec.elementAt (c));
-			if (ccs != null && ccs.size () > 0)
+			Connection ccs = getConnectionForNode (vec.elementAt (c));
+			if (ccs != null)
 				vec.remove (c);
 		}
 	}

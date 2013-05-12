@@ -35,32 +35,48 @@ public class SBMLUnit
 		
 		if (kind == null || !kind.isBaseUnit ())
 			throw new BivesSBMLParseException ("Unit kind attribute not defined or not base unit: " + kindStr);
+
+
+		if (documentNode.getAttribute ("multiplier") != null)
+		{
+			try
+			{
+				multiplier = Double.parseDouble (documentNode.getAttribute ("multiplier"));
+			}
+			catch (Exception e)
+			{
+				throw new BivesSBMLParseException ("multiplier of unexpected format: " + documentNode.getAttribute ("multiplier"));
+			}
+		}
+		else
+			multiplier = 1; // level <= 2
+
+		if (documentNode.getAttribute ("scale") != null)
+		{
+			try
+			{
+				scale = Integer.parseInt (documentNode.getAttribute ("scale"));
+			}
+			catch (Exception e)
+			{
+				throw new BivesSBMLParseException ("scale of unexpected format: " + documentNode.getAttribute ("scale"));
+			}
+		}
+		else
+			scale = 0; // level <= 2
 		
-		try
+		if (documentNode.getAttribute ("exponent") != null)
 		{
-			multiplier = Double.parseDouble (documentNode.getAttribute ("multiplier"));
+			try
+			{
+				exponent = Double.parseDouble (documentNode.getAttribute ("exponent"));
+			}
+			catch (Exception e)
+			{
+				throw new BivesSBMLParseException ("exponent of unexpected format: " + documentNode.getAttribute ("exponent"));
+			}
 		}
-		catch (Exception e)
-		{
-			throw new BivesSBMLParseException ("multiplier of unexpected format: " + documentNode.getAttribute ("multiplier"));
-		}
-		
-		try
-		{
-			scale = Integer.parseInt (documentNode.getAttribute ("scale"));
-		}
-		catch (Exception e)
-		{
-			throw new BivesSBMLParseException ("scale of unexpected format: " + documentNode.getAttribute ("scale"));
-		}
-		
-		try
-		{
-			exponent = Double.parseDouble (documentNode.getAttribute ("exponent"));
-		}
-		catch (Exception e)
-		{
-			throw new BivesSBMLParseException ("exponent of unexpected format: " + documentNode.getAttribute ("exponent"));
-		}
+		else
+			exponent = 1; // level <= 2
 	}
 }

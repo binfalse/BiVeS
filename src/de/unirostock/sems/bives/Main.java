@@ -18,7 +18,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.log4j.PropertyConfigurator;
 import org.xml.sax.SAXException;
 
 import de.unirostock.sems.bives.algorithm.Connection;
@@ -74,7 +73,6 @@ public class Main
 	 */
 	public static void main (String[] args) throws ParserConfigurationException, FileNotFoundException, SAXException, IOException
 	{
-    PropertyConfigurator.configure("log4j.prop");
 
 		//args = new String [] {"--sbml-graph", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
     

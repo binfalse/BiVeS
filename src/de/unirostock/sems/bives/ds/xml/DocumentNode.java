@@ -11,7 +11,6 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -20,6 +19,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
+import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Weighter;
@@ -37,7 +37,6 @@ import de.unirostock.sems.bives.tools.Tools;
  */
 public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 {
-	private final static Logger LOGGER = Logger.getLogger(DocumentNode.class.getName());
 	
 	public static String ID_ATTR = "id";
 	

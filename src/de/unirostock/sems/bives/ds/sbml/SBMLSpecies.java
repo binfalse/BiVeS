@@ -23,7 +23,9 @@ public class SBMLSpecies
 	private boolean hasOnlySubstanceUnits;
 	private boolean boundaryCondition;
 	private boolean constant;
+	private Integer charge; //optional
 	private	SBMLParameter conversionFactor; //optional
+	private SBMLSpeciesType speciesType; //optional
 	
 	/**
 	 * @param documentNode
@@ -48,6 +50,26 @@ public class SBMLSpecies
 		
 		initialAmount = null;
 		initialConcentration = null;
+
+		tmp = documentNode.getAttribute ("speciesType");
+		if (tmp != null)
+		{
+			speciesType = sbmlModel.getSpeciesType (tmp);
+			if (speciesType == null)
+				throw new BivesSBMLParseException ("no valid speciesType for species "+id+" defined: " + tmp);
+		}
+		
+		if (documentNode.getAttribute ("charge") != null)
+		{
+			try
+			{
+				charge = Integer.parseInt (documentNode.getAttribute ("charge"));
+			}
+			catch (Exception e)
+			{
+				throw new BivesSBMLParseException ("charge of species "+id+" of unexpected format: " + documentNode.getAttribute ("charge"));
+			}
+		}
 		
 		if (documentNode.getAttribute ("initialAmount") != null)
 		{
