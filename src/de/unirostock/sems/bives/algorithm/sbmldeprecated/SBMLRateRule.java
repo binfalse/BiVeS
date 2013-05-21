@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.unirostock.sems.bives.algorithm.sbml;
+package de.unirostock.sems.bives.algorithm.sbmldeprecated;
 
 import java.io.IOException;
 
@@ -21,13 +21,13 @@ import de.unirostock.sems.bives.tools.Tools;
  * @author Martin Scharm
  *
  */
-public class SBMLAssignmentRule
+public class SBMLRateRule
 	extends SBMLRule
 {
-	private final static Logger LOGGER = Logger.getLogger(SBMLAssignmentRule.class.getName());
+	private final static Logger LOGGER = Logger.getLogger(SBMLRateRule.class.getName());
 	private String varA, varB;
-
-	public SBMLAssignmentRule (String varA, String varB, DocumentNode ruleA, DocumentNode ruleB)
+	
+	public SBMLRateRule (String varA, String varB, DocumentNode ruleA, DocumentNode ruleB)
 	{
 		super (ruleA, ruleB);
 		this.varA = varA;
@@ -41,13 +41,15 @@ public class SBMLAssignmentRule
 	public String getType (String cssclass)
 	{
 		if (varA == null)
-			return "Assignment Rule for <span class='inserted "+cssclass+"'>" + varB +"</span>";
+			return "Rate Rule for <span class='inserted "+cssclass+"'>" + varB +"</span>";
 		if (varB == null)
-			return "Assignment Rule for <span class='deleted "+cssclass+"'>" + varA +"</span>";
+			return "Rate Rule for <span class='deleted "+cssclass+"'>" + varA +"</span>";
 		if (varA.equals (varB))
-			return "Assignment Rule for " + varA;
-		return "Assignment Rule initial for <span class='deleted "+cssclass+"'>" + varA + "</span> now for <span class='inserted "+cssclass+"'>" + varB +"</span>";
+			return "Rate Rule for " + varA;
+		return "Rate Rule initial for <span class='deleted "+cssclass+"'>" + varA + "</span> now for <span class='inserted "+cssclass+"'>" + varB +"</span>";
 	}
+	
+	
 	
 	public void setVariableA (String var)
 	{

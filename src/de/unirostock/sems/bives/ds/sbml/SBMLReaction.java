@@ -5,9 +5,12 @@ package de.unirostock.sems.bives.ds.sbml;
 
 import java.util.Vector;
 
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -15,14 +18,16 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  *
  */
 public class SBMLReaction
-	extends SBMLSbase
+	extends SBMLGenericIdNameObject
+	implements SBMLDiffReporter
 {
-	private String id;
-	private String name; //optional
 	private boolean reversible;
 	private boolean fast;
 	private SBMLCompartment compartment; //optional
 
+	private SBMLListOf listOfReactantsNode;
+	private SBMLListOf listOfProductsNode;
+	private SBMLListOf listOfModifiersNode;
 	private Vector<SBMLSpeciesReference> listOfReactants;
 	private Vector<SBMLSpeciesReference> listOfProducts;
 	private Vector<SBMLSimpleSpeciesReference> listOfModifiers;
@@ -88,6 +93,7 @@ public class SBMLReaction
 		Vector<TreeNode> nodes = documentNode.getChildrenWithTag ("listOfReactants");
 		for (int i = 0; i < nodes.size (); i++)
 		{
+			listOfReactantsNode = new SBMLListOf ((DocumentNode) nodes.elementAt (i), sbmlModel);
 			Vector<TreeNode> subnodes = ((DocumentNode) nodes.elementAt (i)).getChildrenWithTag ("speciesReference");
 			for (int j = 0; j < subnodes.size (); j++)
 			{
@@ -99,6 +105,7 @@ public class SBMLReaction
 		nodes = documentNode.getChildrenWithTag ("listOfProducts");
 		for (int i = 0; i < nodes.size (); i++)
 		{
+			listOfProductsNode = new SBMLListOf ((DocumentNode) nodes.elementAt (i), sbmlModel);
 			Vector<TreeNode> subnodes = ((DocumentNode) nodes.elementAt (i)).getChildrenWithTag ("speciesReference");
 			for (int j = 0; j < subnodes.size (); j++)
 			{
@@ -110,6 +117,7 @@ public class SBMLReaction
 		nodes = documentNode.getChildrenWithTag ("listOfModifiers");
 		for (int i = 0; i < nodes.size (); i++)
 		{
+			listOfModifiersNode = new SBMLListOf ((DocumentNode) nodes.elementAt (i), sbmlModel);
 			Vector<TreeNode> subnodes = ((DocumentNode) nodes.elementAt (i)).getChildrenWithTag ("modifierSpeciesReference");
 			for (int j = 0; j < subnodes.size (); j++)
 			{
@@ -123,16 +131,6 @@ public class SBMLReaction
 			throw new BivesSBMLParseException ("reaction "+id+" has "+nodes.size ()+" kinetic law elements. (expected not more tha one element)");
 		if (nodes.size () == 1)
 			kineticLaw = new SBMLKineticLaw ((DocumentNode) nodes.elementAt (0), sbmlModel);
-	}
-	
-	public String getID ()
-	{
-		return id;
-	}
-	
-	public String getName ()
-	{
-		return name;
 	}
 	
 	public boolean isReversible ()
@@ -150,6 +148,21 @@ public class SBMLReaction
 		return kineticLaw;
 	}
 	
+	public SBMLListOf getListOfReactantsNode ()
+	{
+		return listOfReactantsNode;
+	}
+	
+	public SBMLListOf getListOfProductsNode ()
+	{
+		return listOfProductsNode;
+	}
+	
+	public SBMLListOf getListOfModifiersNode ()
+	{
+		return listOfModifiersNode;
+	}
+	
 	public Vector<SBMLSpeciesReference> getReactants ()
 	{
 		return listOfReactants;
@@ -163,5 +176,139 @@ public class SBMLReaction
 	public Vector<SBMLSimpleSpeciesReference> getModifiers ()
 	{
 		return listOfModifiers;
+	}
+
+	@Override
+	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	{
+		SBMLReaction a = (SBMLReaction) docA;
+		SBMLReaction b = (SBMLReaction) docB;
+		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
+			return "";
+		
+		String idA = a.getNameAndId (), idB = b.getNameAndId ();
+		String ret = "<tr><td>";
+		if (idA.equals (idB))
+			ret += idA;
+		else
+			ret += "<span class='"+CLASS_DELETED+"'>" + idA + "</span> &rarr; <span class='"+CLASS_DELETED+"'>" + idB + "</span> ";
+		ret += "</td><td>";
+		
+		ret += Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
+
+		Vector<SBMLSpeciesReference> aS = a.listOfReactants;
+		Vector<SBMLSpeciesReference> bS = b.listOfReactants;
+		String sub = "";
+		for (SBMLSpeciesReference sr : aS)
+		{
+			if (sub.length () > 0)
+				sub += " + ";
+			if (conMgmt.getConnectionForNode (sr.getDocumentNode ()) == null)
+				sub += sr.reportDelete ();
+			else
+			{
+				Connection c = conMgmt.getConnectionForNode (sr.getDocumentNode ());
+				SBMLSpeciesReference partner = (SBMLSpeciesReference) b.sbmlModel.getFromNode (c.getPartnerOf (sr.getDocumentNode ()));
+				sub += sr.reportMofification (conMgmt, sr, partner);
+			}
+		}
+		for (SBMLSpeciesReference sr : bS)
+		{
+			if (conMgmt.getConnectionForNode (sr.getDocumentNode ()) == null)
+			{
+				if (sub.length () > 0)
+					sub += " + ";
+				sub += sr.reportInsert ();
+			}
+		}
+		if (sub.length () > 0)
+			ret += sub + " &rarr; ";
+		else
+			ret += "&Oslash; &rarr; ";
+
+		aS = a.listOfProducts;
+		bS = b.listOfProducts;
+		sub = "";
+		for (SBMLSpeciesReference sr : aS)
+		{
+			if (sub.length () > 0)
+				sub += " + ";
+			if (conMgmt.getConnectionForNode (sr.getDocumentNode ()) == null)
+			{
+				//System.out.println ("reporting delete for " + sr.getDocumentNode ().getXPath ());
+				sub += sr.reportDelete ();
+			}
+			else
+			{
+				//System.out.println ("reporting mod for " + sr.getDocumentNode ().getXPath ());
+				Connection c = conMgmt.getConnectionForNode (sr.getDocumentNode ());
+				SBMLSpeciesReference partner = (SBMLSpeciesReference) b.sbmlModel.getFromNode (c.getPartnerOf (sr.getDocumentNode ()));
+				sub += sr.reportMofification (conMgmt, sr, partner);
+			}
+		}
+		for (SBMLSpeciesReference sr : bS)
+		{
+			if (conMgmt.getConnectionForNode (sr.getDocumentNode ()) == null)
+			{
+				//System.out.println ("reporting ins for " + sr.getDocumentNode ().getXPath ());
+				if (sub.length () > 0)
+					sub += " + ";
+				sub += sr.reportInsert ();
+			}
+		}
+		if (sub.length () > 0)
+			ret += sub;
+		else
+			ret += "&Oslash;";
+		
+		ret += "<br/>";
+		
+
+		Vector<SBMLSimpleSpeciesReference> aM = a.listOfModifiers;
+		Vector<SBMLSimpleSpeciesReference> bM = b.listOfModifiers;
+		sub = "";
+		for (SBMLSimpleSpeciesReference sr : aM)
+		{
+			if (sub.length () > 0)
+				sub += "; ";
+			if (conMgmt.getConnectionForNode (sr.getDocumentNode ()) == null)
+				sub += sr.reportDelete ();
+			else
+			{
+				Connection c = conMgmt.getConnectionForNode (sr.getDocumentNode ());
+				SBMLSimpleSpeciesReference partner = (SBMLSimpleSpeciesReference) b.sbmlModel.getFromNode (c.getPartnerOf (sr.getDocumentNode ()));
+				sub += sr.reportMofification (conMgmt, sr, partner);
+			}
+		}
+		for (SBMLSimpleSpeciesReference sr : bM)
+		{
+			if (sub.length () > 0)
+				sub += "; ";
+			if (conMgmt.getConnectionForNode (sr.getDocumentNode ()) == null)
+				sub += sr.reportInsert ();
+		}
+		if (sub.length () > 0)
+			ret += "Modifiers: " + sub + "<br/>";
+		
+		if (a.kineticLaw != null && b.kineticLaw != null)
+			ret += "<strong>Kinetic Law:</strong><br/>" + a.kineticLaw.reportMofification (conMgmt, a.kineticLaw, b.kineticLaw);
+		else if (a.kineticLaw != null)
+			ret += "<strong>Kinetic Law:</strong><br/>" + a.kineticLaw.reportDelete ();
+		else if (b.kineticLaw != null)
+			ret += "<strong>Kinetic Law:</strong><br/>" + b.kineticLaw.reportInsert ();
+		
+		return ret + "</td></tr>";
+	}
+
+	@Override
+	public String reportInsert ()
+	{
+		return "<tr><td><span class='"+CLASS_INSERTED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_INSERTED+"'>inserted</span></td></tr>";
+	}
+
+	@Override
+	public String reportDelete ()
+	{
+		return "<tr><td><span class='"+CLASS_DELETED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_DELETED+"'>deleted</span></td></tr>";
 	}
 }

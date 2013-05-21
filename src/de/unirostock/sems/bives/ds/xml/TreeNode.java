@@ -9,6 +9,7 @@ import java.util.Vector;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 
@@ -165,9 +166,9 @@ public abstract class TreeNode
 		}
 	}
 	
-	public abstract boolean evaluate (ConnectionManager conMgmr);
+	public abstract boolean evaluate (ClearConnectionManager conMgmr);
 	protected abstract boolean contentDiffers (TreeNode tn);
-	public boolean networkDiffers (TreeNode tn, ConnectionManager conMgmr, Connection c)
+	public boolean networkDiffers (TreeNode tn, ClearConnectionManager conMgmr, Connection c)
 	{
 		//System.out.println ("checking : " + getXPath () + " -> " + tn.getXPath ());
 		DocumentNode p = getParent ();
@@ -182,10 +183,17 @@ public abstract class TreeNode
 			return true;
 		
 		//System.out.println ("netw diff p : " + p.getXPath () + " -> " + tnp.getXPath ());
+
 		
 		// parents connected and same child no.?
 		if (!conMgmr.parentsConnected (c))
+		//if ( (c))
 		{
+			/*System.out.println ("nodes: " + ((DocumentNode) this).getAttribute ("species") + "->" + getXPath () + " --- " + ((DocumentNode) tn).getAttribute ("species") + "->" + tn.getXPath ());
+			System.out.println ("parents: " + p.getXPath () + " --- " + tnp.getXPath ());
+		System.out.println ("p1: " + conMgmr.getConnectionOfNodes (p, tnp));
+		System.out.println ("p2: " + conMgmr.parentsConnected (c));
+			System.out.println ("parents not connected: ");*/
 			if (p != null)
 				p.addModification (SUB_MODIFIED);
 			if (tnp != null)

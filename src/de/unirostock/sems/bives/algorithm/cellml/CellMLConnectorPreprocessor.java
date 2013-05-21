@@ -8,6 +8,7 @@ import java.util.Vector;
 
 import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
+import de.unirostock.sems.bives.exception.BivesConnectionException;
 
 
 /**
@@ -28,7 +29,7 @@ public class CellMLConnectorPreprocessor
 	 * @see de.unirostock.sems.xmldiff.algorithm.Connector#connect()
 	 */
 	@Override
-	protected void connect ()
+	protected void connect () throws BivesConnectionException
 	{
 		//System.out.println ("get call");
 		// connect components by name

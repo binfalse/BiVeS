@@ -9,6 +9,7 @@ import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
+import de.unirostock.sems.bives.exception.BivesConnectionException;
 
 
 /**
@@ -25,7 +26,7 @@ public class IdConnector
 	 * @see de.unirostock.sems.xmldiff.algorithm.Connector#findConnections()
 	 */
 	@Override
-	protected void connect ()
+	protected void connect () throws BivesConnectionException
 	{
 		findConnections (true);
 	}
@@ -34,8 +35,9 @@ public class IdConnector
 	 * Find connections.
 	 *
 	 * @param requireSameLabel if true, both id-tags need to have the same label
+	 * @throws BivesConnectionException 
 	 */
-	public void findConnections (boolean requireSameLabel)
+	public void findConnections (boolean requireSameLabel) throws BivesConnectionException
 	{
 		// we can only map by ids if they are unique...
 		if (!docA.uniqueIds () || !docB.uniqueIds ())

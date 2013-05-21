@@ -5,9 +5,11 @@ package de.unirostock.sems.bives.ds.sbml;
 
 import java.util.Vector;
 
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -15,9 +17,10 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  *
  */
 public class SBMLInitialAssignment
-	extends SBMLSbase
+	extends SBMLSBase
+	implements SBMLDiffReporter
 {
-	private SBMLSbase symbol;
+	private SBMLSBase symbol;
 	private SBMLMathML math;
 	
 	/**
@@ -48,7 +51,7 @@ public class SBMLInitialAssignment
 		math = new SBMLMathML ((DocumentNode) maths.elementAt (0));
 	}
 	
-	public SBMLSbase getSymbol ()
+	public SBMLSBase getSymbol ()
 	{
 		return symbol;
 	}
@@ -56,5 +59,41 @@ public class SBMLInitialAssignment
 	public SBMLMathML getMath ()
 	{
 		return math;
+	}
+	
+	@Override
+	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	{
+		SBMLInitialAssignment a = (SBMLInitialAssignment) docA;
+		SBMLInitialAssignment b = (SBMLInitialAssignment) docB;
+		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
+			return "";
+		
+		String idA = SBMLModel.getSidName (a.symbol), idB = SBMLModel.getSidName (b.symbol);
+		
+		String ret = "<tr><td>";
+		if (idA.equals (idB))
+			ret += idA;
+		else
+			ret += "<span class='"+CLASS_DELETED+"'>" + idA + "</span> &rarr; <span class='"+CLASS_DELETED+"'>" + idB + "</span> ";
+		ret += "</td><td>";
+		
+		ret += Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath ());
+		
+		ret += Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
+		
+		return ret + "</td></tr>";
+	}
+	
+	@Override
+	public String reportInsert ()
+	{
+		return "<tr><td><span class='"+CLASS_INSERTED+"'>" + SBMLModel.getSidName (symbol) + "</span></td><td><span class='"+CLASS_INSERTED+"'>inserted</span></td></tr>";
+	}
+	
+	@Override
+	public String reportDelete ()
+	{
+		return "<tr><td><span class='"+CLASS_DELETED+"'>" + SBMLModel.getSidName (symbol) + "</span></td><td><span class='"+CLASS_DELETED+"'>deleted</span></td></tr>";
 	}
 }

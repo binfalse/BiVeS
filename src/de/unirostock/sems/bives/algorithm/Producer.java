@@ -12,7 +12,7 @@ import de.unirostock.sems.bives.ds.xml.TreeDocument;
  */
 public abstract class Producer
 {
-	protected ConnectionManager conMgmt;
+	protected ClearConnectionManager conMgmt;
 	protected TreeDocument docA;
 	protected TreeDocument docB;
 	
@@ -20,7 +20,7 @@ public abstract class Producer
 	{
 	}
 	
-	public void init (ConnectionManager conMgmt, TreeDocument docA, TreeDocument docB)
+	public void init (ClearConnectionManager conMgmt, TreeDocument docA, TreeDocument docB)
 	{
 		this.conMgmt = conMgmt;
 		this.docA = docA;

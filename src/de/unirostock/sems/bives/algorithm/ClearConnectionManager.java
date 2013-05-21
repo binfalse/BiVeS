@@ -243,10 +243,16 @@ public class ClearConnectionManager
 		{
 			c = conByTree2.get (node);
 			if (c != null)
-				conByTree2.remove (node);
+			{
+				conByTree1.remove (c.getTreeA ());
+				conByTree2.remove (c.getTreeB ());
+			}
 		}
 		else
-			conByTree1.remove (node);
+		{
+			conByTree1.remove (c.getTreeA ());
+			conByTree2.remove (c.getTreeB ());
+		}
 		
 		if (c != null)
 			connections.remove (c);

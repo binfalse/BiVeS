@@ -1,4 +1,4 @@
-package de.unirostock.sems.bives.algorithm.sbml;
+package de.unirostock.sems.bives.algorithm.sbmldeprecated;
 
 import java.util.HashSet;
 import java.util.Set;

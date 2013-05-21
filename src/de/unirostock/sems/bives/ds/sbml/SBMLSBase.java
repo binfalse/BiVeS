@@ -15,7 +15,7 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  * @author Martin Scharm
  *
  */
-public abstract class SBMLSbase
+public abstract class SBMLSBase
 	extends SBMLGenericObject
 {
 	private String metaid;
@@ -23,9 +23,12 @@ public abstract class SBMLSbase
 	private SBMLXHTML notes;
 	private DocumentNode annotation;
 	
-	public SBMLSbase(DocumentNode documentNode, SBMLModel sbmlModel) throws BivesSBMLParseException
+	public SBMLSBase(DocumentNode documentNode, SBMLModel sbmlModel) throws BivesSBMLParseException
 	{
 		super (documentNode, sbmlModel);
+		
+		if (sbmlModel != null)
+			sbmlModel.mapNode (documentNode, this);
 
 		metaid = documentNode.getAttribute ("metaid");
 		if (documentNode.getAttribute ("SBOTerm") != null)
@@ -62,5 +65,15 @@ public abstract class SBMLSbase
 	public DocumentNode getAnnotation ()
 	{
 		return annotation;
+	}
+	
+	protected String reportAnnotation ()
+	{
+		return "";
+	}
+	
+	protected String reportNotes ()
+	{
+		return "";
 	}
 }

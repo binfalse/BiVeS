@@ -13,9 +13,7 @@ import de.unirostock.sems.bives.ds.xml.DocumentNode;
 public class SBMLMathML
 {
 	private DocumentNode math;
-	/**
-	 * 
-	 */
+	
 	public SBMLMathML (DocumentNode math)
 	{
 		this.math = math;

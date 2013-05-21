@@ -36,6 +36,7 @@ import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
 
 import de.binfalse.bflog.LOGGER;
+import de.unirostock.sems.bives.ds.sbml.SBMLDiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 
@@ -258,11 +259,11 @@ UnsupportedEncodingException  {
 		{
 			String aA = a.getAttribute (attr), bA = b.getAttribute (attr);
 			if (aA == null)
-				ret += "Attribute <span class='attr'>" + attr + "</span> was inserted: <span class='inserted'>"+bA+"</span><br/>";
+				ret += "Attribute <span class='"+SBMLDiffReporter.CLASS_ATTRIBUTE+"'>" + attr + "</span> was inserted: <span class='inserted'>"+bA+"</span><br/>";
 			else if (bA == null)
-				ret += "Attribute <span class='attr'>" + attr + "</span> was deleted: <span class='deleted'>"+aA+"</span><br/>";
+				ret += "Attribute <span class='"+SBMLDiffReporter.CLASS_ATTRIBUTE+"'>" + attr + "</span> was deleted: <span class='deleted'>"+aA+"</span><br/>";
 			else if (!aA.equals (bA))
-				ret += "Attribute <span class='attr'>" + attr + "</span> has changed: <span class='deleted'>"+aA+"</span> &rarr; <span class='inserted'>"+bA+"</span><br/>";
+				ret += "Attribute <span class='"+SBMLDiffReporter.CLASS_ATTRIBUTE+"'>" + attr + "</span> has changed: <span class='deleted'>"+aA+"</span> &rarr; <span class='inserted'>"+bA+"</span><br/>";
 		}
 		return ret;
   }

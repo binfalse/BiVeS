@@ -3,10 +3,12 @@
  */
 package de.unirostock.sems.bives.algorithm.cellml;
 
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
+import de.unirostock.sems.bives.exception.BivesConnectionException;
 import de.unirostock.sems.bives.tools.Tools;
 
 
@@ -33,7 +35,7 @@ public class CellMLVariable implements DiffReporter
 		this.nodeB = nodeB;
 	}
 	
-	public void connect (ConnectionManager conMgmt)
+	public void connect (ClearConnectionManager conMgmt) throws BivesConnectionException
 	{
 		if (nodeA == null || nodeB == null)
 			return;

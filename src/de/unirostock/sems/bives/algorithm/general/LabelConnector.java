@@ -11,6 +11,7 @@ import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.ds.MultiNodeMapper;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
+import de.unirostock.sems.bives.exception.BivesConnectionException;
 
 
 /**
@@ -23,8 +24,10 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
  * </pre>
  * 
  * @author Martin Scharm
+ * 
  *
  */
+@Deprecated
 public class LabelConnector
 	extends Connector
 {
@@ -33,7 +36,7 @@ public class LabelConnector
 	 * @see de.unirostock.sems.xmldiff.algorithm.Connector#findConnections()
 	 */
 	@Override
-	protected void connect ()
+	protected void connect () throws BivesConnectionException
 	{
 		Set<String> tags = docA.getOccuringTags ();
 		

@@ -19,15 +19,32 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
-import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import de.binfalse.bflog.LOGGER;
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Interpreter;
 import de.unirostock.sems.bives.algorithm.Producer;
-import de.unirostock.sems.bives.algorithm.sbml.SBMLReport.ModConnection;
+import de.unirostock.sems.bives.algorithm.sbmldeprecated.SBMLReport.ModConnection;
+import de.unirostock.sems.bives.ds.sbml.SBMLCompartment;
+import de.unirostock.sems.bives.ds.sbml.SBMLCompartmentType;
+import de.unirostock.sems.bives.ds.sbml.SBMLConstraint;
+import de.unirostock.sems.bives.ds.sbml.SBMLDiffReport;
+import de.unirostock.sems.bives.ds.sbml.SBMLDiffReporter;
+import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
+import de.unirostock.sems.bives.ds.sbml.SBMLEvent;
+import de.unirostock.sems.bives.ds.sbml.SBMLFunctionDefinition;
+import de.unirostock.sems.bives.ds.sbml.SBMLInitialAssignment;
+import de.unirostock.sems.bives.ds.sbml.SBMLModel;
+import de.unirostock.sems.bives.ds.sbml.SBMLParameter;
+import de.unirostock.sems.bives.ds.sbml.SBMLReaction;
+import de.unirostock.sems.bives.ds.sbml.SBMLRule;
+import de.unirostock.sems.bives.ds.sbml.SBMLSpecies;
+import de.unirostock.sems.bives.ds.sbml.SBMLSpeciesType;
+import de.unirostock.sems.bives.ds.sbml.SBMLUnitDefinition;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
@@ -40,25 +57,16 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
 public class SBMLDiffInterpreter
 	extends Interpreter
 {
-	private HashMap<String, CRNNode> entityMapper;
-	//private HashMap<String, SBMLEventDetail> eventMapper;
-	private ChemicalReactionNetwork crn;
-	private SBMLReport report;
+	private SBMLDiffReport report;
+	private SBMLDocument sbmlDocA, sbmlDocB;
 	
-	private final static Logger LOGGER = Logger.getLogger(SBMLDiffInterpreter.class.getName());
-	
-	public SBMLDiffInterpreter (ConnectionManager conMgmt, TreeDocument docA,
-		TreeDocument docB) throws ParserConfigurationException
+	public SBMLDiffInterpreter (ClearConnectionManager conMgmt, SBMLDocument sbmlDocA,
+		SBMLDocument sbmlDocB)
 	{
-		super (conMgmt, docA, docB);
-			entityMapper = new HashMap<String, CRNNode> ();
-			crn = new ChemicalReactionNetwork ();
-			report = new SBMLReport ();
-	}
-	
-	public String getCRNGraph () throws ParserConfigurationException
-	{
-		return crn.getGraphML ();
+		super (conMgmt, sbmlDocA.getTreeDocument (), sbmlDocB.getTreeDocument ());
+			report = new SBMLDiffReport ();
+			this.sbmlDocA = sbmlDocA;
+			this.sbmlDocB = sbmlDocB;
 	}
 	
 	// TODO!!!
@@ -67,7 +75,7 @@ public class SBMLDiffInterpreter
 		// TODO!!!
 	}
 	
-	public SBMLReport getReport ()
+	public SBMLDiffReport getReport ()
 	{
 		return report;
 	}
@@ -80,732 +88,380 @@ public class SBMLDiffInterpreter
 	public void interprete ()
 	{
 		// id's are quite critical!
-		
 
-		String lvA = "L" + docA.getRoot ().getAttribute ("level") + "V" + docA.getRoot ().getAttribute ("version");
-		String lvB = "L" + docB.getRoot ().getAttribute ("level") + "V" + docB.getRoot ().getAttribute ("version");
+		SBMLModel modelA = sbmlDocA.getModel ();
+		SBMLModel modelB = sbmlDocB.getModel ();
+
+		String lvA = "L" + sbmlDocA.getLevel () + "V" + sbmlDocA.getVersion ();
+		String lvB = "L" + sbmlDocB.getLevel () + "V" + sbmlDocB.getVersion ();
 		if (lvA.equals (lvB))
 			report.addHeader ("Both documents have same Level/Version: " + lvA);
 		else
-			report.addHeader ("Level/Version has changed: from <span class='deleted'>" + lvA + "</span> to <span class='inserted'>" + lvB+"</span><br/>");
+			report.addHeader ("Level/Version has changed: from <span class='" + SBMLDiffReporter.CLASS_DELETED+"'>" + lvA + "</span> to <span class='" + SBMLDiffReporter.CLASS_INSERTED+"'>" + lvB+"</span><br/>");
 		
 		
-		// compartments
 		LOGGER.info ("searching for rules in A");
-		Vector<DocumentNode> rules = docA.getNodesByTag ("assignmentRule");
-		rules.addAll (docA.getNodesByTag ("algebraicRule"));
-		rules.addAll (docA.getNodesByTag ("rateRule"));
-		for (DocumentNode dp : rules)
+		Vector<SBMLRule> rules = modelA.getRules ();
+		for (SBMLRule rule : rules)
 		{
-			LOGGER.info ("rule: " + dp.getXPath ());
+			DocumentNode dn = rule.getDocumentNode ();
+			LOGGER.info ("rule: " + dn.getXPath ());
 
-			if (dp.hasModification (TreeNode.UNMAPPED))
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyRules (rule.reportDelete ());
+			else
 			{
-				SBMLRule rule = null;
-				if (dp.getTagName ().equals ("assignmentRule"))
-					rule = new SBMLAssignmentRule (dp.getAttribute ("variable"), null, (DocumentNode) dp.getChildren ().elementAt (0), null);
-				if (dp.getTagName ().equals ("algebraicRule"))
-					rule = new SBMLAlgebraicRule ((DocumentNode) dp.getChildren ().elementAt (0), null);
-				if (dp.getTagName ().equals ("rateRule"))
-					rule = new SBMLRateRule (dp.getAttribute ("variable"), null, (DocumentNode) dp.getChildren ().elementAt (0), null);
-				
-				report.deleteRule (rule);
-			}
-			else if (dp.hasModification (TreeNode.MODIFIED))
-			{
-				SBMLRule rule = null;
-				
-				Vector<Connection> cons = conMgmt.getConnectionsForNode (dp);
-				for (Connection con : cons)
-				{
-					DocumentNode partner = (DocumentNode) con.getPartnerOf (dp);
-					if (!partner.getTagName ().equals (dp.getTagName ()))
-						throw new UnsupportedOperationException ("different rule types matched...");
-
-					if (dp.getTagName ().equals ("assignmentRule"))
-						rule = new SBMLAssignmentRule (dp.getAttribute ("variable"), partner.getAttribute ("variable"), (DocumentNode) dp.getChildren ().elementAt (0), (DocumentNode) partner.getChildren ().elementAt (0));
-					if (dp.getTagName ().equals ("algebraicRule"))
-						rule = new SBMLAlgebraicRule ((DocumentNode) dp.getChildren ().elementAt (0), (DocumentNode) partner.getChildren ().elementAt (0));
-					if (dp.getTagName ().equals ("rateRule"))
-						rule = new SBMLRateRule (dp.getAttribute ("variable"), partner.getAttribute ("variable"), (DocumentNode) dp.getChildren ().elementAt (0), (DocumentNode) partner.getChildren ().elementAt (0));
-				}
-				
-				report.modifyRule (rule);
+				report.modifyRules (rule.reportMofification (conMgmt, rule, (SBMLRule) modelB.getFromNode (con.getPartnerOf (dn))));
 			}
 		}
 		LOGGER.info ("searching for rules in B");
-		rules = docB.getNodesByTag ("assignmentRule");
-		rules.addAll (docB.getNodesByTag ("algebraicRule"));
-		rules.addAll (docB.getNodesByTag ("rateRule"));
-		for (DocumentNode dp : rules)
+		rules = modelB.getRules ();
+		for (SBMLRule rule : rules)
 		{
-			if (!dp.hasModification (TreeNode.UNMAPPED))
-				continue;
+			DocumentNode dn = rule.getDocumentNode ();
+			LOGGER.info ("rule: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
 			
-			LOGGER.info ("parameter: " + dp.getXPath ());
-			SBMLRule rule = null;
-			if (dp.getTagName ().equals ("assignmentRule"))
-				rule = new SBMLAssignmentRule (null, dp.getAttribute ("variable"), null, (DocumentNode) dp.getChildren ().elementAt (0));
-			if (dp.getTagName ().equals ("algebraicRule"))
-				rule = new SBMLAlgebraicRule (null, (DocumentNode) dp.getChildren ().elementAt (0));
-			if (dp.getTagName ().equals ("rateRule"))
-				rule = new SBMLRateRule (null, dp.getAttribute ("variable"), null, (DocumentNode) dp.getChildren ().elementAt (0));
-			
-			report.insertRule (rule);
+			if (con == null)
+				report.modifyRules (rule.reportInsert ());
 		}
 		
-		
-		
-		
-		
-		
-		
-		// compartments
-		LOGGER.info ("searching for compartments in A");
-		for (DocumentNode dp : docA.getNodesByTag ("compartment"))
-		{
-			LOGGER.info ("parameter: " + dp.getXPath ());
 
-			if (dp.hasModification (TreeNode.UNMAPPED))
+		LOGGER.info ("searching for compartments in A");
+		HashMap<String, SBMLCompartment> compartments = modelA.getCompartments ();
+		for (SBMLCompartment compartment : compartments.values ())
+		{
+			DocumentNode dn = compartment.getDocumentNode ();
+			LOGGER.info ("compartment: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyCompartments (compartment.reportDelete ());
+			else
 			{
-				report.deleteCompartments (dp);
-			}
-			else if (dp.hasModification (TreeNode.MODIFIED))
-			{
-				Vector<Connection> cons = conMgmt.getConnectionsForNode (dp);
-				//System.out.println ("modified para: " + p.getXPath ());
-				for (Connection con : cons)
-					report.modifyCompartments (new ModConnection (dp, (DocumentNode) con.getPartnerOf (dp)));
+				report.modifyCompartments (compartment.reportMofification (conMgmt, compartment, (SBMLCompartment) modelB.getFromNode (con.getPartnerOf (dn))));
 			}
 		}
 		LOGGER.info ("searching for compartments in B");
-		for (DocumentNode dp : docB.getNodesByTag ("compartment"))
+		compartments = modelB.getCompartments ();
+		for (SBMLCompartment compartment : compartments.values ())
 		{
-			if (!dp.hasModification (TreeNode.UNMAPPED))
-				continue;
-			
-			LOGGER.info ("parameter: " + dp.getXPath ());
-			report.insertCompartments (dp);
-		}
-		
-		
-		
-		
-		
-		
-		// parameter
-		LOGGER.info ("searching for parameter in A");
-		for (DocumentNode dp : docA.getNodesByTag ("parameter"))
-		{
-			LOGGER.info ("parameter: " + dp.getXPath ());
+			DocumentNode dn = compartment.getDocumentNode ();
+			LOGGER.info ("compartment: " + dn.getXPath ());
 
-			if (dp.hasModification (TreeNode.UNMAPPED))
-			{
-				report.deleteParameter (dp);
-			}
-			else if (dp.hasModification (TreeNode.MODIFIED))
-			{
-				Vector<Connection> cons = conMgmt.getConnectionsForNode (dp);
-				//System.out.println ("modified para: " + p.getXPath ());
-				for (Connection con : cons)
-					report.modifyParameter (new ModConnection (dp, (DocumentNode) con.getPartnerOf (dp)));
-			}
-		}
-		LOGGER.info ("searching for parameter in B");
-		for (DocumentNode dp : docB.getNodesByTag ("parameter"))
-		{
-			if (!dp.hasModification (TreeNode.UNMAPPED))
-				continue;
+			Connection con = conMgmt.getConnectionForNode (dn);
 			
-			LOGGER.info ("parameter: " + dp.getXPath ());
-			report.insertParameter (dp);
+			if (con == null)
+				report.modifyCompartments (compartment.reportInsert ());
 		}
 		
+
+		LOGGER.info ("searching for compartmenttypes in A");
+		HashMap<String, SBMLCompartmentType> compartmenttypes = modelA.getCompartmentTypes ();
+		for (SBMLCompartmentType compartment : compartmenttypes.values ())
+		{
+			DocumentNode dn = compartment.getDocumentNode ();
+			LOGGER.info ("compartmenttype: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyCompartmentTypes (compartment.reportDelete ());
+			else
+			{
+				report.modifyCompartmentTypes (compartment.reportMofification (conMgmt, compartment, (SBMLCompartmentType) modelB.getFromNode (con.getPartnerOf (dn))));
+			}
+		}
+		LOGGER.info ("searching for compartmenttypes in B");
+		compartmenttypes = modelB.getCompartmentTypes ();
+		for (SBMLCompartmentType compartment : compartmenttypes.values ())
+		{
+			DocumentNode dn = compartment.getDocumentNode ();
+			LOGGER.info ("compartmenttype: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyCompartmentTypes (compartment.reportInsert ());
+		}
 		
+
+		LOGGER.info ("searching for parameters in A");
+		HashMap<String, SBMLParameter> parameters = modelA.getParameters();
+		for (SBMLParameter parameter : parameters.values ())
+		{
+			DocumentNode dn = parameter.getDocumentNode ();
+			LOGGER.info ("parameter: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyParameter(parameter.reportDelete ());
+			else
+			{
+				report.modifyParameter (parameter.reportMofification (conMgmt, parameter, (SBMLParameter) modelB.getFromNode (con.getPartnerOf (dn))));
+			}
+		}
+		LOGGER.info ("searching for parameters in B");
+		parameters = modelB.getParameters ();
+		for (SBMLParameter parameter : parameters.values ())
+		{
+			DocumentNode dn = parameter.getDocumentNode ();
+			LOGGER.info ("parameter: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyParameter (parameter.reportInsert ());
+		}
 		
-		
-		
-		
-		// parameter
+
 		LOGGER.info ("searching for events in A");
-		for (DocumentNode dp : docA.getNodesByTag ("event"))
+		Vector<SBMLEvent> events = modelA.getEvents ();
+		for (SBMLEvent event : events)
 		{
-			LOGGER.info ("event: " + dp.getXPath ());
-			
-			SBMLEvent e = new SBMLEvent (dp, null);
-			
-			if (dp.hasModification (TreeNode.UNMAPPED))
-			{
-				report.deleteEvent (e);
-			}
-			else if (dp.hasModification (TreeNode.MODIFIED))
-			{
-				Vector<Connection> cons = conMgmt.getConnectionsForNode (dp);
-				//System.out.println ("modified para: " + p.getXPath ());
-				for (Connection con : cons)
-				{
-					e.setEvenetB ((DocumentNode) con.getTreeB ());
-					report.modifyEvent (e);
-					// just one con possible
-					break;
-				}
-			}
-			
+			DocumentNode dn = event.getDocumentNode ();
+			LOGGER.info ("event: " + dn.getXPath ());
 
-			for (TreeNode node : dp.getChildren ())
-			{
-				DocumentNode dnode = (DocumentNode) node;
-				if (dnode.getTagName ().equals ("trigger"))
-				{
-					if (dnode.hasModification (TreeNode.UNMAPPED))
-						e.setTrigger (new SBMLEventTrigger (dnode, null));
-					else
-					{
-						Vector<Connection> cs = conMgmt.getConnectionsForNode (dnode);
-						if (cs.size () != 1)
-							throw new UnsupportedOperationException ("mapped but not exactly 1 connection... ");
-						e.setTrigger (new SBMLEventTrigger (dnode, (DocumentNode) cs.elementAt (0).getPartnerOf (dnode)));
-					}
-				}
-				else if (dnode.getTagName ().equals ("delay"))
-				{
-					if (dnode.hasModification (TreeNode.UNMAPPED))
-						e.setDelay (new SBMLEventDelay (dnode, null));
-					else
-					{
-						Vector<Connection> cs = conMgmt.getConnectionsForNode (dnode);
-						if (cs.size () != 1)
-							throw new UnsupportedOperationException ("mapped but not exactly 1 connection... ");
-						e.setDelay (new SBMLEventDelay (dnode, (DocumentNode) cs.elementAt (0).getPartnerOf (dnode)));
-					}
-				}
-				else if (dnode.getTagName ().equals ("listOfEventAssignments"))
-				{
-					for (TreeNode node2 : dnode.getChildren ())
-					{
-						DocumentNode dass = (DocumentNode) node2;
-						if (dass.hasModification (TreeNode.UNMAPPED))
-							e.addAssignment (new SBMLEventAssignment (dass, null));
-						else
-						{
-							Vector<Connection> cs = conMgmt.getConnectionsForNode (dass);
-							if (cs.size () != 1)
-								throw new UnsupportedOperationException ("mapped but not exactly 1 connection... ");
-							e.addAssignment (new SBMLEventAssignment (dass, (DocumentNode) cs.elementAt (0).getPartnerOf (dass)));
-						}
-					}
-				}
-			}
+			Connection con = conMgmt.getConnectionForNode (dn);
 			
+			if (con == null)
+				report.modifyEvents (event.reportDelete ());
+			else
+			{
+				report.modifyEvents (event.reportMofification (conMgmt, event, (SBMLEvent) modelB.getFromNode (con.getPartnerOf (dn))));
+			}
 		}
 		LOGGER.info ("searching for events in B");
-		for (DocumentNode dp : docB.getNodesByTag ("event"))
+		events = modelB.getEvents ();
+		for (SBMLEvent event : events)
 		{
-			if (!dp.hasModification (TreeNode.UNMAPPED))
-				continue;
-			
-			LOGGER.info ("event: " + dp.getXPath ());
-			
-			SBMLEvent e = new SBMLEvent (null, dp);
+			DocumentNode dn = event.getDocumentNode ();
+			LOGGER.info ("event: " + dn.getXPath ());
 
-			report.deleteEvent (e);
-
-			for (TreeNode node : dp.getChildren ())
-			{
-				DocumentNode dnode = (DocumentNode) node;
-				if (dnode.getTagName ().equals ("trigger"))
-				{
-					e.setTrigger (new SBMLEventTrigger (null, dnode));
-				}
-				else if (dnode.getTagName ().equals ("delay"))
-				{
-					e.setDelay (new SBMLEventDelay (null, dnode));
-				}
-				else if (dnode.getTagName ().equals ("listOfEventAssignments"))
-				{
-					for (TreeNode node2 : dnode.getChildren ())
-					{
-						e.addAssignment (new SBMLEventAssignment (null, (DocumentNode) node2));
-					}
-				}
-			}
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyEvents (event.reportInsert ());
 		}
 		
-		
-		
-		
-		
-		
-		// species
+
 		LOGGER.info ("searching for species in A");
-		for (DocumentNode ds : docA.getNodesByTag ("species"))
+		HashMap<String, SBMLSpecies> species = modelA.getSpecies();
+		for (SBMLSpecies spec : species.values ())
 		{
+			DocumentNode dn = spec.getDocumentNode ();
+			LOGGER.info ("species: " + dn.getXPath ());
 
-			LOGGER.info ("species: " + ds.getXPath ());
-
-			String name = ds.getAttribute ("name");
-			if (name == null)
-				name = ds.getId ();
+			Connection con = conMgmt.getConnectionForNode (dn);
 			
-			//System.out.println (ds.getXPath () + " -mod-> " + ds.getModification ());
-
-			// new node in crn
-			CRNSpecies spec = new CRNSpecies (name, null, ds.getModification (), ds, null);
-
-			if (ds.hasModification (TreeNode.UNMAPPED))
-			{
-				entityMapper.put ("sd" + ds.getId (), spec);
-				// report
-				report.deleteSpecies (ds);
-			}
+			if (con == null)
+				report.modifySpecies(spec.reportDelete ());
 			else
 			{
-				entityMapper.put ("sc" + ds.getId (), spec);
-				if (ds.hasModification (TreeNode.MODIFIED))
-				{
-					// report
-					Vector<Connection> cons = conMgmt.getConnectionsForNode (ds);
-					for (Connection con : cons)
-						report.modifySpecies(new ModConnection (ds, (DocumentNode) con.getPartnerOf (ds)));
-				}
+				report.modifySpecies (spec.reportMofification (conMgmt, spec, (SBMLSpecies) modelB.getFromNode (con.getPartnerOf (dn))));
 			}
-			crn.addSpecies (spec);
 		}
-		
 		LOGGER.info ("searching for species in B");
-		for (DocumentNode ds : docB.getNodesByTag ("species"))
+		species = modelB.getSpecies ();
+		for (SBMLSpecies spec : species.values ())
 		{
+			DocumentNode dn = spec.getDocumentNode ();
+			LOGGER.info ("species: " + dn.getXPath ());
 
-			LOGGER.info ("species: " + ds.getXPath ());
-
-			String name = ds.getAttribute ("name");
-			if (name == null)
-				name = ds.getId ();
+			Connection con = conMgmt.getConnectionForNode (dn);
 			
-			//System.out.println (ds.getXPath () + " -mod-> " + ds.getModification ());
+			if (con == null)
+				report.modifySpecies (spec.reportInsert ());
+		}
+		
 
-			// new node in crn
-			if (ds.hasModification (TreeNode.UNMAPPED))
-			{
-				CRNSpecies spec = new CRNSpecies (null, name, ds.getModification (), null, ds);
-				entityMapper.put ("si" + ds.getId (), spec);
-				crn.addSpecies (spec);
-				// report
-				report.insertSpecies (ds);
-			}
+		LOGGER.info ("searching for speciestypes in A");
+		HashMap<String, SBMLSpeciesType> speciestypes = modelA.getSpeciesTypes();
+		for (SBMLSpeciesType spec : speciestypes.values ())
+		{
+			DocumentNode dn = spec.getDocumentNode ();
+			LOGGER.info ("speciestype: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifySpeciesTypes(spec.reportDelete ());
 			else
 			{
-				CRNNode spec = entityMapper.get ("sc" + ds.getId ());
-				spec.setTreeB (ds);
-				//System.out.println ("adde mod " + ds.getModification () + " to: " + ds.getXPath ());
-				spec.addModifications (ds.getModification ());
-				spec.setNameB (name);
+				report.modifySpeciesTypes (spec.reportMofification (conMgmt, spec, (SBMLSpeciesType) modelB.getFromNode (con.getPartnerOf (dn))));
 			}
 		}
+		LOGGER.info ("searching for speciestypes in B");
+		speciestypes = modelB.getSpeciesTypes ();
+		for (SBMLSpeciesType spec : speciestypes.values ())
+		{
+			DocumentNode dn = spec.getDocumentNode ();
+			LOGGER.info ("speciestype: " + dn.getXPath ());
 
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifySpeciesTypes (spec.reportInsert ());
+		}
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		// reactions
+
 		LOGGER.info ("searching for reactions in A");
-		for (DocumentNode reaction : docA.getNodesByTag ("reaction"))
+		HashMap<String, SBMLReaction> reactions = modelA.getReactions();
+		for (SBMLReaction reaction : reactions.values ())
 		{
-			LOGGER.info ("reaction: " + reaction.getXPath ());
-			LOGGER.info ("reaction marker: " + reaction.getModification () + " mod/submod: " + reaction.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED));
-			
+			DocumentNode dn = reaction.getDocumentNode ();
+			LOGGER.info ("reaction: " + dn.getXPath ());
 
-			String reactionID = reaction.getAttribute ("id");
-			String name = reaction.getAttribute ("name");
-			if (name == null)
-				name = reactionID;
+			Connection con = conMgmt.getConnectionForNode (dn);
 			
-			// new node in crn
-			CRNReaction react = new CRNReaction (name, null, reaction.getModification (), reaction.getAttribute ("reversible"), reaction.getAttribute ("fast"), reaction, null);
-			crn.addReaction (react);
-			
-
-			if (reaction.hasModification (TreeNode.UNMAPPED))
-			{
-				entityMapper.put ("rd" + reactionID, react);
-				// report
-				report.deleteReaction (react);
-			}
+			if (con == null)
+				report.modifyReaction(reaction.reportDelete ());
 			else
 			{
-				entityMapper.put ("rc" + reactionID, react);
-				if (reaction.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED))
-				{
-					// report
-					report.modifyReaction (react);
-				}
-				else
-				{
-					Vector<Connection> cons = conMgmt.getConnectionsForNode (reaction);
-					for (Connection con : cons)
-						if (con.getPartnerOf (reaction).hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED))
-							report.modifyReaction (react);
-				}
-			}
-			
-
-			for (TreeNode c: reaction.getChildren ())
-			{
-				DocumentNode dn = (DocumentNode) c;
-				String dntag = dn.getTagName ();
-				// modification of whole list!?
-				int mod = c.getModification ();
-				
-
-				if (dntag.equals ("listOfReactants"))
-				{
-					for (TreeNode rea : dn.getChildren ())
-					{
-						DocumentNode reactant = (DocumentNode) rea;
-						if (reactant.getTagName ().equals ("ListOfSpeciesReferences"))
-						{
-							// v3..
-							for (TreeNode rea2 : reactant.getChildren ())
-							{
-								DocumentNode reactant2 = (DocumentNode) rea2;
-								CRNNode spec = entityMapper.get ("sd" + reactant2.getAttribute ("species"));
-								if (spec == null)
-									spec = entityMapper.get ("sc" + reactant2.getAttribute ("species"));
-								
-								CRNEdge edge = new CRNEdge (spec, react, CRNEdge.REACTANT, reactant2.getModification (), null, null, reactant2, null);
-								react.addReactant (spec, edge);
-							}
-						}
-						else
-						{
-							CRNNode spec = entityMapper.get ("sd" + reactant.getAttribute ("species"));
-							if (spec == null)
-								spec = entityMapper.get ("sc" + reactant.getAttribute ("species"));
-							
-							CRNEdge edge = new CRNEdge (spec, react, CRNEdge.REACTANT, reactant.getModification (), null, null, reactant, null);
-							react.addReactant (spec, edge);
-						}
-					}
-				}
-				
-				else if (dntag.equals ("listOfProducts"))
-				{
-					for (TreeNode prod : dn.getChildren ())
-					{
-						DocumentNode product = (DocumentNode) prod;
-						if (product.getTagName ().equals ("ListOfSpeciesReferences"))
-						{
-							// v3..
-							for (TreeNode prod2 : product.getChildren ())
-							{
-								DocumentNode product2 = (DocumentNode) prod2;
-								CRNNode spec = entityMapper.get ("sd" + product2.getAttribute ("species"));
-								if (spec == null)
-									spec = entityMapper.get ("sc" + product2.getAttribute ("species"));
-								
-								CRNEdge edge = new CRNEdge (react, spec, CRNEdge.PRODUCT, product2.getModification (), null, null, product2, null);
-								react.addReactant (spec, edge);
-							}
-						}
-						else
-						{
-							CRNNode spec = entityMapper.get ("sd" + product.getAttribute ("species"));
-							if (spec == null)
-								spec = entityMapper.get ("sc" + product.getAttribute ("species"));
-	
-							CRNEdge edge = new CRNEdge (react, spec, CRNEdge.PRODUCT, product.getModification (), null, null, product, null);
-							react.addProduct (spec, edge);
-						}
-					}
-				}
-				
-				else if (dntag.equals ("listOfModifiers"))
-				{
-					for (TreeNode modi : dn.getChildren ())
-					{
-						DocumentNode modifier = (DocumentNode) modi;
-						if (modifier.getTagName ().equals ("ListOfSpeciesReferences"))
-						{
-							// v3..
-							for (TreeNode mod2 : modifier.getChildren ())
-							{
-								DocumentNode modifier2 = (DocumentNode) mod2;
-								CRNNode spec = entityMapper.get ("sd" + modifier2.getAttribute ("species"));
-								if (spec == null)
-									spec = entityMapper.get ("sc" + modifier2.getAttribute ("species"));
-								
-								String sbo = modifier2.getAttribute ("sboTerm");
-								if (sbo == null)
-									sbo = "unknown";
-								
-								CRNEdge edge = new CRNEdge (spec, react, CRNEdge.MODIFIER, modifier2.getModification (), sbo, null, modifier2, null);
-								react.addReactant (spec, edge);
-							}
-						}
-						else
-						{
-							CRNNode spec = entityMapper.get ("sd" + modifier.getAttribute ("species"));
-							if (spec == null)
-								spec = entityMapper.get ("sc" + modifier.getAttribute ("species"));
-							
-							String sbo = modifier.getAttribute ("sboTerm");
-							if (sbo == null)
-								sbo = "unknown";
-	
-							CRNEdge edge = new CRNEdge (spec, react, CRNEdge.MODIFIER, modifier.getModification (), sbo, null, modifier, null);
-							react.addModifier (spec, edge);
-						}
-					}
-				}
-				
-				else if (dntag.equals ("kineticLaw"))
-				{
-					for (TreeNode math : dn.getChildren ())
-					{
-						DocumentNode mathNode = (DocumentNode) math;
-						if (mathNode.getTagName ().equals ("math"))
-							react.setKineticLawA (mathNode);
-					}
-				}
+				report.modifyReaction (reaction.reportMofification (conMgmt, reaction, (SBMLReaction) modelB.getFromNode (con.getPartnerOf (dn))));
 			}
 		}
-		
-		
-
 		LOGGER.info ("searching for reactions in B");
-		for (DocumentNode reaction : docB.getNodesByTag ("reaction"))
+		reactions = modelB.getReactions();
+		for (SBMLReaction reaction : reactions.values ())
 		{
-			LOGGER.info ("reaction: " + reaction.getXPath ());
-			LOGGER.info ("reaction marker: " + reaction.getModification () + " mod/submod: " + reaction.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED));
+			DocumentNode dn = reaction.getDocumentNode ();
+			LOGGER.info ("reaction: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
 			
-
-			String reactionID = reaction.getAttribute ("id");
-			String name = reaction.getAttribute ("name");
-			if (name == null)
-				name = reactionID;
-			
-			CRNReaction react;
-			CRNNode dummy = entityMapper.get ("rc" + reactionID);
-			// exists node?
-			if (reaction.hasModification (TreeNode.UNMAPPED) || dummy == null)
-			{
-				react = new CRNReaction (null, name, reaction.getModification (), reaction.getAttribute ("reversible"), reaction.getAttribute ("fast"), null, reaction);
-				entityMapper.put ("ri" + reactionID, react);
-				crn.addReaction (react);
-				// report
-				report.insertReaction (react);
-			}
-			else
-			{
-				react = (CRNReaction) dummy;
-				react.setTreeB (reaction);
-				react.addModifications (reaction.getModification ());
-				react.setNameB (name);
-				//System.out.println ("modify reaction: " + react.getId ());
-			}
-			
-
-			for (TreeNode c: reaction.getChildren ())
-			{
-				DocumentNode dn = (DocumentNode) c;
-				String dntag = dn.getTagName ();
-				// modification of whole list!?
-				int mod = c.getModification ();
-				
-
-				if (dntag.equals ("listOfReactants"))
-				{
-					for (TreeNode rea : dn.getChildren ())
-					{
-						DocumentNode reactant = (DocumentNode) rea;
-						if (reactant.getTagName ().equals ("ListOfSpeciesReferences"))
-						{
-							// v3..
-							for (TreeNode rea2 : reactant.getChildren ())
-							{
-								DocumentNode reactant2 = (DocumentNode) rea2;
-								
-								CRNNode spec = entityMapper.get ("si" + reactant2.getAttribute ("species"));
-								if (spec == null)
-									spec = entityMapper.get ("sc" + reactant2.getAttribute ("species"));
-								
-								CRNEdge edge = react.getReactant (spec);
-								if (edge == null)
-								{
-									edge = new CRNEdge (spec, react, CRNEdge.REACTANT, reactant2.getModification (), null, null, null, reactant2);
-									react.addReactant (spec, edge);
-								}
-								else
-								{
-									edge.addModifications (reactant2.getModification ());
-									edge.setTreeB (reactant2);
-								}
-							}
-						}
-						else
-						{
-							
-							CRNNode spec = entityMapper.get ("si" + reactant.getAttribute ("species"));
-							if (spec == null)
-								spec = entityMapper.get ("sc" + reactant.getAttribute ("species"));
-							
-							CRNEdge edge = react.getReactant (spec);
-							if (edge == null)
-							{
-								edge = new CRNEdge (spec, react, CRNEdge.REACTANT, reactant.getModification (), null, null, null, reactant);
-								react.addReactant (spec, edge);
-							}
-							else
-							{
-								edge.addModifications (reactant.getModification ());
-								edge.setTreeB (reactant);
-							}
-						}
-					}
-				}
-				
-				else if (dntag.equals ("listOfProducts"))
-				{
-					for (TreeNode prod : dn.getChildren ())
-					{
-						DocumentNode product = (DocumentNode) prod;
-						if (product.getTagName ().equals ("ListOfSpeciesReferences"))
-						{
-							// v3..
-							for (TreeNode prod2 : product.getChildren ())
-							{
-								DocumentNode product2 = (DocumentNode) prod2;
-								CRNNode spec = entityMapper.get ("si" + product2.getAttribute ("species"));
-								if (spec == null)
-									spec = entityMapper.get ("sc" + product2.getAttribute ("species"));
-
-								CRNEdge edge = react.getProduct (spec);
-								if (edge == null)
-								{
-									edge = new CRNEdge (react, spec, CRNEdge.PRODUCT, product2.getModification (), null, null, null, product2);
-									react.addProduct (spec, edge);
-								}
-								else
-								{
-									edge.addModifications (product2.getModification ());
-									edge.setTreeB (product2);
-								}
-							}
-						}
-						else
-						{
-							CRNNode spec = entityMapper.get ("si" + product.getAttribute ("species"));
-							if (spec == null)
-								spec = entityMapper.get ("sc" + product.getAttribute ("species"));
-
-							CRNEdge edge = react.getProduct (spec);
-							if (edge == null)
-							{
-								edge = new CRNEdge (react, spec, CRNEdge.PRODUCT, product.getModification (), null, null, null, product);
-								react.addProduct (spec, edge);
-							}
-							else
-							{
-								edge.addModifications (product.getModification ());
-								edge.setTreeB (product);
-							}
-						}
-					
-					
-
-					}
-				}
-				
-				else if (dntag.equals ("listOfModifiers"))
-				{
-					for (TreeNode modi : dn.getChildren ())
-					{
-						
-
-						DocumentNode modifier = (DocumentNode) modi;
-						if (modifier.getTagName ().equals ("ListOfSpeciesReferences"))
-						{
-							// v3..
-							for (TreeNode mod2 : modifier.getChildren ())
-							{
-								DocumentNode modifier2 = (DocumentNode) mod2;
-								CRNNode spec = entityMapper.get ("si" + modifier2.getAttribute ("species"));
-								if (spec == null)
-									spec = entityMapper.get ("sc" + modifier2.getAttribute ("species"));
-
-									String sbo = modifier2.getAttribute ("sboTerm");
-									if (sbo == null)
-										sbo = "unknown";
-									
-								CRNEdge edge = react.getModifier (spec);
-								if (edge == null)
-								{
-									System.out.println ("adde new mod to react " + reactionID);
-									edge = new CRNEdge (spec, react, CRNEdge.MODIFIER, modifier2.getModification (), null, sbo, null, modifier2);
-									react.addModifier (spec, edge);
-								}
-								else
-								{
-									edge.addModifications (modifier2.getModification ());
-									edge.setTreeB (modifier2);
-									edge.setModB (sbo);
-								}
-							}
-						}
-						else
-						{
-							CRNNode spec = entityMapper.get ("si" + modifier.getAttribute ("species"));
-							if (spec == null)
-								spec = entityMapper.get ("sc" + modifier.getAttribute ("species"));
-
-								String sbo = modifier.getAttribute ("sboTerm");
-								if (sbo == null)
-									sbo = "unknown";
-								
-							CRNEdge edge = react.getModifier (spec);
-							if (edge == null)
-							{
-								System.out.println ("adde new mod to react " + reactionID);
-								edge = new CRNEdge (spec, react, CRNEdge.MODIFIER, modifier.getModification (), null, sbo, null, modifier);
-								react.addModifier (spec, edge);
-							}
-							else
-							{
-								edge.addModifications (modifier.getModification ());
-								edge.setTreeB (modifier);
-								edge.setModB (sbo);
-							}
-						}
-					}
-						
-						
-						
-						
-
-				}
-				
-				else if (dntag.equals ("kineticLaw"))
-				{
-					for (TreeNode math : dn.getChildren ())
-					{
-						DocumentNode mathNode = (DocumentNode) math;
-						if (mathNode.getTagName ().equals ("math"))
-							react.setKineticLawB (mathNode);
-					}
-				}
-			}
+			if (con == null)
+				report.modifyReaction(reaction.reportInsert ());
 		}
 		
+
+		LOGGER.info ("searching for functions in A");
+		HashMap<String, SBMLFunctionDefinition> functions = modelA.getFunctionDefinitions();
+		for (SBMLFunctionDefinition function : functions.values ())
+		{
+			DocumentNode dn = function.getDocumentNode ();
+			LOGGER.info ("function: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyFunctions(function.reportDelete ());
+			else
+			{
+				report.modifyFunctions (function.reportMofification (conMgmt, function, (SBMLFunctionDefinition) modelB.getFromNode (con.getPartnerOf (dn))));
+			}
+		}
+		LOGGER.info ("searching for functions in B");
+		functions = modelB.getFunctionDefinitions();
+		for (SBMLFunctionDefinition function : functions.values ())
+		{
+			DocumentNode dn = function.getDocumentNode ();
+			LOGGER.info ("function: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyFunctions(function.reportInsert ());
+		}
+		
+
+		LOGGER.info ("searching for units in A");
+		HashMap<String, SBMLUnitDefinition> units = modelA.getUnitDefinitions();
+		for (SBMLUnitDefinition unit : units.values ())
+		{
+			if (unit.isBaseUnit ())
+				continue;
+			DocumentNode dn = unit.getDocumentNode ();
+			LOGGER.info ("unit: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyUnits(unit.reportDelete ());
+			else
+			{
+				report.modifyUnits(unit.reportMofification (conMgmt, unit, (SBMLUnitDefinition) modelB.getFromNode (con.getPartnerOf (dn))));
+			}
+		}
+		LOGGER.info ("searching for units in B");
+		units = modelB.getUnitDefinitions();
+		for (SBMLUnitDefinition unit : units.values ())
+		{
+			if (unit.isBaseUnit ())
+				continue;
+			DocumentNode dn = unit.getDocumentNode ();
+			LOGGER.info ("unit: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyUnits(unit.reportInsert ());
+		}
+		
+
+		
+		LOGGER.info ("searching for initial assignments in A");
+		Vector<SBMLInitialAssignment> initAss = modelA.getInitialAssignments ();
+		for (SBMLInitialAssignment ia : initAss)
+		{
+			DocumentNode dn = ia.getDocumentNode ();
+			LOGGER.info ("init. ass.: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyInitialAssignments (ia.reportDelete ());
+			else
+			{
+				report.modifyInitialAssignments (ia.reportMofification (conMgmt, ia, (SBMLInitialAssignment) modelB.getFromNode (con.getPartnerOf (dn))));
+			}
+		}
+		LOGGER.info ("searching for initial assignments in B");
+		initAss = modelB.getInitialAssignments ();
+		for (SBMLInitialAssignment ia : initAss)
+		{
+			DocumentNode dn = ia.getDocumentNode ();
+			LOGGER.info ("init. ass.: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyInitialAssignments(ia.reportInsert ());
+		}
+		
+		LOGGER.info ("searching for constraints in A");
+		Vector<SBMLConstraint> constraints = modelA.getConstraints ();
+		for (SBMLConstraint constraint : constraints)
+		{
+			DocumentNode dn = constraint.getDocumentNode ();
+			LOGGER.info ("constraint: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyContraints (constraint.reportDelete ());
+			else
+			{
+				report.modifyContraints (constraint.reportMofification (conMgmt, constraint, (SBMLConstraint) modelB.getFromNode (con.getPartnerOf (dn))));
+			}
+		}
+		LOGGER.info ("searching for constraints in B");
+		constraints = modelB.getConstraints ();
+		for (SBMLConstraint constraint : constraints)
+		{
+			DocumentNode dn = constraint.getDocumentNode ();
+			LOGGER.info ("constraint: " + dn.getXPath ());
+
+			Connection con = conMgmt.getConnectionForNode (dn);
+			
+			if (con == null)
+				report.modifyContraints (constraint.reportInsert ());
+		}
 		
 		return ;
 	}

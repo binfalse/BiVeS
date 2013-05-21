@@ -4,6 +4,7 @@
 package de.unirostock.sems.bives.algorithm;
 
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
+import de.unirostock.sems.bives.exception.BivesConnectionException;
 
 
 /**
@@ -15,7 +16,7 @@ public abstract class Connector
 {
 	
 	/** The connection manager, holding node-correspondences. */
-	protected ConnectionManager conMgmt;
+	protected ClearConnectionManager conMgmt;
 	
 	/** The documents a and b. */
 	protected TreeDocument docA, docB;
@@ -46,21 +47,22 @@ public abstract class Connector
 	 *
 	 * @param docA the document A
 	 * @param docB the document B
+	 * @throws BivesConnectionException 
 	 */
-	public void init (TreeDocument docA, TreeDocument docB)
+	public void init (TreeDocument docA, TreeDocument docB) throws BivesConnectionException
 	{
 		this.docA = docA;
 		this.docB = docB;
-		conMgmt = new ConnectionManager (docA, docB);
+		conMgmt = new ClearConnectionManager (docA, docB);
 	}
 	
 	/**
 	 * Inherit to search for connections.
 	 */
-	protected abstract void connect ();
+	protected abstract void connect () throws BivesConnectionException;
 	
 	
-	public final void findConnections ()
+	public final void findConnections () throws BivesConnectionException
 	{
 		connect ();
 
@@ -76,7 +78,7 @@ public abstract class Connector
 	 *
 	 * @return the connections
 	 */
-	public final ConnectionManager getConnections ()
+	public final ClearConnectionManager getConnections ()
 	{
 		return conMgmt;
 	}

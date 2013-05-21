@@ -6,6 +6,7 @@ package de.unirostock.sems.bives.ds.sbml;
 import java.util.HashMap;
 import java.util.Vector;
 
+import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -16,9 +17,11 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  *
  */
 public class SBMLModel
-	extends SBMLSbase
+	extends SBMLSBase
 {
 	private SBMLDocument document;
+
+	private HashMap<TreeNode, SBMLSBase> nodeMapper;
 	
 	private HashMap<String, SBMLFunctionDefinition> listOfFunctionDefinitions;
 	private HashMap<String, SBMLUnitDefinition> listOfUnitDefinitions;
@@ -56,11 +59,14 @@ public class SBMLModel
 		sbmlModel = this;
 		this.document = sbmlDocument;
 		
+		nodeMapper = new HashMap<TreeNode, SBMLSBase> ();
+		
 		listOfFunctionDefinitions = new  HashMap<String, SBMLFunctionDefinition> ();
 		listOfUnitDefinitions = new  HashMap<String, SBMLUnitDefinition> ();
 		listOfCompartments = new  HashMap<String, SBMLCompartment> ();
 		listOfCompartmentTypes = new  HashMap<String, SBMLCompartmentType> ();
 		listOfSpecies = new  HashMap<String, SBMLSpecies> ();
+		listOfSpeciesTypes = new  HashMap<String, SBMLSpeciesType> ();
 		listOfParameters = new  HashMap<String, SBMLParameter> ();
 		listOfInitialAssignments = new  Vector<SBMLInitialAssignment> ();
 		listOfRules = new  Vector<SBMLRule> ();
@@ -335,7 +341,7 @@ public class SBMLModel
 
 	private void parseUnits (DocumentNode root) throws BivesSBMLParseException
 	{
-		String [] baseUnits = new String [] {"ampere", "farad", "joule", "lux", "radian", "volt", "avogadro", "gram", "katal", "metre", "second", "watt", "becquerel", "gray", "kelvin", "mole", "siemens", "weber", "candela", "henry", "kilogram", "newton", "sievert", "coulomb", "hertz", "litre", "ohm", "steradian", "dimensionless", "item", "lumen", "pascal", "tesla"};
+		String [] baseUnits = new String [] {"substance", "volume", "area", "length", "ampere", "farad", "joule", "lux", "radian", "volt", "avogadro", "gram", "katal", "metre", "second", "watt", "becquerel", "gray", "kelvin", "mole", "siemens", "weber", "candela", "henry", "kilogram", "newton", "sievert", "coulomb", "hertz", "litre", "ohm", "steradian", "dimensionless", "item", "lumen", "pascal", "tesla"};
 		for (int i = 0; i < baseUnits.length; i++)
 		{
 			SBMLUnitDefinition ud = new SBMLUnitDefinition (baseUnits[i], this);
@@ -351,9 +357,15 @@ public class SBMLModel
 			for (int j = 0; j < units.size (); j++)
 			{
 				SBMLUnitDefinition ud = new SBMLUnitDefinition ((DocumentNode) units.elementAt (j), this);
-				if (listOfUnitDefinitions.get (ud.getID ()) != null)
-					throw new BivesSBMLParseException ("Multiple definitions of unit " + ud.getID ());
-				listOfUnitDefinitions.put (ud.getID (), ud);
+				String id = ud.getID ();
+				if (listOfUnitDefinitions.get (id) != null)
+				{
+					if (id.equals ("substance") || id.equals ("volume") || id.equals ("area") || id.equals ("length"))
+						LOGGER.warn ("std unit " + id + " redefined");
+					else
+						throw new BivesSBMLParseException ("Multiple definitions of unit " + ud.getID ());
+				}
+				listOfUnitDefinitions.put (id, ud);
 			}
 		}
 	}
@@ -373,6 +385,17 @@ public class SBMLModel
 			}
 		}
 	}
+
+	
+	public HashMap<String, SBMLFunctionDefinition> getFunctionDefinitions ()
+	{
+		return listOfFunctionDefinitions;
+	}
+	
+	public HashMap<String, SBMLUnitDefinition> getUnitDefinitions ()
+	{
+		return listOfUnitDefinitions;
+	}
 	
 	public SBMLUnitDefinition getUnitDefinition (String kind)
 	{
@@ -382,6 +405,16 @@ public class SBMLModel
 	public SBMLCompartmentType getCompartmentType (String id)
 	{
 		return listOfCompartmentTypes.get (id);
+	}
+	
+	public HashMap<String, SBMLCompartmentType> getCompartmentTypes ()
+	{
+		return listOfCompartmentTypes;
+	}
+	
+	public HashMap<String, SBMLCompartment> getCompartments ()
+	{
+		return listOfCompartments;
 	}
 	
 	public SBMLCompartment getCompartment (String id)
@@ -394,9 +427,24 @@ public class SBMLModel
 		return listOfSpecies.get (id);
 	}
 	
+	public HashMap<String, SBMLSpecies> getSpecies ()
+	{
+		return listOfSpecies;
+	}
+	
 	public SBMLSpeciesType getSpeciesType (String id)
 	{
 		return listOfSpeciesTypes.get (id);
+	}
+	
+	public HashMap<String, SBMLSpeciesType> getSpeciesTypes ()
+	{
+		return listOfSpeciesTypes;
+	}
+	
+	public HashMap<String, SBMLParameter> getParameters ()
+	{
+		return listOfParameters;
 	}
 	
 	public SBMLParameter getParameter (String id)
@@ -418,6 +466,30 @@ public class SBMLModel
 	{
 		return listOfReactions.get (id);
 	}
+	public HashMap<String, SBMLReaction> getReactions ()
+	{
+		return listOfReactions;
+	}
+	
+	public Vector<SBMLConstraint> getConstraints()
+	{
+		return listOfConstraints;
+	}
+	
+	public Vector<SBMLInitialAssignment> getInitialAssignments()
+	{
+		return listOfInitialAssignments;
+	}
+	
+	public Vector<SBMLEvent> getEvents ()
+	{
+		return listOfEvents;
+	}
+	
+	public Vector<SBMLRule> getRules ()
+	{
+		return listOfRules;
+	}
 	
 	public String getID ()
 	{
@@ -429,4 +501,26 @@ public class SBMLModel
 		return name;
 	}
 	
+	public void mapNode (DocumentNode node, SBMLSBase sbase)
+	{
+		nodeMapper.put (node, sbase);
+	}
+	
+	public SBMLSBase getFromNode (TreeNode node)
+	{
+		return nodeMapper.get (node);
+	}
+	
+	public static String getSidName (SBMLSBase ref)
+	{
+		if (ref instanceof SBMLParameter)
+			return ((SBMLParameter) ref).getNameAndId ();
+		if (ref instanceof SBMLSpecies)
+			return ((SBMLSpecies) ref).getNameAndId ();
+		if (ref instanceof SBMLCompartment)
+			return ((SBMLCompartment) ref).getNameAndId ();
+		if (ref instanceof SBMLSimpleSpeciesReference)
+			return ((SBMLSimpleSpeciesReference) ref).getSpecies ().getNameAndId ();
+		return null;
+	}
 }

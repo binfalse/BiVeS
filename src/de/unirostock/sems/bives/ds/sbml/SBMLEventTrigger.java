@@ -5,9 +5,11 @@ package de.unirostock.sems.bives.ds.sbml;
 
 import java.util.Vector;
 
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -15,7 +17,8 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  *
  */
 public class SBMLEventTrigger
-	extends SBMLSbase
+	extends SBMLSBase
+	implements SBMLDiffReporter
 {
 	private SBMLMathML math;
 	private Boolean initialValue;
@@ -69,6 +72,38 @@ public class SBMLEventTrigger
 	public SBMLMathML getMath ()
 	{
 		return math;
+	}
+
+	@Override
+	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	{
+		SBMLEventTrigger a = (SBMLEventTrigger) docA;
+		SBMLEventTrigger b = (SBMLEventTrigger) docB;
+		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
+			return "";
+		
+		String ret =  Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
+
+		if (a.math != null && b.math != null)
+			ret += Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath ());
+		else if (a.math != null)
+			ret += Tools.genMathHtmlStats (a.math.getMath (), null);
+		else if (b.math != null)
+			ret += Tools.genMathHtmlStats (null, b.math.getMath ());
+		
+		return ret;
+	}
+
+	@Override
+	public String reportInsert ()
+	{
+		return Tools.genMathHtmlStats (null, math.getMath ());
+	}
+
+	@Override
+	public String reportDelete ()
+	{
+		return Tools.genMathHtmlStats (math.getMath (), null);
 	}
 	
 }

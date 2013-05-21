@@ -3,8 +3,11 @@
  */
 package de.unirostock.sems.bives.ds.sbml;
 
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.ds.HTMLMarkup;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -12,10 +15,9 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  *
  */
 public class SBMLParameter
-	extends SBMLSbase
+	extends SBMLGenericIdNameObject
+	implements SBMLDiffReporter, HTMLMarkup
 {
-	private String id;
-	private String name; //optional
 	private Double value; //optional
 	private SBMLUnitDefinition units; //optional
 	private boolean constant; //optional
@@ -79,18 +81,46 @@ public class SBMLParameter
 		return value;
 	}
 	
-	public String getID ()
-	{
-		return id;
-	}
-	
-	public String getName ()
-	{
-		return name;
-	}
-	
 	public boolean isConstant ()
 	{
 		return constant;
+	}
+	
+	public String htmlMarkup ()
+	{
+		return getNameAndId () + "=" + value + " " + units.htmlMarkup () + (constant ? " [const]" : "");
+	}
+
+	@Override
+	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	{
+		SBMLParameter a = (SBMLParameter) docA;
+		SBMLParameter b = (SBMLParameter) docB;
+		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
+			return "";
+		
+		String idA = a.getNameAndId (), idB = b.getNameAndId ();
+		String ret = "<tr><td>";
+		if (idA.equals (idB))
+			ret += idA;
+		else
+			ret += "<span class='"+CLASS_DELETED+"'>" + idA + "</span> &rarr; <span class='"+CLASS_DELETED+"'>" + idB + "</span> ";
+		ret += "</td><td>";
+		
+		ret += Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
+		
+		return ret + "</td></tr>";
+	}
+	
+	@Override
+	public String reportInsert ()
+	{
+		return "<tr><td><span class='"+CLASS_INSERTED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_INSERTED+"'>inserted</span></td></tr>";
+	}
+	
+	@Override
+	public String reportDelete ()
+	{
+		return "<tr><td><span class='"+CLASS_DELETED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_DELETED+"'>deleted</span></td></tr>";
 	}
 }

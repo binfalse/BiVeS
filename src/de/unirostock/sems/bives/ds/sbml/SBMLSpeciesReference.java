@@ -5,6 +5,7 @@ package de.unirostock.sems.bives.ds.sbml;
 
 import java.util.Vector;
 
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -16,6 +17,7 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  */
 public class SBMLSpeciesReference
 	extends SBMLSimpleSpeciesReference
+	implements SBMLDiffReporter
 {
 	private Double stoichiometry;
 	private SBMLMathML stoichiometryMath;
@@ -72,6 +74,38 @@ public class SBMLSpeciesReference
 		}
 		else
 			constant = false; // level <= 2
+	}
+
+	@Override
+	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	{
+		SBMLSpeciesReference a = (SBMLSpeciesReference) docA;
+		SBMLSpeciesReference b = (SBMLSpeciesReference) docB;
+		//if (a.getDocumentNode ().getModification () == 0)
+		//	return stoichiometry + species.getNameAndId ();
+
+		//System.out.println (a + " - " + b);
+		//System.out.println (a.species + " - " + b.species);
+		
+		String retA = a.stoichiometry + a.species.getNameAndId ();
+		String retB = b.stoichiometry + b.species.getNameAndId ();
+		
+		if (retA.equals (retB))
+			return retA;
+		else
+			return "<span class='"+CLASS_DELETED+"'>" + retA + "</span> + <span class='"+CLASS_INSERTED +"'>" + retB + "</span>";
+	}
+
+	@Override
+	public String reportInsert ()
+	{
+		return "<span class='"+CLASS_INSERTED+"'>" + stoichiometry + species.getNameAndId () + "</span>";
+	}
+
+	@Override
+	public String reportDelete ()
+	{
+		return "<span class='"+CLASS_DELETED+"'>" + stoichiometry + species.getNameAndId () + "</span>";
 	}
 	
 }

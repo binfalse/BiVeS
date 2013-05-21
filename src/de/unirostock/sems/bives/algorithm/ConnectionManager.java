@@ -17,6 +17,7 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
  * @author Martin Scharm
  *
  */
+@Deprecated
 public class ConnectionManager
 {
 	private Vector<Connection> connections;

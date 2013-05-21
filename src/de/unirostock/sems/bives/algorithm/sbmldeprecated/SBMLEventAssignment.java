@@ -1,4 +1,4 @@
-package de.unirostock.sems.bives.algorithm.sbml;
+package de.unirostock.sems.bives.algorithm.sbmldeprecated;
 
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 

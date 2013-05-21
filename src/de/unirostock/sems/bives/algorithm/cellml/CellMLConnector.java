@@ -6,6 +6,7 @@ package de.unirostock.sems.bives.algorithm.cellml;
 import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
+import de.unirostock.sems.bives.exception.BivesConnectionException;
 
 
 /**
@@ -22,7 +23,7 @@ public class CellMLConnector
 	}
 
 	@Override
-	public void init (TreeDocument docA, TreeDocument docB)
+	public void init (TreeDocument docA, TreeDocument docB) throws BivesConnectionException
 	{
 		super.init (docA, docB);
 

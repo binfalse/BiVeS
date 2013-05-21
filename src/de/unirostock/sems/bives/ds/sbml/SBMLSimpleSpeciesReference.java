@@ -3,6 +3,7 @@
  */
 package de.unirostock.sems.bives.ds.sbml;
 
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
 
@@ -12,7 +13,8 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  *
  */
 public class SBMLSimpleSpeciesReference
-extends SBMLSbase
+extends SBMLSBase
+implements SBMLDiffReporter
 {
 	protected String id; //optional
 	protected String name; //optional
@@ -37,5 +39,34 @@ extends SBMLSbase
 	public SBMLSpecies getSpecies ()
 	{
 		return species;
+	}
+
+	@Override
+	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	{
+		SBMLSimpleSpeciesReference a = (SBMLSimpleSpeciesReference) docA;
+		SBMLSimpleSpeciesReference b = (SBMLSimpleSpeciesReference) docB;
+		//if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
+		//	return species.getNameAndId ();
+		
+		String retA = a.species.getNameAndId ();
+		String retB = b.species.getNameAndId ();
+		
+		if (retA.equals (retB))
+			return retA;
+		else
+			return "<span class='"+CLASS_DELETED+"'>" + retA + "</span> + <span class='"+CLASS_INSERTED +"'>" + retB + "</span>";
+	}
+
+	@Override
+	public String reportInsert ()
+	{
+		return "<span class='"+CLASS_INSERTED+"'>" + species.getNameAndId () + "</span>";
+	}
+
+	@Override
+	public String reportDelete ()
+	{
+		return "<span class='"+CLASS_DELETED+"'>" + species.getNameAndId () + "</span>";
 	}
 }

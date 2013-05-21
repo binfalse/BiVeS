@@ -1,21 +1,19 @@
 /**
  * 
  */
-package de.unirostock.sems.bives.algorithm.sbml;
+package de.unirostock.sems.bives.algorithm.sbmldeprecated;
 
 import java.util.Vector;
 
+import org.apache.log4j.Logger;
 
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
-import de.unirostock.sems.bives.algorithm.sbmldeprecated.ChemicalReactionNetwork;
-import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
-import de.unirostock.sems.bives.exception.BivesConnectionException;
 
 
 /**
@@ -25,14 +23,12 @@ import de.unirostock.sems.bives.exception.BivesConnectionException;
 public class SBMLConnector
 	extends Connector
 {
+	private final static Logger LOGGER = Logger.getLogger(SBMLConnector.class.getName());
 	private Connector preprocessor;
-	private SBMLDocument sbmlDocA, sbmlDocB;
 
-	public SBMLConnector (SBMLDocument sbmlDocA, SBMLDocument sbmlDocB)
+	public SBMLConnector ()
 	{
 		super ();
-		this.sbmlDocA = sbmlDocA;
-		this.sbmlDocB = sbmlDocB;
 	}
 	
 	public SBMLConnector (Connector preprocessor)
@@ -43,21 +39,20 @@ public class SBMLConnector
 	
 
 	@Override
-	public void init (TreeDocument docA, TreeDocument docB) throws BivesConnectionException
+	public void init (TreeDocument docA, TreeDocument docB)
 	{
 		// TODO: maybe preporcessing -> instead of id's use annotations/ontologies etc
 		// use id's
 		// use variables for rules
-		super.init (sbmlDocA.getTreeDocument (), sbmlDocA.getTreeDocument ());
+		super.init (docA, docB);
 
 		// preprocessor connects by id and stuff
 		// xy propagates connections
-		XyDiffConnector id = new XyDiffConnector (new SBMLConnectorPreprocessor (sbmlDocA, sbmlDocB));
+		XyDiffConnector id = new XyDiffConnector (new SBMLConnectorPreprocessor ());
 		id.init (docA, docB);
 		id.findConnections ();
 
 		conMgmt = id.getConnections ();
-		//System.out.println (conMgmt);
 		
 	}
 	
@@ -81,20 +76,13 @@ public class SBMLConnector
 		lists.addAll (docA.getNodesByTag ("trigger"));
 		lists.addAll (docA.getNodesByTag ("eventAssignment"));
 		lists.addAll (docA.getNodesByTag ("delay"));
-		lists.addAll (docA.getNodesByTag ("priority"));
 		for (DocumentNode tn : lists)
 		{
-			Connection con = conMgmt.getConnectionForNode (tn);
-			if (con == null)
+			Vector<Connection> cons = conMgmt.getConnectionsForNode (tn);
+			if (cons == null)
 				continue;
-			TreeNode partner = con.getTreeB ();
-			if (tn.networkDiffers (partner, conMgmt, con))
-			{
-				conMgmt.dropConnection (tn);
-			}
 			
-			
-			/*boolean unconnect = false;
+			boolean unconnect = false;
 			for (Connection c : cons)
 			{
 				TreeNode partner = c.getTreeB ();
@@ -107,7 +95,7 @@ public class SBMLConnector
 			if (unconnect)
 			{
 				//System.out.println ("dropping connections of " + tn.getXPath ());
-				conMgmt.dropConnection (tn);
+				conMgmt.dropConnections (tn);
 			}
 			/*if (tn)
 			{
@@ -119,22 +107,17 @@ public class SBMLConnector
 		// different kind of modifiers?
 		for (TreeNode tn : docA.getNodesByTag ("modifierSpeciesReference"))
 		{
-			Connection con = conMgmt.getConnectionForNode (tn);
-			if (con == null)
+			Vector<Connection> cons = conMgmt.getConnectionsForNode (tn);
+			if (cons == null)
 				continue;
-			DocumentNode a = (DocumentNode) con.getTreeA ();
-			DocumentNode b = (DocumentNode) con.getTreeB ();
-			if (!SBMLGraphProducer.resolvModSBO (a.getAttribute ("sboTerm")).equals (SBMLGraphProducer.resolvModSBO (a.getAttribute ("sboTerm"))))
-				conMgmt.dropConnection (con);
 			
-			/*
 			for (Connection c : cons)
 			{
 				DocumentNode a = (DocumentNode) c.getTreeA ();
 				DocumentNode b = (DocumentNode) c.getTreeB ();
 				if (!ChemicalReactionNetwork.resolvModSBO (a.getAttribute ("sboTerm")).equals (ChemicalReactionNetwork.resolvModSBO (a.getAttribute ("sboTerm"))))
 					conMgmt.dropConnection (c);
-			}*/
+			}
 			
 		}
 		

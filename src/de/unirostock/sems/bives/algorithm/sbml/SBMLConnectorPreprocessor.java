@@ -6,16 +6,22 @@ package de.unirostock.sems.bives.algorithm.sbml;
 import java.util.HashMap;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 
 import de.unirostock.sems.bives.algorithm.Connection;
-import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.algorithm.general.IdConnector;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
+import de.unirostock.sems.bives.ds.sbml.SBMLAssignmentRule;
+import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
+import de.unirostock.sems.bives.ds.sbml.SBMLModel;
+import de.unirostock.sems.bives.ds.sbml.SBMLRateRule;
+import de.unirostock.sems.bives.ds.sbml.SBMLReaction;
+import de.unirostock.sems.bives.ds.sbml.SBMLRule;
+import de.unirostock.sems.bives.ds.sbml.SBMLSBase;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
+import de.unirostock.sems.bives.exception.BivesConnectionException;
 
 
 /**
@@ -25,12 +31,14 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
 public class SBMLConnectorPreprocessor
 	extends Connector
 {
-	private final static Logger LOGGER = Logger.getLogger(SBMLConnectorPreprocessor.class.getName());
 	private Connector preprocessor;
+	private SBMLDocument sbmlDocA, sbmlDocB;
 
-	public SBMLConnectorPreprocessor ()
+	public SBMLConnectorPreprocessor (SBMLDocument sbmlDocA, SBMLDocument sbmlDocB)
 	{
 		super ();
+		this.sbmlDocA = sbmlDocA;
+		this.sbmlDocB = sbmlDocB;
 	}
 	
 	public SBMLConnectorPreprocessor (Connector preprocessor)
@@ -39,11 +47,10 @@ public class SBMLConnectorPreprocessor
 		this.preprocessor = preprocessor;
 	}
 	
-
 	@Override
-	public void init (TreeDocument docA, TreeDocument docB)
+	public void init (TreeDocument docA, TreeDocument docB) throws BivesConnectionException
 	{
-		super.init (docA, docB);
+		super.init (sbmlDocA.getTreeDocument (), sbmlDocA.getTreeDocument ());
 		
 		// not yet initialized?
 		if (preprocessor == null)
@@ -70,73 +77,72 @@ public class SBMLConnectorPreprocessor
 	 * @see de.unirostock.sems.xmldiff.algorithm.Connector#findConnections()
 	 */
 	@Override
-	protected void connect ()
+	protected void connect () throws BivesConnectionException
 	{
-		HashMap<String, DocumentNode> ruleMapper = new HashMap<String, DocumentNode> ();
+		SBMLModel modelA = sbmlDocA.getModel ();
+		SBMLModel modelB = sbmlDocB.getModel ();
+
+		// ractions
+		HashMap<String, SBMLReaction> reactionsA = modelA.getReactions ();
+		HashMap<String, SBMLReaction> reactionsB = modelB.getReactions ();
+		for (String id : reactionsA.keySet ())
+		{
+			SBMLReaction rB = reactionsB.get (id);
+			if (rB == null)
+				continue;
+			SBMLReaction rA = reactionsA.get (id);
+			
+			if (conMgmt.getConnectionForNode (rA.getDocumentNode ()) == null)
+				conMgmt.addConnection (new Connection (rA.getDocumentNode (), rB.getDocumentNode ()));
+			
+			SBMLSBase loA = rA.getListOfReactantsNode (), loB = rB.getListOfReactantsNode ();
+			if (loA != null && loB != null)
+				conMgmt.addConnection (new Connection (loA.getDocumentNode (), loB.getDocumentNode ()));
+			
+			loA = rA.getListOfProductsNode ();
+			loB = rB.getListOfProductsNode ();
+			if (loA != null && loB != null)
+				conMgmt.addConnection (new Connection (loA.getDocumentNode (), loB.getDocumentNode ()));
+			
+			loA = rA.getListOfModifiersNode ();
+			loB = rB.getListOfModifiersNode ();
+			if (loA != null && loB != null)
+				conMgmt.addConnection (new Connection (loA.getDocumentNode (), loB.getDocumentNode ()));
+		}
 		
-		Vector<DocumentNode> rules = docA.getNodesByTag ("assignmentRule");
-		if (rules != null)
-			for (DocumentNode rule : rules)
-			{
-				String var = rule.getAttribute ("variable");
-				if (var != null)
-				{
-					ruleMapper.put (var, rule);
-					//System.out.println ("adde var: " + var);
-				}
-			}
-		rules = docB.getNodesByTag ("assignmentRule");
-		if (rules != null)
-			for (DocumentNode rule : rules)
-			{
-				//System.out.println ("test rule: " + rule.getXPath ());
-				if (conMgmt.getConnectionsForNode (rule) != null && conMgmt.getConnectionsForNode (rule).size () > 0)
-					continue;
-				String var = rule.getAttribute ("variable");
-				//System.out.println ("search var: " + var);
-				if (var != null)
-				{
-					DocumentNode ruleA = ruleMapper.get (var);
-					if (ruleA != null)
-					{
-						//System.out.println ("find var: " + ruleA.getXPath ());
-						if (conMgmt.getConnectionsForNode (ruleA) != null && conMgmt.getConnectionsForNode (ruleA).size () > 0)
-							continue;
-						//System.out.println ("connecte : " + var + " -> " + rule.getXPath () + " -> " + ruleA.getXPath ());
-						conMgmt.addConnection (new Connection (ruleA, rule));
-					}
-				}
-			}
 		
-		ruleMapper.clear ();
-		rules = docA.getNodesByTag ("rateRule");
-		if (rules != null)
-			for (DocumentNode rule : rules)
+		// rules
+		HashMap<SBMLSBase, SBMLRule> aRuleMapper = new HashMap<SBMLSBase, SBMLRule> ();
+		HashMap<SBMLSBase, SBMLRule> rRuleMapper = new HashMap<SBMLSBase, SBMLRule> ();
+		
+		Vector<SBMLRule> rules = modelA.getRules ();
+		for (SBMLRule rule : rules)
+		{
+			if (rule.getRuleType () == SBMLRule.ASSIGNMENT_RULE)
 			{
-				String var = rule.getAttribute ("variable");
-				if (var != null)
-				{
-					ruleMapper.put (var, rule);
-				}
+				aRuleMapper.put (((SBMLAssignmentRule) rule).getVariable (), rule);
 			}
-		rules = docB.getNodesByTag ("rateRule");
-		if (rules != null)
-			for (DocumentNode rule : rules)
+			if (rule.getRuleType () == SBMLRule.RATE_RULE)
 			{
-				if (conMgmt.getConnectionsForNode (rule) != null && conMgmt.getConnectionsForNode (rule).size () > 0)
-					continue;
-				String var = rule.getAttribute ("variable");
-				if (var != null)
-				{
-					DocumentNode ruleA = ruleMapper.get (var);
-					if (ruleA != null)
-					{
-						if (conMgmt.getConnectionsForNode (ruleA) != null && conMgmt.getConnectionsForNode (ruleA).size () > 0)
-							continue;
-						conMgmt.addConnection (new Connection (ruleA, rule));
-					}
-				}
+				rRuleMapper.put (((SBMLRateRule) rule).getVariable (), rule);
 			}
+		}
+		rules = modelB.getRules ();
+		for (SBMLRule rule : rules)
+		{
+			if (rule.getRuleType () == SBMLRule.ASSIGNMENT_RULE)
+			{
+				SBMLRule a = aRuleMapper.get (((SBMLAssignmentRule) rule).getVariable ());
+				if (a != null)
+					conMgmt.addConnection (new Connection (a.getDocumentNode (), rule.getDocumentNode ()));
+			}
+			if (rule.getRuleType () == SBMLRule.RATE_RULE)
+			{
+				SBMLRule a = rRuleMapper.get (((SBMLRateRule) rule).getVariable ());
+				if (a != null)
+					conMgmt.addConnection (new Connection (a.getDocumentNode (), rule.getDocumentNode ()));
+			}
+		}
 		
 	}
 	

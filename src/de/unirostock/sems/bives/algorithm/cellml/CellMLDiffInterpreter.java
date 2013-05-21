@@ -23,11 +23,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import de.binfalse.bflog.LOGGER;
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Interpreter;
 import de.unirostock.sems.bives.algorithm.Producer;
-import de.unirostock.sems.bives.algorithm.sbml.SBMLReport.ModConnection;
+import de.unirostock.sems.bives.algorithm.sbmldeprecated.SBMLReport.ModConnection;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
@@ -43,7 +44,7 @@ public class CellMLDiffInterpreter
 	private CellMLReport report;
 	
 	
-	public CellMLDiffInterpreter (ConnectionManager conMgmt, TreeDocument docA,
+	public CellMLDiffInterpreter (ClearConnectionManager conMgmt, TreeDocument docA,
 		TreeDocument docB) throws ParserConfigurationException
 	{
 		super (conMgmt, docA, docB);
@@ -90,8 +91,9 @@ public class CellMLDiffInterpreter
 			}
 			else
 			{
-				Vector<Connection> cons = conMgmt.getConnectionsForNode (component);
-				for (Connection con : cons)
+				Connection con = conMgmt.getConnectionForNode (component);
+				if (con != null)
+				//for (Connection con : cons)
 				{
 					DocumentNode partner = (DocumentNode) con.getPartnerOf (component);
 					if (((component.getModification () | partner.getModification ()) & (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED)) != 0)

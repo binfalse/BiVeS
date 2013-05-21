@@ -12,6 +12,7 @@ import javax.xml.transform.TransformerException;
 
 
 import de.binfalse.bflog.LOGGER;
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Producer;
@@ -43,7 +44,7 @@ public class PatchProducer
 		LOGGER.info ("creating patch producer");
 	}*/
 	
-	public void init (ConnectionManager conMgmt, TreeDocument docA, TreeDocument docB)
+	public void init (ClearConnectionManager conMgmt, TreeDocument docA, TreeDocument docB)
 	{
 		super.init (conMgmt, docA, docB);
 		fullDiff = true;
@@ -87,7 +88,7 @@ public class PatchProducer
 					}
 					else
 					{
-						patch.updateNode (conMgmt.getConnectionsForNode (node).elementAt (0), conMgmt);
+						patch.updateNode (conMgmt.getConnectionForNode (node), conMgmt);
 					}
 				}
 			}
@@ -95,7 +96,9 @@ public class PatchProducer
 			TreeNode [] nodesB = docB.getSubtreesBySize ();
 			for (TreeNode node : nodesB)
 			{
-				if ((node.getModification () & TreeNode.UNMAPPED) != 0)
+				//System.out.println (node.getXPath () + " -> " + node.getModification ());
+				//if ((node.getModification () & TreeNode.UNMAPPED) != 0)
+				if ((node.hasModification (TreeNode.UNMAPPED)))
 					patch.insertNode (node);
 				else
 				{

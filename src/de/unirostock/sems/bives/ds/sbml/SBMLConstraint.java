@@ -5,9 +5,11 @@ package de.unirostock.sems.bives.ds.sbml;
 
 import java.util.Vector;
 
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -15,7 +17,8 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  *
  */
 public class SBMLConstraint
-	extends SBMLSbase
+	extends SBMLSBase
+	implements SBMLDiffReporter
 {
 	private SBMLMathML math;
 	private SBMLXHTML message;
@@ -51,6 +54,37 @@ public class SBMLConstraint
 	public SBMLXHTML getMessage ()
 	{
 		return message;
+	}
+
+	@Override
+	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	{
+		SBMLConstraint a = (SBMLConstraint) docA;
+		SBMLConstraint b = (SBMLConstraint) docB;
+		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
+			return "";
+		
+		String ret = "<tr><td>-</td><td>";
+		
+		ret += Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath ());
+		
+		ret += Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
+		
+		ret += "[change in message not implemented yet.]";
+		
+		return ret + "</td></tr>";
+	}
+	
+	@Override
+	public String reportInsert ()
+	{
+		return "<tr><td><span class='"+CLASS_INSERTED+"'>-</span></td><td><span class='"+CLASS_INSERTED+"'>inserted</span></td></tr>";
+	}
+	
+	@Override
+	public String reportDelete ()
+	{
+		return "<tr><td><span class='"+CLASS_DELETED+"'>-</span></td><td><span class='"+CLASS_DELETED+"'>deleted</span></td></tr>";
 	}
 	
 }

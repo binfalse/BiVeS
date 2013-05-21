@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.unirostock.sems.bives.algorithm.sbml;
+package de.unirostock.sems.bives.algorithm.sbmldeprecated;
 
 import java.io.IOException;
 import java.util.HashSet;

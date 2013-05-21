@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.unirostock.sems.bives.algorithm.sbml;
+package de.unirostock.sems.bives.algorithm.sbmldeprecated;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -19,20 +19,13 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import de.binfalse.bflog.LOGGER;
-import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
+import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Producer;
-import de.unirostock.sems.bives.ds.SBOTerm;
-import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
-import de.unirostock.sems.bives.ds.sbml.SBMLModel;
-import de.unirostock.sems.bives.ds.sbml.SBMLReaction;
-import de.unirostock.sems.bives.ds.sbml.SBMLSimpleSpeciesReference;
-import de.unirostock.sems.bives.ds.sbml.SBMLSpecies;
-import de.unirostock.sems.bives.ds.sbml.SBMLSpeciesReference;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
@@ -53,7 +46,9 @@ public class SBMLGraphProducer
 	private static final String INSERT = "1";
 	private static final String DELETE = "-1";
 	private static final String MODIFIED = "2";
-	private SBMLDocument sbmlDocA, sbmlDocB;
+	
+	
+	private final static Logger LOGGER = Logger.getLogger(SBMLGraphProducer.class.getName());
 	
 	public SBMLGraphProducer () throws ParserConfigurationException
 	{
@@ -66,11 +61,10 @@ public class SBMLGraphProducer
 			maxReaction = 0;
 	}
 	
-	public void init (ClearConnectionManager conMgmt, SBMLDocument sbmlDocA, SBMLDocument sbmlDocB)
+	public void init (ConnectionManager conMgmt, TreeDocument docA,
+		TreeDocument docB)
 	{
-		super.init (conMgmt, sbmlDocA.getTreeDocument (), sbmlDocA.getTreeDocument ());
-		this.sbmlDocA = sbmlDocA;
-		this.sbmlDocB = sbmlDocB;
+		super.init (conMgmt, docA, docB);
 	}
 	
 
@@ -80,187 +74,275 @@ public class SBMLGraphProducer
 	@Override
 	public String produce ()
 	{
-		SBMLModel modelA = sbmlDocA.getModel ();
-		SBMLModel modelB = sbmlDocB.getModel ();
-		
 		LOGGER.info ("searching for species in A");
-		HashMap<String, SBMLSpecies> species = modelA.getSpecies ();
-		for (SBMLSpecies s : species.values ())
+		for (TreeNode s : docA.getNodesByTag ("species"))
 		{
-			DocumentNode sNode = s.getDocumentNode ();
-			LOGGER.info ("species: " + sNode.getXPath ());
+			LOGGER.info ("species: " + s.getXPath ());
+			DocumentNode ds = (DocumentNode) s;
 			String id = "s" + ++maxSpecies;
+			String name = ds.getAttribute ("name");
+			if (name == null)
+				name = ds.getId ();
 			
-			if (sNode.hasModification (TreeNode.UNMAPPED))
+			if (s.hasModification (TreeNode.UNMAPPED))
 			{
 				// delete
-				entityMapper.put ("sd" + s.getID (), id);
+				entityMapper.put ("sd" + ds.getId (), id);
 				createGraphMLNode (graphRoot,
 				id, "species",
-				s.getID (),
+				name,
 				DELETE, null, null);
 			}
 			else
 			{
 				// both have this species in common
-				entityMapper.put ("sc" + s.getID (), id);
+				entityMapper.put ("sc" + ds.getId (), id);
 				createGraphMLNode (graphRoot,
 				id, "species",
-				s.getID (),
-				sNode.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED) ? MODIFIED : null, null, null);
+				name,
+				s.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED) ? MODIFIED : null, null, null);
 			}
 		}
 		
 		LOGGER.info ("searching for species in B");
-		species = modelB.getSpecies ();
-		for (SBMLSpecies s : species.values ())
+		for (TreeNode s : docB.getNodesByTag ("species"))
 		{
-			DocumentNode sNode = s.getDocumentNode ();
-			LOGGER.info ("species: " + sNode.getXPath ());
+			LOGGER.info ("species: " + s.getXPath ());
+			DocumentNode ds = (DocumentNode) s;
+			String id = "s" + ++maxSpecies;
+			String name = ds.getAttribute ("name");
+			if (name == null)
+				name = ds.getId ();
 			
-			if (sNode.hasModification (TreeNode.UNMAPPED))
+			if (s.hasModification (TreeNode.UNMAPPED))
 			{
-				String id = "s" + ++maxSpecies;
 				// insert
-				entityMapper.put ("si" + s.getID (), id);
+				entityMapper.put ("si" + ds.getId (), id);
 				createGraphMLNode (graphRoot,
 				id, "species",
-				s.getID (),
+				name,
 				INSERT, null, null);
 			}
 		}
 		
+
 		// write reactions
 		LOGGER.info ("searching for reactions in A");
-		HashMap<String, SBMLReaction> reactions = modelA.getReactions ();
-		for (SBMLReaction r : reactions.values ())
+		for (TreeNode r : docA.getNodesByTag ("reaction"))
 		{
-			DocumentNode rNode = r.getDocumentNode ();
-			LOGGER.debug ("reaction: " + rNode.getXPath ());
-			LOGGER.debug ("reaction marker: " + rNode.getModification () + " mod/submod: " + rNode.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED));
+			LOGGER.info ("reaction: " + r.getXPath ());
+			LOGGER.info ("reaction marker: " + r.getModification () + " mod/submod: " + r.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED));
 			
-			String reactionID = r.getID ();
+			DocumentNode reaction = (DocumentNode) r;
+			
+			String reactionID = reaction.getAttribute ("id");
+			String name = reaction.getAttribute ("name");
+			if (name == null)
+				name = reactionID;
 			String id = "r" + ++maxReaction;
 			
-			//System.out.println (r.getNameAndId () + " = " + rNode.getXPath () + " -> " + rNode.getModification ());
-			
-			if (rNode.hasModification (TreeNode.UNMAPPED))
+			if (r.hasModification (TreeNode.UNMAPPED))
 			{
 				// delete
 				entityMapper.put ("rd" + reactionID, id);
 				createGraphMLNode (graphRoot,
 					id, "reaction",
-				r.getID (),
-				DELETE, r.isReversible (), r.isFast ());
+				name,
+				DELETE, reaction.getAttribute ("reversible"), reaction.getAttribute ("fast"));
 			}
 			else
 			{
 				entityMapper.put ("rc" + reactionID, id);
 				createGraphMLNode (graphRoot,
 					id, "reaction",
-				r.getID (),
-				rNode.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED) ? MODIFIED : null, r.isReversible (), r.isFast ());
+				name,
+				r.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED) ? MODIFIED : null, reaction.getAttribute ("reversible"), reaction.getAttribute ("fast"));
 			}
 			
-			Vector<SBMLSpeciesReference> sRefs = r.getReactants ();
-			for (SBMLSpeciesReference sRef : sRefs)
-			{
-				//System.out.println ("sd" + sRef.getSpecies ().getID ());
-				String spec = entityMapper.get ("sd" + sRef.getSpecies ());
-				if (spec == null)
-					spec = entityMapper.get ("sc" + sRef.getSpecies ().getID ());
-
-				createEdge (graphRoot, spec,
-					id, sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED) ? DELETE : null, "none");
-			}
 			
-			sRefs = r.getProducts ();
-			for (SBMLSpeciesReference sRef : sRefs)
+			for (TreeNode c: reaction.getChildren ())
 			{
-				String spec = entityMapper.get ("sd" + sRef.getSpecies ().getID ());
-				if (spec == null)
-					spec = entityMapper.get ("sc" + sRef.getSpecies ().getID ());
+				DocumentNode dn = (DocumentNode) c;
+				String dntag = dn.getTagName ();
+				String mod = null;
+				if (c.getModification () != 0)
+					mod = MODIFIED;
+				if (c.hasModification (TreeNode.UNMAPPED))
+					mod = INSERT;
+				
+				if (dntag.equals ("listOfReactants"))
+				{
+					for (TreeNode react : dn.getChildren ())
+					{
+						DocumentNode reactant = (DocumentNode) react;
 
-				createEdge (graphRoot, id, spec,
-					sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED) ? DELETE : null, "none");
-			}
-			
-			Vector<SBMLSimpleSpeciesReference> ssRefs = r.getModifiers ();
-			for (SBMLSimpleSpeciesReference sRef : ssRefs)
-			{
-				String spec = entityMapper.get ("sd" + sRef.getSpecies ().getID ());
-				if (spec == null)
-					spec = entityMapper.get ("sc" + sRef.getSpecies ().getID ());
+						String spec = entityMapper.get ("sd" + reactant.getAttribute ("species"));
+						if (spec == null)
+							spec = entityMapper.get ("sc" + reactant.getAttribute ("species"));
 
-				createEdge (graphRoot, spec,
-					id, sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED) ? DELETE : null, resolvModSBO (sRef.getSBOTerm ()));
+						String mymod = mod;
+						if (mymod == null && reactant.getModification () != 0)
+							mymod = MODIFIED;
+						if (reactant.hasModification (TreeNode.UNMAPPED))
+							mymod = DELETE;
+						
+						createEdge (graphRoot, spec,
+							id, mymod, "none");
+					}
+				}
+				else if (dntag.equals ("listOfProducts"))
+				{
+					for (TreeNode prod : dn.getChildren ())
+					{
+						DocumentNode product = (DocumentNode) prod;
+
+						String spec = entityMapper.get ("sd" + product.getAttribute ("species"));
+						if (spec == null)
+							spec = entityMapper.get ("sc" + product.getAttribute ("species"));
+
+						String mymod = mod;
+						if (mymod == null && product.getModification () != 0)
+							mymod = MODIFIED;
+						if (product.hasModification (TreeNode.UNMAPPED))
+							mymod = DELETE;
+						
+						createEdge (graphRoot,
+							id, spec, mymod, "none");
+					}
+					
+				}
+				else if (dntag.equals ("listOfModifiers"))
+				{
+					for (TreeNode modi : dn.getChildren ())
+					{
+						DocumentNode modifier = (DocumentNode) modi;
+
+						String spec = entityMapper.get ("sd" + modifier.getAttribute ("species"));
+						if (spec == null)
+							spec = entityMapper.get ("sc" + modifier.getAttribute ("species"));
+
+						String mymod = mod;
+						if (mymod == null && modifier.getModification () != 0)
+							mymod = MODIFIED;
+						if (modifier.hasModification (TreeNode.UNMAPPED))
+							mymod = DELETE;
+						
+						createEdge (graphRoot,
+							spec, id, mymod, resolvModSBO (modifier.getAttribute ("sboTerm")));
+					}
+					
+				}
 			}
 		}
-		
 
 		LOGGER.info ("searching for reactions in B");
-		reactions = modelB.getReactions ();
-		for (SBMLReaction r : reactions.values ())
+		for (TreeNode r : docA.getNodesByTag ("reaction"))
 		{
-			DocumentNode rNode = r.getDocumentNode ();
-			LOGGER.debug ("reaction: " + rNode.getXPath ());
-			LOGGER.debug ("reaction marker: " + rNode.getModification () + " mod/submod: " + rNode.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED));
+			LOGGER.info ("reaction: " + r.getXPath ());
+			LOGGER.info ("reaction marker: " + r.getModification ());
 			
-			String reactionID = r.getID ();
+			DocumentNode reaction = (DocumentNode) r;
+			
+			String reactionID = reaction.getAttribute ("id");
+			String name = reaction.getAttribute ("name");
+			if (name == null)
+				name = reactionID;
 			String id;
 			
-			if (rNode.hasModification (TreeNode.UNMAPPED))
+			if (r.hasModification (TreeNode.UNMAPPED))
 			{
-				// insert
+				// delete
 				id = "r" + ++maxReaction;
 				entityMapper.put ("ri" + reactionID, id);
 				createGraphMLNode (graphRoot,
 					id, "reaction",
-				r.getID (),
-				INSERT, r.isReversible (), r.isFast ());
+				name,
+				INSERT, reaction.getAttribute ("reversible"), reaction.getAttribute ("fast"));
 			}
 			else
 			{
 				id = entityMapper.get ("rc" + reactionID);
 			}
-
-			Vector<SBMLSpeciesReference> sRefs = r.getReactants ();
-			for (SBMLSpeciesReference sRef : sRefs)
-			{
-				if (!sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED))
-					continue;
-				String spec = entityMapper.get ("si" + sRef.getSpecies ().getID ());
-				if (spec == null)
-					spec = entityMapper.get ("sc" + sRef.getSpecies ().getID ());
-
-				createEdge (graphRoot, spec,
-					id, sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED) ? INSERT : null, "none");
-			}
-
-			sRefs = r.getProducts ();
-			for (SBMLSpeciesReference sRef : sRefs)
-			{
-				if (!sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED))
-					continue;
-				String spec = entityMapper.get ("si" + sRef.getSpecies ().getID ());
-				if (spec == null)
-					spec = entityMapper.get ("sc" + sRef.getSpecies ().getID ());
-
-				createEdge (graphRoot, id, spec,
-					sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED) ? INSERT : null, "none");
-			}
 			
-			Vector<SBMLSimpleSpeciesReference> ssRefs = r.getModifiers ();
-			for (SBMLSimpleSpeciesReference sRef : ssRefs)
+			
+			for (TreeNode c: reaction.getChildren ())
 			{
-				if (!sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED))
-					continue;
-				String spec = entityMapper.get ("si" + sRef.getSpecies ().getID ());
-				if (spec == null)
-					spec = entityMapper.get ("sc" + sRef.getSpecies ().getID ());
+				DocumentNode dn = (DocumentNode) c;
+				String dntag = dn.getTagName ();
+				String mod = null;
+				if (c.getModification () != 0)
+					mod = MODIFIED;
+				if (c.hasModification (TreeNode.UNMAPPED))
+					mod = INSERT;
+				
+				if (dntag.equals ("listOfReactants"))
+				{
+					for (TreeNode react : dn.getChildren ())
+					{
+						if (react.getModification () == 0)
+							continue;
+						DocumentNode reactant = (DocumentNode) react;
 
-				createEdge (graphRoot, spec,
-					id, sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED) ? INSERT : null, resolvModSBO (sRef.getSBOTerm ()));
+						String spec = entityMapper.get ("sd" + reactant.getAttribute ("species"));
+						if (spec == null)
+							spec = entityMapper.get ("sc" + reactant.getAttribute ("species"));
+						
+						String mymod = mod;
+						if (mymod == null && reactant.getModification () != 0)
+							mymod = MODIFIED;
+						if (reactant.hasModification (TreeNode.UNMAPPED))
+							mymod = INSERT;
+						
+						createEdge (graphRoot, spec,
+							id, mymod, "none");
+					}
+				}
+				else if (dntag.equals ("listOfProducts"))
+				{
+					for (TreeNode prod : dn.getChildren ())
+					{
+						if (prod.getModification () == 0)
+							continue;
+						DocumentNode product = (DocumentNode) prod;
+
+						String spec = entityMapper.get ("sd" + product.getAttribute ("species"));
+						if (spec == null)
+							spec = entityMapper.get ("sc" + product.getAttribute ("species"));
+
+						String mymod = mod;
+						if (mymod == null && product.getModification () != 0)
+							mymod = MODIFIED;
+						if (product.hasModification (TreeNode.UNMAPPED))
+							mymod = INSERT;
+						
+						createEdge (graphRoot,
+							id, spec, mymod, "none");
+					}
+					
+				}
+				else if (dntag.equals ("listOfModifiers"))
+				{
+					for (TreeNode modi : dn.getChildren ())
+					{
+						if (modi.getModification () == 0)
+							continue;
+						DocumentNode modifier = (DocumentNode) modi;
+
+						String spec = entityMapper.get ("sd" + modifier.getAttribute ("species"));
+						if (spec == null)
+							spec = entityMapper.get ("sc" + modifier.getAttribute ("species"));
+
+						String mymod = mod;
+						if (mymod == null && modifier.getModification () != 0)
+							mymod = MODIFIED;
+						if (modifier.hasModification (TreeNode.UNMAPPED))
+							mymod = INSERT;
+						
+						createEdge (graphRoot,
+							spec, id, mymod, resolvModSBO (modifier.getAttribute ("sboTerm")));
+					}
+					
+				}
 			}
 		}
 		
@@ -422,7 +504,7 @@ public class SBMLGraphProducer
 	 *          reaction only: the fast attribute (should be null for non-reactions)
 	 */
 	private void createGraphMLNode (Element parent, String id,
-		String ns, String name, String modification, Boolean reversible, Boolean fast)
+		String ns, String name, String modification, String reversible, String fast)
 	{
 		LOGGER.debug ("create gml node: " + id + " mod: " + modification);
 		Element element = graphDocument.createElement ("node");
@@ -442,21 +524,21 @@ public class SBMLGraphProducer
 			element.appendChild (srcElement);
 		}
 		
-		if (reversible != null)
+		if (reversible != null && reversible.length () > 0)
 		{
-			//name += " (reversible)";
+			name += " (reversible)";
 			Element revElement = graphDocument.createElement ("data");
 			revElement.setAttribute ("key", "rev");
-			revElement.appendChild (graphDocument.createTextNode (reversible ? "true" : "false"));
+			revElement.appendChild (graphDocument.createTextNode (reversible));
 			element.appendChild (revElement);
 		}
 		
-		if (fast != null)
+		if (fast != null && fast.length () > 0)
 		{
-			//name += " (fast)";
+			name += " (fast)";
 			Element fastElement = graphDocument.createElement ("data");
 			fastElement.setAttribute ("key", "fast");
-			fastElement.appendChild (graphDocument.createTextNode (fast ? "true" : "false"));
+			fastElement.appendChild (graphDocument.createTextNode (fast));
 			element.appendChild (fastElement);
 		}
 		
@@ -552,20 +634,5 @@ public class SBMLGraphProducer
 			
 		}
 		return "unknown";
-	}
-	
-	
-	/**
-	 * Resolve a modifier SBO-ID.
-	 * 
-	 * @param id
-	 *          the id
-	 * @return the modifier ({@code stimulator}, {@code inhibitor} or {@code unknown})
-	 */
-	public static String resolvModSBO (SBOTerm sbo)
-	{
-		if (sbo == null)
-			return "unknown";
-		return resolvModSBO (sbo.getSBOTerm ());
 	}
 }

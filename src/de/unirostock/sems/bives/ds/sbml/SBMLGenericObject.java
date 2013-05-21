@@ -25,4 +25,9 @@ public class SBMLGenericObject
 	{
 		return documentNode;
 	}
+	
+	public SBMLModel getModel ()
+	{
+		return sbmlModel;
+	}
 }

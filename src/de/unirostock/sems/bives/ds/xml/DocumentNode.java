@@ -20,6 +20,7 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
 
 import de.binfalse.bflog.LOGGER;
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Weighter;
@@ -353,7 +354,7 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 	}
 	
 	
-	public boolean evaluate (ConnectionManager conMgmr)
+	public boolean evaluate (ClearConnectionManager conMgmr)
 	{
 		LOGGER.debug ("evaluate " + xPath);
 		
@@ -367,14 +368,28 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 			addModification (SUB_MODIFIED);
 		LOGGER.debug ("evaluate kids changed: " + kidChanged);
 		
-		Vector<Connection> cons = conMgmr.getConnectionsForNode (this);
-		if (cons == null || cons.size () == 0)
+		Connection con = conMgmr.getConnectionForNode (this);
+		if (con == null)
 		{
+			LOGGER.debug ("evaluate " + xPath + " is unmapped");
 			addModification (UNMAPPED);
 			return true;
 		}
+
+		TreeNode partner = con.getPartnerOf (this);
+		//System.out.println ("evaluate " + xPath + " is mapped to " + partner.getXPath ());
+		LOGGER.debug ("evaluate " + xPath + " is mapped to " + partner.getXPath ());
+		// changed?
+		if (contentDiffers (partner))
+			addModification (MODIFIED);
+		// moved?
+		if (networkDiffers (partner, conMgmr, con))
+		{
+			//System.out.println ("netw differs : " + xPath + " -> " + partner.getXPath ());
+			addModification (MOVED);
+		}
 		
-		if (cons.size () == 1)
+		/*if (cons.size () == 1)
 		{
 			Connection c = cons.elementAt (0);
 			TreeNode partner = c.getPartnerOf (this);
@@ -409,7 +424,7 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 			}
 			addModification (MOVED);
 			addModification (COPIED);
-		}
+		}*/
 		
 		LOGGER.debug ("mod: " + modified);
 		

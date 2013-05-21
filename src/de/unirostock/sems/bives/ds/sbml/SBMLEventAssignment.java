@@ -5,9 +5,14 @@ package de.unirostock.sems.bives.ds.sbml;
 
 import java.util.Vector;
 
+import javax.xml.transform.TransformerException;
+
+import de.binfalse.bflog.LOGGER;
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -15,10 +20,11 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  *
  */
 public class SBMLEventAssignment
-	extends SBMLSbase
+	extends SBMLSBase
+	implements SBMLDiffReporter
 {
 	private SBMLMathML math;
-	private SBMLSbase variable;
+	private SBMLSBase variable;
 	
 	/**
 	 * @param documentNode
@@ -39,9 +45,9 @@ public class SBMLEventAssignment
 	}
 
 	
-	protected final SBMLSbase resolvVariable (String ref) throws BivesSBMLParseException
+	protected final SBMLSBase resolvVariable (String ref) throws BivesSBMLParseException
 	{
-		SBMLSbase var = sbmlModel.getCompartment (ref);
+		SBMLSBase var = sbmlModel.getCompartment (ref);
 		if (var == null)
 			var = sbmlModel.getSpecies (ref);
 		if (var == null)
@@ -52,7 +58,7 @@ public class SBMLEventAssignment
 	}
 	
 	
-	public SBMLSbase getVariable ()
+	public SBMLSBase getVariable ()
 	{
 		return variable;
 	}
@@ -60,6 +66,59 @@ public class SBMLEventAssignment
 	public SBMLMathML getMath ()
 	{
 		return math;
+	}
+
+	@Override
+	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	{
+		SBMLEventAssignment a = (SBMLEventAssignment) docA;
+		SBMLEventAssignment b = (SBMLEventAssignment) docB;
+		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
+			return "";
+		
+		String ret = "";
+		String varA = SBMLModel.getSidName (a.variable);
+		String varB = SBMLModel.getSidName (b.variable);
+		if (varA.equals (varB))
+			ret += "for: " + varA + " ";
+		else
+			ret += "was for: <span class='"+CLASS_DELETED+"'>" + varA + "</span> but now for: <span class='"+CLASS_INSERTED+"'>" + varB + "</span> ";
+
+		ret += Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath ());
+		
+		return ret;
+	}
+
+	@Override
+	public String reportInsert ()
+	{
+		String ret = "<span class='"+CLASS_INSERTED+"'>" + SBMLModel.getSidName (variable) + " = ";
+		try
+		{
+			ret += Tools.transformMathML (math.getMath ());
+		}
+		catch (TransformerException e)
+		{
+			LOGGER.error ("cannot parse math in event assignment", e);
+			ret += "[math parsing err]";
+		}
+		return ret + "</span>";
+	}
+
+	@Override
+	public String reportDelete ()
+	{
+		String ret = "<span class='"+CLASS_DELETED+"'>" + SBMLModel.getSidName (variable) + " = ";
+		try
+		{
+			ret += Tools.transformMathML (math.getMath ());
+		}
+		catch (TransformerException e)
+		{
+			LOGGER.error ("cannot parse math in event assignment", e);
+			ret += "[math parsing err]";
+		}
+		return ret + "</span>";
 	}
 	
 }

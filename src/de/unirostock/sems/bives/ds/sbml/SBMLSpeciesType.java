@@ -3,8 +3,10 @@
  */
 package de.unirostock.sems.bives.ds.sbml;
 
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -12,10 +14,9 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  *
  */
 public class SBMLSpeciesType
-	extends SBMLSbase
+	extends SBMLGenericIdNameObject
+	implements SBMLDiffReporter
 {
-	private String id;
-	private String name; //optional
 	
 	/**
 	 * @param documentNode
@@ -33,15 +34,38 @@ public class SBMLSpeciesType
 		
 		name = documentNode.getAttribute ("name");
 	}
-	
-	public String getID ()
+
+	@Override
+	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
 	{
-		return id;
+		SBMLSpeciesType a = (SBMLSpeciesType) docA;
+		SBMLSpeciesType b = (SBMLSpeciesType) docB;
+		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
+			return "";
+		
+		String idA = a.getNameAndId (), idB = b.getNameAndId ();
+		String ret = "<tr><td>";
+		if (idA.equals (idB))
+			ret += idA;
+		else
+			ret += "<span class='"+CLASS_DELETED+"'>" + idA + "</span> &rarr; <span class='"+CLASS_DELETED+"'>" + idB + "</span> ";
+		ret += "</td><td>";
+		
+		ret += Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
+		
+		return ret + "</td></tr>";
 	}
-	
-	public String getName ()
+
+	@Override
+	public String reportInsert ()
 	{
-		return name;
+		return "<tr><td><span class='"+CLASS_INSERTED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_INSERTED+"'>inserted</span></td></tr>";
+	}
+
+	@Override
+	public String reportDelete ()
+	{
+		return "<tr><td><span class='"+CLASS_DELETED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_DELETED+"'>deleted</span></td></tr>";
 	}
 	
 }

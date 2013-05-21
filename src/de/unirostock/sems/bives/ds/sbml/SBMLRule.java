@@ -8,6 +8,7 @@ import java.util.Vector;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -15,9 +16,14 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  *
  */
 public abstract class SBMLRule
-	extends SBMLSbase
+	extends SBMLSBase
+	implements SBMLDiffReporter
 {
-	private SBMLMathML math;
+	public static final int ASSIGNMENT_RULE = 1;
+	public static final int ALGEBRAIC_RULE = 2;
+	public static final int RATE_RULE = 3;
+	protected SBMLMathML math;
+	protected int type;
 	
 	/**
 	 * @param documentNode
@@ -40,9 +46,9 @@ public abstract class SBMLRule
 		return math;
 	}
 	
-	protected final SBMLSbase resolvVariable (String ref) throws BivesSBMLParseException
+	protected final SBMLSBase resolvVariable (String ref) throws BivesSBMLParseException
 	{
-		SBMLSbase var = sbmlModel.getCompartment (ref);
+		SBMLSBase var = sbmlModel.getCompartment (ref);
 		if (var == null)
 			var = sbmlModel.getSpecies (ref);
 		if (var == null)
@@ -52,5 +58,10 @@ public abstract class SBMLRule
 		if (var == null)
 			throw new BivesSBMLParseException ("variable "+ref+" of rule unmappable.");
 		return var;
+	}
+	
+	public int getRuleType ()
+	{
+		return type;
 	}
 }

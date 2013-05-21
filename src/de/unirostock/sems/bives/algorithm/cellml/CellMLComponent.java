@@ -7,11 +7,13 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.Vector;
 
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
+import de.unirostock.sems.bives.exception.BivesConnectionException;
 import de.unirostock.sems.bives.tools.Tools;
 
 
@@ -27,7 +29,7 @@ public class CellMLComponent implements DiffReporter
 	private HashMap <String, CellMLVariable> variables;
 	private HashMap <String, CellMLMath> maths;
 	
-	public CellMLComponent (DocumentNode nodeA, DocumentNode nodeB, ConnectionManager conMgmr)
+	public CellMLComponent (DocumentNode nodeA, DocumentNode nodeB, ClearConnectionManager conMgmr)
 	{
 		variables = new HashMap <String, CellMLVariable> ();
 		maths = new HashMap <String, CellMLMath> ();
@@ -81,7 +83,7 @@ public class CellMLComponent implements DiffReporter
 		return name;
 	}
 	
-	private void setUpAB (ConnectionManager conMgmr)
+	private void setUpAB (ClearConnectionManager conMgmr)
 	{
 		nameA = nodeA.getAttribute ("name");
 		nameB = nodeB.getAttribute ("name");
@@ -99,8 +101,8 @@ public class CellMLComponent implements DiffReporter
 				}
 				else
 				{
-					Vector<Connection> cons = conMgmr.getConnectionsForNode (child);
-					TreeNode child2 = cons.elementAt (0).getPartnerOf (child);
+					Connection con = conMgmr.getConnectionForNode (child);
+					TreeNode child2 = con.getPartnerOf (child);
 					if (child.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED) || child2.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED))
 						variables.put (getRandomVariableIdentifier (), new CellMLVariable ((DocumentNode) child, (DocumentNode) child2));
 				}
@@ -132,8 +134,8 @@ public class CellMLComponent implements DiffReporter
 				}
 				else
 				{
-					Vector<Connection> cons = conMgmr.getConnectionsForNode (child);
-					TreeNode child2 = cons.elementAt (0).getPartnerOf (child);
+					Connection con = conMgmr.getConnectionForNode (child);
+					TreeNode child2 = con.getPartnerOf (child);
 					if (child.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED) || child2.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED))
 						maths.put (getRandomMathIdentifier (), new CellMLMath ((DocumentNode) child, (DocumentNode) child2));
 				}
@@ -194,7 +196,7 @@ public class CellMLComponent implements DiffReporter
 		
 	}
 	
-	public void connect (ConnectionManager conMgmt)
+	public void connect (ClearConnectionManager conMgmt) throws BivesConnectionException
 	{
 		if (nodeA == null || nodeB == null)
 			return;

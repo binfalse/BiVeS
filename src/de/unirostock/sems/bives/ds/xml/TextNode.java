@@ -9,6 +9,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import de.binfalse.bflog.LOGGER;
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Weighter;
@@ -78,11 +80,32 @@ public class TextNode
 	}
 	
 	
-	public boolean evaluate (ConnectionManager conMgmr)
+	public boolean evaluate (ClearConnectionManager conMgmr)
 	{
+		LOGGER.debug ("evaluate " + xPath);
+		
 		setModification (UNCHANGED);
 		
-		Vector<Connection> cons = conMgmr.getConnectionsForNode (this);
+		Connection con = conMgmr.getConnectionForNode (this);
+		if (con == null)
+		{
+			addModification (UNMAPPED);
+			return true;
+		}
+		
+		TreeNode partner = con.getPartnerOf (this);
+		
+		// changed?
+		if (contentDiffers (partner))
+			addModification (MODIFIED);
+		// moved?
+		if (networkDiffers (partner, conMgmr, con))
+		{
+			addModification (MOVED);
+		}
+		
+		
+		/*Vector<Connection> cons = conMgmr.getConnectionsForNode (this);
 		if (cons == null || cons.size () == 0)
 		{
 			addModification (UNMAPPED);
@@ -123,8 +146,9 @@ public class TextNode
 			}
 			addModification (MOVED);
 			addModification (COPIED);
-		}
-		
+		}*/
+
+		LOGGER.debug ("mod: " + modified);
 		return (modified & (MODIFIED | MOVED | UNMAPPED)) != 0;
 	}
 	

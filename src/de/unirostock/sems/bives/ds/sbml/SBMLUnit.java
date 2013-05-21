@@ -12,7 +12,7 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  *
  */
 public class SBMLUnit
-	extends SBMLSbase
+	extends SBMLSBase
 {
 	private SBMLUnitDefinition kind;
 	private double exponent;
@@ -78,5 +78,10 @@ public class SBMLUnit
 		}
 		else
 			exponent = 1; // level <= 2
+	}
+	
+	public String unitToHTMLString ()
+	{
+		return "(" + multiplier + "&middot;10^" + scale + "&middot;" + kind.name + ")^" + exponent;
 	}
 }

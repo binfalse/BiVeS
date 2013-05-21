@@ -18,8 +18,8 @@ import de.unirostock.sems.bives.algorithm.Producer;
 import de.unirostock.sems.bives.algorithm.general.PatchProducer;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
 import de.unirostock.sems.bives.algorithm.general.XyWeighter;
-import de.unirostock.sems.bives.algorithm.sbml.SBMLConnector;
-import de.unirostock.sems.bives.algorithm.sbml.SBMLDiffInterpreter;
+import de.unirostock.sems.bives.algorithm.sbmldeprecated.SBMLConnector;
+import de.unirostock.sems.bives.algorithm.sbmldeprecated.SBMLDiffInterpreter;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 
 
