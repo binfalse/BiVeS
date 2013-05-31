@@ -9,6 +9,7 @@ import javax.xml.transform.TransformerException;
 
 import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -23,7 +24,7 @@ public class SBMLEventAssignment
 	extends SBMLSBase
 	implements SBMLDiffReporter
 {
-	private SBMLMathML math;
+	private MathML math;
 	private SBMLSBase variable;
 	
 	/**
@@ -39,7 +40,7 @@ public class SBMLEventAssignment
 		Vector<TreeNode> maths = documentNode.getChildrenWithTag ("math");
 		if (maths.size () != 1)
 			throw new BivesSBMLParseException ("event trigger has "+maths.size ()+" math elements. (expected exactly one element)");
-		math = new SBMLMathML ((DocumentNode) maths.elementAt (0));
+		math = new MathML ((DocumentNode) maths.elementAt (0));
 		
 		variable = resolvVariable (documentNode.getAttribute ("variable"));
 	}
@@ -63,7 +64,7 @@ public class SBMLEventAssignment
 		return variable;
 	}
 	
-	public SBMLMathML getMath ()
+	public MathML getMath ()
 	{
 		return math;
 	}

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.unirostock.sems.bives.ds.sbml;
+package de.unirostock.sems.bives.ds;
 
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 
@@ -10,11 +10,11 @@ import de.unirostock.sems.bives.ds.xml.DocumentNode;
  * @author Martin Scharm
  *
  */
-public class SBMLMathML
+public class MathML
 {
 	private DocumentNode math;
 	
-	public SBMLMathML (DocumentNode math)
+	public MathML (DocumentNode math)
 	{
 		this.math = math;
 	}

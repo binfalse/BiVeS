@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Vector;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -14,7 +15,7 @@ public class SBMLKineticLaw
 	extends SBMLSBase
 	implements SBMLDiffReporter
 {
-	private SBMLMathML math;
+	private MathML math;
 	private HashMap<String, SBMLParameter> listOfLocalParameters;
 	
 	public SBMLKineticLaw (DocumentNode documentNode, SBMLModel sbmlModel)
@@ -25,7 +26,7 @@ public class SBMLKineticLaw
 		Vector<TreeNode> nodes = documentNode.getChildrenWithTag ("math");
 		if (nodes.size () != 1)
 			throw new BivesSBMLParseException ("kinetic law has "+nodes.size ()+" math elements. (expected exactly one element)");
-		math = new SBMLMathML ((DocumentNode) nodes.elementAt (0));
+		math = new MathML ((DocumentNode) nodes.elementAt (0));
 		
 		listOfLocalParameters = new HashMap<String, SBMLParameter> ();
 		
@@ -41,7 +42,7 @@ public class SBMLKineticLaw
 		}
 	}
 	
-	public SBMLMathML getMath ()
+	public MathML getMath ()
 	{
 		return math;
 	}

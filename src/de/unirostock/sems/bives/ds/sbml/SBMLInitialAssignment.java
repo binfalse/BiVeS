@@ -6,6 +6,7 @@ package de.unirostock.sems.bives.ds.sbml;
 import java.util.Vector;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -21,7 +22,7 @@ public class SBMLInitialAssignment
 	implements SBMLDiffReporter
 {
 	private SBMLSBase symbol;
-	private SBMLMathML math;
+	private MathML math;
 	
 	/**
 	 * @param documentNode
@@ -48,7 +49,7 @@ public class SBMLInitialAssignment
 		Vector<TreeNode> maths = documentNode.getChildrenWithTag ("math");
 		if (maths.size () != 1)
 			throw new BivesSBMLParseException ("initial assignment has "+maths.size ()+" math elements. (expected exactly one element)");
-		math = new SBMLMathML ((DocumentNode) maths.elementAt (0));
+		math = new MathML ((DocumentNode) maths.elementAt (0));
 	}
 	
 	public SBMLSBase getSymbol ()
@@ -56,7 +57,7 @@ public class SBMLInitialAssignment
 		return symbol;
 	}
 	
-	public SBMLMathML getMath ()
+	public MathML getMath ()
 	{
 		return math;
 	}

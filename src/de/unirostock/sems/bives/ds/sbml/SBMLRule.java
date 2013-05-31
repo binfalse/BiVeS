@@ -5,6 +5,7 @@ package de.unirostock.sems.bives.ds.sbml;
 
 import java.util.Vector;
 
+import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -22,7 +23,7 @@ public abstract class SBMLRule
 	public static final int ASSIGNMENT_RULE = 1;
 	public static final int ALGEBRAIC_RULE = 2;
 	public static final int RATE_RULE = 3;
-	protected SBMLMathML math;
+	protected MathML math;
 	protected int type;
 	
 	/**
@@ -38,10 +39,10 @@ public abstract class SBMLRule
 		Vector<TreeNode> maths = documentNode.getChildrenWithTag ("math");
 		if (maths.size () != 1)
 			throw new BivesSBMLParseException ("initial assignment has "+maths.size ()+" math elements. (expected exactly one element)");
-		math = new SBMLMathML ((DocumentNode) maths.elementAt (0));
+		math = new MathML ((DocumentNode) maths.elementAt (0));
 	}
 	
-	public SBMLMathML getMath ()
+	public MathML getMath ()
 	{
 		return math;
 	}

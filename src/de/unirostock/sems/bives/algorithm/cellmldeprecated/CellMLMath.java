@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.unirostock.sems.bives.algorithm.cellml;
+package de.unirostock.sems.bives.algorithm.cellmldeprecated;
 
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;

@@ -3,69 +3,133 @@
  */
 package de.unirostock.sems.bives.algorithm.cellml;
 
-import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
-import de.unirostock.sems.bives.algorithm.Connection;
-import de.unirostock.sems.bives.algorithm.ConnectionManager;
-import de.unirostock.sems.bives.algorithm.DiffReporter;
+import java.util.Vector;
+
+import org.w3c.dom.Element;
+
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
-import de.unirostock.sems.bives.exception.BivesConnectionException;
-import de.unirostock.sems.bives.tools.Tools;
+import de.unirostock.sems.bives.exception.BivesConsistencyException;
+import de.unirostock.sems.bives.exception.BivesLogicalException;
+import de.unirostock.sems.bives.exception.CellMLReadException;
 
 
 /**
  * @author Martin Scharm
  *
  */
-public class CellMLVariable implements DiffReporter
+public class CellMLVariable
+extends CellMLEntity
 {
-	private DocumentNode nodeA, nodeB;
-
-	public CellMLVariable (DocumentNode nodeA, DocumentNode nodeB)
+	public static final int INTERFACE_NONE = 0;
+	public static final int INTERFACE_IN = -1;
+	public static final int INTERFACE_OUT = 1;
+	
+	private CellMLComponent component;
+	
+	// Variables must define a name attribute, the value of which must be unique across all variables in the current component
+	private String name;
+	
+	// All variables must also define a units attribute
+	private CellMLUnit unit;
+	
+	// This attribute provides a convenient means for specifying the value of a scalar real variable when all independent variables in the model have a value of 0.0. Independent variables are those whose values do not depend on others.
+	private double initial_value;
+	
+	//This attribute specifies the interface exposed to components in the parent and sibling sets (see below). The public interface must have a value of "in", "out", or "none". The absence of a public_interface attribute implies a default value of "none".
+	private int public_interface;
+	private Vector<CellMLVariable> public_interface_connection;
+	// This attribute specifies the interface exposed to components in the encapsulated set (see below). The private interface must have a value of "in", "out", or "none". The absence of a private_interface attribute implies a default value of "none".
+	private int private_interface;
+	private Vector<CellMLVariable> private_interface_connection;
+	
+	public CellMLVariable (CellMLModel model, CellMLComponent component, DocumentNode node) throws CellMLReadException, BivesConsistencyException, BivesLogicalException
 	{
-		this.nodeA = nodeA;
-		this.nodeB = nodeB;
+		super (node, model);
+		this.component = component;
+		name = node.getAttribute ("name");
+		if (name == null)
+			throw new CellMLReadException ("variable doesn't have a name. (component: "+component.getName ()+")");
+		unit = component.getUnit (node.getAttribute ("units"));
+		if (unit == null)
+			throw new CellMLReadException ("variable doesn't have a unit. (component: "+component.getName ()+")");
+		
+		public_interface = parseInterface (node.getAttribute ("public_interface"));
+		private_interface = parseInterface (node.getAttribute ("private_interface"));
+		
+		private_interface_connection = new Vector<CellMLVariable> ();
+		public_interface_connection = new Vector<CellMLVariable> ();
+		
+		// An initial_value attribute must not be defined on a <variable> element with a public_interface or private_interface attribute with a value of "in". [ These variables receive their value from variables belonging to another component. ]
+		
+		String attr = node.getAttribute ("initial_value");
+		if (attr != null)
+		{
+			if (public_interface == INTERFACE_IN || private_interface == INTERFACE_IN)
+				throw new BivesLogicalException ("initial_value attribute must not be defined on a <variable> element with a public_interface or private_interface attribute with a value of 'in' (variable: "+name+", component: "+component.getName ()+")");
+			try
+			{
+				initial_value = Double.parseDouble (attr);
+			}
+			catch (NumberFormatException ex)
+			{
+				// TODO: may be a variable name
+				// If present, the value of the initial_value attribute may be a real number or the value of the name attribute of a <variable> element declared in the current component.
+				throw new CellMLReadException ("Unsupported number format: " + attr + " in variable " + name + " of component " + component.getName ());
+			}
+		}
+		
 	}
 	
-	public void setTreeA (DocumentNode nodeA)
+	public int getPublicInterface ()
 	{
-		this.nodeA = nodeA;
-	}
-	public void setTreeB (DocumentNode nodeB)
-	{
-		this.nodeB = nodeB;
+		return public_interface;
 	}
 	
-	public void connect (ClearConnectionManager conMgmt) throws BivesConnectionException
+	public void addPublicInterfaceConnection (CellMLVariable var)
 	{
-		if (nodeA == null || nodeB == null)
-			return;
-		//System.out.println ("connecting: " + nodeA.getXPath () + " -> " + nodeB.getXPath ());
-		conMgmt.addConnection (new Connection (nodeA, nodeB));
+		public_interface_connection.add (var);
+	}
+	
+	public Vector<CellMLVariable> getPublicInterfaceConnections ()
+	{
+		return public_interface_connection;
+	}
+	
+	public int getPrivateInterface ()
+	{
+		return private_interface;
+	}
+	
+	public void addPrivateInterfaceConnection (CellMLVariable var)
+	{
+		private_interface_connection.add (var);
+	}
+	
+	public Vector<CellMLVariable> getPrivateInterfaceConnections ()
+	{
+		return private_interface_connection;
+	}
+	
+	private String parseInterface (int attr)
+	{
+		if (attr == INTERFACE_IN)
+			return "in";
+		if (attr == INTERFACE_OUT)
+			return "out";
+		return "none";
 	}
 
-	@Override
-	public String reportHTML (String cssclass)
+	private int parseInterface (String attr)
 	{
-		if (nodeA == null)
-		{
-			return "<tr><td>Variable <span class='inserted'>" + nodeB.getAttribute ("name") + "</span> was inserted</td><td></td></tr>";
-		}
-		if (nodeB == null)
-		{
-			return "<tr><td>Variable <span class='deleted'>" + nodeA.getAttribute ("name") + "</span> was deleted</td><td></td></tr>";
-		}
-		
-		String tmp = Tools.genAttributeHtmlStats (nodeA, nodeB);
-		if (tmp.length () < 1 && nodeA.getAttribute ("name").equals (nodeB.getAttribute ("name")))
-			return "";
-		
-		String ret = "<tr><td>Variable ";
-		if (nodeA.getAttribute ("name").equals (nodeB.getAttribute ("name")))
-			ret += nodeA.getAttribute ("name");
-		else
-			ret += "<span class='deleted'>" + nodeA.getAttribute ("name") + "</span> &rarr; <span class='inserted'>" + nodeB.getAttribute ("name") + "</span>";
-		ret += "</td><td>";
-		
-		return ret + tmp + "</td></tr>";
+		if (attr.equals ("in"))
+			return INTERFACE_IN;
+		if (attr.equals ("out"))
+			return INTERFACE_OUT;
+		return INTERFACE_NONE;
+	}
+	
+	public String getName ()
+	{
+		return name;
 	}
 }

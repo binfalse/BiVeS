@@ -1,7 +1,7 @@
 /**
  * 
  */
-package de.unirostock.sems.bives.algorithm.cellml;
+package de.unirostock.sems.bives.algorithm.cellmldeprecated;
 
 import java.util.HashSet;
 import java.util.Set;

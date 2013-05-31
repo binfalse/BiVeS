@@ -6,6 +6,7 @@ package de.unirostock.sems.bives.ds.sbml;
 import java.util.Vector;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -20,7 +21,7 @@ public class SBMLSpeciesReference
 	implements SBMLDiffReporter
 {
 	private Double stoichiometry;
-	private SBMLMathML stoichiometryMath;
+	private MathML stoichiometryMath;
 	private boolean constant;
 	
 	/**
@@ -55,7 +56,7 @@ public class SBMLSpeciesReference
 				maths = ((DocumentNode) maths.elementAt (0)).getChildrenWithTag ("math");
 				if (maths.size () != 1)
 					throw new BivesSBMLParseException ("stoichiometryMath in SpeciesReference has "+maths.size ()+" math elements. (expected exactly one element)");
-				stoichiometryMath = new SBMLMathML ((DocumentNode) maths.elementAt (0));
+				stoichiometryMath = new MathML ((DocumentNode) maths.elementAt (0));
 			}
 			else
 				stoichiometry = 1.;

@@ -48,7 +48,7 @@ public class PatchProducer
 	{
 		super.init (conMgmt, docA, docB);
 		fullDiff = true;
-		LOGGER.info ("creating patch producer");
+		LOGGER.info ("creating patch producer: " + conMgmt + " " + docA + " " + docB);
 	}
 
 	/* (non-Javadoc)

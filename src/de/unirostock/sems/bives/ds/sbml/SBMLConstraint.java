@@ -6,6 +6,7 @@ package de.unirostock.sems.bives.ds.sbml;
 import java.util.Vector;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -20,7 +21,7 @@ public class SBMLConstraint
 	extends SBMLSBase
 	implements SBMLDiffReporter
 {
-	private SBMLMathML math;
+	private MathML math;
 	private SBMLXHTML message;
 	
 	/**
@@ -36,7 +37,7 @@ public class SBMLConstraint
 		Vector<TreeNode> nodes = documentNode.getChildrenWithTag ("math");
 		if (nodes.size () != 1)
 			throw new BivesSBMLParseException ("constraint has "+nodes.size ()+" math elements. (expected exactly one element)");
-		math = new SBMLMathML ((DocumentNode) nodes.elementAt (0));
+		math = new MathML ((DocumentNode) nodes.elementAt (0));
 
 		nodes = documentNode.getChildrenWithTag ("message");
 		if (nodes.size () > 1)
@@ -46,7 +47,7 @@ public class SBMLConstraint
 		
 	}
 	
-	public SBMLMathML getMath ()
+	public MathML getMath ()
 	{
 		return math;
 	}

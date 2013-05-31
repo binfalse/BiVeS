@@ -25,7 +25,7 @@ import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.algorithm.Producer;
-import de.unirostock.sems.bives.algorithm.cellml.CellMLConnector;
+import de.unirostock.sems.bives.algorithm.cellmldeprecated.CellMLConnector;
 import de.unirostock.sems.bives.algorithm.general.PatchProducer;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
 import de.unirostock.sems.bives.algorithm.general.XyWeighter;
