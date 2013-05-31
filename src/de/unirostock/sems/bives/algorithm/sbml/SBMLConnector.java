@@ -7,10 +7,8 @@ import java.util.Vector;
 
 
 import de.unirostock.sems.bives.algorithm.Connection;
-import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
-import de.unirostock.sems.bives.algorithm.sbmldeprecated.ChemicalReactionNetwork;
 import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
@@ -124,7 +122,9 @@ public class SBMLConnector
 				continue;
 			DocumentNode a = (DocumentNode) con.getTreeA ();
 			DocumentNode b = (DocumentNode) con.getTreeB ();
-			if (!SBMLGraphProducer.resolvModSBO (a.getAttribute ("sboTerm")).equals (SBMLGraphProducer.resolvModSBO (a.getAttribute ("sboTerm"))))
+			String modA = sbmlDocA.getModel ().getFromNode (a).getSBOTerm ().resolvModifier ();
+			String modB = sbmlDocB.getModel ().getFromNode (b).getSBOTerm ().resolvModifier ();
+			if (!modA.equals (modB))
 				conMgmt.dropConnection (con);
 			
 			/*

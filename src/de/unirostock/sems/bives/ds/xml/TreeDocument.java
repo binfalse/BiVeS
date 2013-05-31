@@ -3,6 +3,7 @@
  */
 package de.unirostock.sems.bives.ds.xml;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -31,8 +32,9 @@ public class TreeDocument
 	private boolean ordered;
 	private Vector<TreeNode> subtreesBySize;
 	private boolean uniqueIds;
+	private URI baseUri;
 
-	public TreeDocument (Document d, Weighter w) throws BivesDocumentParseException
+	public TreeDocument (Document d, Weighter w, URI baseUri) throws BivesDocumentParseException
 	{
 		if (w == null)
 			w = new XyWeighter (); // default xy
@@ -45,8 +47,9 @@ public class TreeDocument
 		Collections.sort (subtreesBySize, new TreeNode.TreeNodeComparatorBySubtreeSize ());
 		ordered = true;
 		uniqueIds = true;
+		this.baseUri = baseUri;
 	}
-	public TreeDocument (Document d, Weighter w, boolean ordered) throws BivesDocumentParseException
+	public TreeDocument (Document d, Weighter w, URI baseUri, boolean ordered) throws BivesDocumentParseException
 	{
 		if (w == null)
 			w = new XyWeighter (); // default xy
@@ -59,6 +62,13 @@ public class TreeDocument
 		Collections.sort (subtreesBySize, new TreeNode.TreeNodeComparatorBySubtreeSize ());
 		this.ordered = ordered;
 		uniqueIds = true;
+		this.baseUri = baseUri;
+	}
+	
+
+	public URI getBaseUri ()
+	{
+		return baseUri;
 	}
 	
 	public void setIdsNotUnique ()

@@ -16,6 +16,8 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
+import de.binfalse.bflog.LOGGER;
+
 
 /**
  * @author martin
@@ -38,7 +40,7 @@ public class FileRetriever
 	{
 		BufferedWriter bw = new BufferedWriter (new FileWriter (to));
 		BufferedReader br = new BufferedReader (new FileReader (
-			from.toString ()));
+			from.toURL ().getFile ()));
 		while (br.ready ())
 		{
 			bw.write (br.readLine ());
@@ -74,6 +76,8 @@ public class FileRetriever
 		if (!dest.canWrite ())
 			throw new IOException ("cannot write to file: " + dest.getAbsolutePath ());
 		
+		LOGGER.info ("trying to retrieve file from: " + file + " to: " + dest);
+		
 		URI theFile = new URI (file);
 		
 		// is full
@@ -95,7 +99,7 @@ public class FileRetriever
 		// is realtive
 		else if (isLocal (base.toString ()))
 		{
-			System.out.println ("else if: " + base);
+			//System.out.println ("else if: " + base);
 			// copy
 			if (file.startsWith ("/"))
 				copy (theFile, dest);

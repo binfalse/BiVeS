@@ -25,10 +25,8 @@ import org.w3c.dom.Element;
 import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
-import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Interpreter;
 import de.unirostock.sems.bives.algorithm.Producer;
-import de.unirostock.sems.bives.algorithm.sbmldeprecated.SBMLReport.ModConnection;
 import de.unirostock.sems.bives.ds.sbml.SBMLCompartment;
 import de.unirostock.sems.bives.ds.sbml.SBMLCompartmentType;
 import de.unirostock.sems.bives.ds.sbml.SBMLConstraint;
@@ -48,6 +46,7 @@ import de.unirostock.sems.bives.ds.sbml.SBMLUnitDefinition;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
+import de.unirostock.sems.bives.markup.MarkupDocument;
 
 
 /**
@@ -57,14 +56,16 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
 public class SBMLDiffInterpreter
 	extends Interpreter
 {
-	private SBMLDiffReport report;
+	//private SBMLDiffReport report;
+	private MarkupDocument markupDocument;
 	private SBMLDocument sbmlDocA, sbmlDocB;
 	
 	public SBMLDiffInterpreter (ClearConnectionManager conMgmt, SBMLDocument sbmlDocA,
 		SBMLDocument sbmlDocB)
 	{
 		super (conMgmt, sbmlDocA.getTreeDocument (), sbmlDocB.getTreeDocument ());
-			report = new SBMLDiffReport ();
+			//report = new SBMLDiffReport ();
+		markupDocument = new MarkupDocument ();
 			this.sbmlDocA = sbmlDocA;
 			this.sbmlDocB = sbmlDocB;
 	}
@@ -75,9 +76,9 @@ public class SBMLDiffInterpreter
 		// TODO!!!
 	}
 	
-	public SBMLDiffReport getReport ()
+	public MarkupDocument getReport ()
 	{
-		return report;
+		return markupDocument;
 	}
 	
 
@@ -95,11 +96,12 @@ public class SBMLDiffInterpreter
 		String lvA = "L" + sbmlDocA.getLevel () + "V" + sbmlDocA.getVersion ();
 		String lvB = "L" + sbmlDocB.getLevel () + "V" + sbmlDocB.getVersion ();
 		if (lvA.equals (lvB))
-			report.addHeader ("Both documents have same Level/Version: " + lvA);
+			markupDocument.addHeader ("Both documents have same Level/Version: " + markupDocument.highlight (lvA));
 		else
-			report.addHeader ("Level/Version has changed: from <span class='" + SBMLDiffReporter.CLASS_DELETED+"'>" + lvA + "</span> to <span class='" + SBMLDiffReporter.CLASS_INSERTED+"'>" + lvB+"</span><br/>");
+			markupDocument.addHeader ("Level/Version has changed: from " + markupDocument.delete (lvA) + " to " + markupDocument.delete (lvB));
 		
 		
+		MarkupSection msec = new MarkupSection ("Species");
 		LOGGER.info ("searching for rules in A");
 		Vector<SBMLRule> rules = modelA.getRules ();
 		for (SBMLRule rule : rules)

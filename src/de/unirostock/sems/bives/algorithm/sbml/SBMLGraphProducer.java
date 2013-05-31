@@ -193,7 +193,7 @@ public class SBMLGraphProducer
 					spec = entityMapper.get ("sc" + sRef.getSpecies ().getID ());
 
 				createEdge (graphRoot, spec,
-					id, sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED) ? DELETE : null, resolvModSBO (sRef.getSBOTerm ()));
+					id, sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED) ? DELETE : null, sRef.getSBOTerm ().resolvModifier ());
 			}
 		}
 		
@@ -260,7 +260,7 @@ public class SBMLGraphProducer
 					spec = entityMapper.get ("sc" + sRef.getSpecies ().getID ());
 
 				createEdge (graphRoot, spec,
-					id, sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED) ? INSERT : null, resolvModSBO (sRef.getSBOTerm ()));
+					id, sRef.getDocumentNode ().hasModification (TreeNode.UNMAPPED) ? INSERT : null, sRef.getSBOTerm ().resolvModifier ());
 			}
 		}
 		
@@ -509,63 +509,5 @@ public class SBMLGraphProducer
 		}
 		
 		parent.appendChild (element);
-	}
-	
-	
-	/**
-	 * Resolve a modifier SBO-ID.
-	 * 
-	 * @param id
-	 *          the id
-	 * @return the modifier ({@code stimulator}, {@code inhibitor} or {@code unknown})
-	 */
-	public static String resolvModSBO (String id)
-	{
-		if (id == null || !id.startsWith ("SBO:"))
-			return "unknown";
-		
-		try
-		{
-			// TODO: resolve the stuff dynamically from db...
-			switch (Integer.parseInt (id.substring (4)))
-			{
-				case 459: // stimulator
-				case 13: // catalyst
-				case 460: // enzymatic catalyst (is a)
-				case 461: // essential activator (is a)
-				case 535: // binding activator (is a)
-				case 534: // catalytic activator (is a)
-				case 533: // specific activator (is a)
-				case 462: // non-essential activator (is a)
-				case 21: // potentiator (is a)
-					return "stimulator";
-				case 20: // inhibitor (is a)
-				case 206: // competitive inhibitor (is a)
-				case 207: // non-competitive inhibitor (is a)
-				case 537: // complete inhibitor (is a)
-				case 536: // partial inhibitor (is a)
-					return "inhibitor";
-			}
-		}
-		catch (NumberFormatException e)
-		{
-			
-		}
-		return "unknown";
-	}
-	
-	
-	/**
-	 * Resolve a modifier SBO-ID.
-	 * 
-	 * @param id
-	 *          the id
-	 * @return the modifier ({@code stimulator}, {@code inhibitor} or {@code unknown})
-	 */
-	public static String resolvModSBO (SBOTerm sbo)
-	{
-		if (sbo == null)
-			return "unknown";
-		return resolvModSBO (sbo.getSBOTerm ());
 	}
 }
