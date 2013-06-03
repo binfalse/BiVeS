@@ -6,6 +6,8 @@ package de.unirostock.sems.bives.ds.sbml;
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
 import de.unirostock.sems.bives.tools.Tools;
 
 
@@ -30,32 +32,35 @@ public class SBMLAlgebraicRule
 	}
 
 	@Override
-	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLAlgebraicRule a = (SBMLAlgebraicRule) docA;
 		SBMLAlgebraicRule b = (SBMLAlgebraicRule) docB;
 		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
-			return "";
+			return null;
 
-		String ret = "<tr><td>AlgebraicRule</td><td>";
+		MarkupElement me = new MarkupElement ("AlgebraicRule");
 		
-		ret += Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath ());
+		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
+		Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
 		
-		ret += Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
-		
-		return ret + "</td></tr>";
+		return me;
 	}
 	
 	@Override
-	public String reportInsert ()
+	public MarkupElement reportInsert (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_INSERTED+"'>AlgebraicRule</span></td><td><span class='"+CLASS_INSERTED+"'>inserted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.insert ("AlgebraicRule"));
+		me.addValue (markupDocument.insert ("inserted"));
+		return me;
 	}
 	
 	@Override
-	public String reportDelete ()
+	public MarkupElement reportDelete (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_DELETED+"'>AlgebraicRule</span></td><td><span class='"+CLASS_DELETED+"'>deleted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.delete ("AlgebraicRule"));
+		me.addValue (markupDocument.delete ("deleted"));
+		return me;
 	}
 	
 }

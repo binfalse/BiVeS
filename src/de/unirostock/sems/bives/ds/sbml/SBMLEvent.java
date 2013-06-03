@@ -10,6 +10,8 @@ import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
 import de.unirostock.sems.bives.tools.Tools;
 
 
@@ -57,10 +59,10 @@ public class SBMLEvent
 		else
 			useValuesFromTriggerTime = true; // level <= 2
 		
-
+		// tigger optional w/ L3V2
 		Vector<TreeNode> nodes = documentNode.getChildrenWithTag ("trigger");
-		if (nodes.size () != 1)
-			throw new BivesSBMLParseException ("event has "+nodes.size ()+" trigger elements. (expected exactly one element)");
+		if (nodes.size () == 1)
+			//throw new BivesSBMLParseException ("event has "+nodes.size ()+" trigger elements. (expected exactly one element)");
 		trigger = new SBMLEventTrigger ((DocumentNode) nodes.elementAt (0), sbmlModel);
 		
 		nodes = documentNode.getChildrenWithTag ("delay");
@@ -93,77 +95,118 @@ public class SBMLEvent
 	}
 
 	@Override
-	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLEvent a = (SBMLEvent) docA;
 		SBMLEvent b = (SBMLEvent) docB;
 		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
-			return "";
+			return null;
 		
 		String idA = a.getNameAndId (), idB = b.getNameAndId ();
-		String ret = "<tr><td>";
+		MarkupElement me = null;
 		if (idA.equals (idB))
-			ret += idA;
+			me = new MarkupElement (idA);
 		else
-			ret += "<span class='"+CLASS_DELETED+"'>" + idA + "</span> &rarr; <span class='"+CLASS_INSERTED +"'>" + idB + "</span> ";
-		ret += "</td><td>";
+			me = new MarkupElement (markupDocument.delete (idA) + " "+markupDocument.rightArrow ()+" " + markupDocument.insert (idB));
 		
-		ret += Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
+		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
 		
 		// trigger -> not optional!
-		ret += "<strong>Trigger:</strong><br/>" + a.trigger.reportMofification (conMgmt, a.trigger, b.trigger);
+		// changed in L3V2
+		MarkupElement me2 = new MarkupElement ("Trigger");
+		if (a.trigger != null && b.trigger != null)
+		{
+			a.trigger.reportMofification (conMgmt, a.trigger, b.trigger, me2, markupDocument);
+			me.addSubElements (me2);
+		}
+		else if (a.trigger != null)
+		{
+			a.trigger.reportDelete (me2, markupDocument);
+			me.addSubElements (me2);
+		}
+		else if (b.trigger != null)
+		{
+			b.trigger.reportInsert (me2, markupDocument);
+			me.addSubElements (me2);
+		}
 		
 		// priority
+		me2 = new MarkupElement ("Priority");
 		if (a.priority != null && b.priority != null)
-			ret += "<strong>Priority:</strong><br/>" + a.priority.reportMofification (conMgmt, a.priority, b.priority);
+		{
+			a.priority.reportMofification (conMgmt, a.priority, b.priority, me2, markupDocument);
+			me.addSubElements (me2);
+		}
 		else if (a.priority != null)
-			ret += "<strong>Priority:</strong><br/>" + a.priority.reportDelete ();
+		{
+			a.priority.reportDelete (me2, markupDocument);
+			me.addSubElements (me2);
+		}
 		else if (b.priority != null)
-			ret += "<strong>Priority:</strong><br/>" + b.priority.reportInsert ();
+		{
+			b.priority.reportInsert (me2, markupDocument);
+			me.addSubElements (me2);
+		}
 		
 		// delay
+		me2 = new MarkupElement ("Delay");
 		if (a.delay != null && b.delay != null)
-			ret += "<strong>Delay:</strong><br/>" + a.delay.reportMofification (conMgmt, a.delay, b.delay);
+		{
+			a.delay.reportMofification (conMgmt, a.delay, b.delay, me2, markupDocument);
+			me.addSubElements (me2);
+		}
 		else if (a.priority != null)
-			ret += "<strong>Delay:</strong><br/>" + a.delay.reportDelete ();
+		{
+			a.delay.reportDelete (me2, markupDocument);
+			me.addSubElements (me2);
+		}
 		else if (b.priority != null)
-			ret += "<strong>Delay:</strong><br/>" + b.delay.reportInsert ();
+		{
+			b.delay.reportInsert (me2, markupDocument);
+			me.addSubElements (me2);
+		}
 		
 		// assignments
 		Vector<SBMLEventAssignment> assA = a.listOfEventAssignments;
 		Vector<SBMLEventAssignment> assB = b.listOfEventAssignments;
 		if (assA.size () > 0 || assB.size () > 0)
-			ret += "<strong>Assignments:</strong><br/>";
-		for (SBMLEventAssignment ass : assA)
 		{
-			if (conMgmt.getConnectionForNode (ass.documentNode) == null)
-				ret += ass.reportDelete () + "<br/>";
-			else
+			me2 = new MarkupElement ("Assignments");
+			for (SBMLEventAssignment ass : assA)
 			{
-				Connection con = conMgmt.getConnectionForNode (ass.documentNode);
-				SBMLEventAssignment partner = (SBMLEventAssignment) b.sbmlModel.getFromNode (con.getPartnerOf (ass.documentNode));
-				ret += ass.reportMofification (conMgmt, ass, partner) + "<br/>";
+				if (conMgmt.getConnectionForNode (ass.documentNode) == null)
+					ass.reportDelete (me2, markupDocument);
+				else
+				{
+					Connection con = conMgmt.getConnectionForNode (ass.documentNode);
+					SBMLEventAssignment partner = (SBMLEventAssignment) b.sbmlModel.getFromNode (con.getPartnerOf (ass.documentNode));
+					ass.reportMofification (conMgmt, ass, partner, me2, markupDocument);
+				}
+			}
+			for (SBMLEventAssignment ass : assB)
+			{
+				if (conMgmt.getConnectionForNode (ass.documentNode) == null)
+					ass.reportInsert (me2, markupDocument);
 			}
 		}
-		for (SBMLEventAssignment ass : assB)
-		{
-			if (conMgmt.getConnectionForNode (ass.documentNode) == null)
-				ret += ass.reportInsert () + "<br/>";
-		}
 		
-		return ret + "</td></tr>";
+		return me;
 	}
 
 	@Override
-	public String reportInsert ()
+	public MarkupElement reportInsert (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_INSERTED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_INSERTED+"'>inserted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.insert (getNameAndId ()));
+		me.addValue (markupDocument.insert ("inserted"));
+		return me;
 	}
 
 	@Override
-	public String reportDelete ()
+	public MarkupElement reportDelete (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_DELETED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_DELETED+"'>deleted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.delete (getNameAndId ()));
+		me.addValue (markupDocument.delete ("deleted"));
+		return me;
 	}
 	
 	private String getNameAndId ()

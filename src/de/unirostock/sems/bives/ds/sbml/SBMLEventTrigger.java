@@ -10,6 +10,8 @@ import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
 import de.unirostock.sems.bives.tools.Tools;
 
 
@@ -19,7 +21,6 @@ import de.unirostock.sems.bives.tools.Tools;
  */
 public class SBMLEventTrigger
 	extends SBMLSBase
-	implements SBMLDiffReporter
 {
 	private MathML math;
 	private Boolean initialValue;
@@ -75,36 +76,30 @@ public class SBMLEventTrigger
 		return math;
 	}
 
-	@Override
-	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	public void reportMofification (ClearConnectionManager conMgmt, SBMLEventTrigger a, SBMLEventTrigger b, MarkupElement me, MarkupDocument markupDocument)
 	{
-		SBMLEventTrigger a = (SBMLEventTrigger) docA;
-		SBMLEventTrigger b = (SBMLEventTrigger) docB;
 		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
-			return "";
+			return;
 		
-		String ret =  Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
+		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
 
 		if (a.math != null && b.math != null)
-			ret += Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath ());
+			Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
 		else if (a.math != null)
-			ret += Tools.genMathHtmlStats (a.math.getMath (), null);
+			Tools.genMathHtmlStats (a.math.getMath (), null, me, markupDocument);
 		else if (b.math != null)
-			ret += Tools.genMathHtmlStats (null, b.math.getMath ());
+			Tools.genMathHtmlStats (null, b.math.getMath (), me, markupDocument);
 		
-		return ret;
 	}
 
-	@Override
-	public String reportInsert ()
+	public void reportInsert (MarkupElement me, MarkupDocument markupDocument)
 	{
-		return Tools.genMathHtmlStats (null, math.getMath ());
+		Tools.genMathHtmlStats (null, math.getMath (), me, markupDocument);
 	}
 
-	@Override
-	public String reportDelete ()
+	public void reportDelete (MarkupElement me, MarkupDocument markupDocument)
 	{
-		return Tools.genMathHtmlStats (math.getMath (), null);
+		Tools.genMathHtmlStats (math.getMath (), null, me, markupDocument);
 	}
 	
 }

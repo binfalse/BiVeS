@@ -38,7 +38,13 @@ public abstract class SBMLSBase
 		if (nodeList.size () > 1)
 			throw new BivesSBMLParseException ("SBase with "+nodeList.size ()+" notes. (expected max one notes)");
 		if (nodeList.size () == 1)
-			notes = new SBMLXHTML ((DocumentNode) nodeList.elementAt (0));
+		{
+			notes = new SBMLXHTML ();
+			DocumentNode root = (DocumentNode) nodeList.elementAt (0);
+			Vector<TreeNode> kids = root.getChildren ();
+			for (TreeNode n : kids)
+				notes.addXHTML (n);
+		}
 		
 		nodeList = documentNode.getChildrenWithTag ("annotation");
 		if (nodeList.size () > 1)

@@ -6,6 +6,7 @@ package de.unirostock.sems.bives.ds.sbml;
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
 
 
 /**
@@ -14,7 +15,6 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  */
 public class SBMLSimpleSpeciesReference
 extends SBMLSBase
-implements SBMLDiffReporter
 {
 	protected String id; //optional
 	protected String name; //optional
@@ -41,32 +41,29 @@ implements SBMLDiffReporter
 		return species;
 	}
 
-	@Override
-	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	public String reportMofification (ClearConnectionManager conMgmt, SBMLSimpleSpeciesReference a, SBMLSimpleSpeciesReference b, MarkupDocument markupDocument)
 	{
-		SBMLSimpleSpeciesReference a = (SBMLSimpleSpeciesReference) docA;
-		SBMLSimpleSpeciesReference b = (SBMLSimpleSpeciesReference) docB;
+		/*SBMLSimpleSpeciesReference a = (SBMLSimpleSpeciesReference) docA;
+		SBMLSimpleSpeciesReference b = (SBMLSimpleSpeciesReference) docB;*/
 		//if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
 		//	return species.getNameAndId ();
 		
-		String retA = a.species.getNameAndId ();
-		String retB = b.species.getNameAndId ();
+		String retA = a.species.getID ();
+		String retB = b.species.getID ();
 		
 		if (retA.equals (retB))
 			return retA;
 		else
-			return "<span class='"+CLASS_DELETED+"'>" + retA + "</span> + <span class='"+CLASS_INSERTED +"'>" + retB + "</span>";
+			return markupDocument.delete (retA) + " + " + markupDocument.insert (retB);
 	}
 
-	@Override
-	public String reportInsert ()
+	public String reportInsert (MarkupDocument markupDocument)
 	{
-		return "<span class='"+CLASS_INSERTED+"'>" + species.getNameAndId () + "</span>";
+		return markupDocument.insert (species.getID ());
 	}
 
-	@Override
-	public String reportDelete ()
+	public String reportDelete (MarkupDocument markupDocument)
 	{
-		return "<span class='"+CLASS_DELETED+"'>" + species.getNameAndId () + "</span>";
+		return markupDocument.delete (species.getID ());
 	}
 }

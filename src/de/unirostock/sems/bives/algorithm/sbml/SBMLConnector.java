@@ -9,6 +9,7 @@ import java.util.Vector;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
+import de.unirostock.sems.bives.ds.SBOTerm;
 import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
@@ -122,7 +123,11 @@ public class SBMLConnector
 				continue;
 			DocumentNode a = (DocumentNode) con.getTreeA ();
 			DocumentNode b = (DocumentNode) con.getTreeB ();
-			String modA = sbmlDocA.getModel ().getFromNode (a).getSBOTerm ().resolvModifier ();
+			
+			if (!cmpSBO (sbmlDocA.getModel ().getFromNode (a).getSBOTerm (), sbmlDocB.getModel ().getFromNode (b).getSBOTerm ()))
+				conMgmt.dropConnection (con);
+			
+			/*String modA = sbmlDocA.getModel ().getFromNode (a).getSBOTerm ().resolvModifier ();
 			String modB = sbmlDocB.getModel ().getFromNode (b).getSBOTerm ().resolvModifier ();
 			if (!modA.equals (modB))
 				conMgmt.dropConnection (con);
@@ -138,6 +143,23 @@ public class SBMLConnector
 			
 		}
 		
+	}
+
+	/**
+	 * Compare SBO terms. Returns true if both terms have equal meaning, or false if they differ.
+	 *
+	 * @param a SBOTerm 1
+	 * @param b SBOTerm 2
+	 * @return true, if same meaning
+	 */
+	private boolean cmpSBO (SBOTerm a, SBOTerm b)
+	{
+		if (a == null && b == null)
+			return true;
+		if (a == null || b == null)
+			return false;
+		
+		return a.resolvModifier ().equals (b.resolvModifier ());
 	}
 	
 }

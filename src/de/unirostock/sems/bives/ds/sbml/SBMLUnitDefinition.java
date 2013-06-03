@@ -10,6 +10,8 @@ import de.unirostock.sems.bives.ds.HTMLMarkup;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
 import de.unirostock.sems.bives.tools.Tools;
 
 
@@ -77,44 +79,47 @@ public class SBMLUnitDefinition
 	}
 
 	@Override
-	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLUnitDefinition a = (SBMLUnitDefinition) docA;
 		SBMLUnitDefinition b = (SBMLUnitDefinition) docB;
 		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
-			return "";
+			return null;
 		
 		String idA = a.getNameAndId (), idB = b.getNameAndId ();
-		String ret = "<tr><td>";
+		MarkupElement me = null;
 		if (idA.equals (idB))
-			ret += idA;
+			me = new MarkupElement (idA);
 		else
-			ret += "<span class='"+CLASS_DELETED+"'>" + idA + "</span> &rarr; <span class='"+CLASS_INSERTED+"'>" + idB + "</span> ";
-		ret += "</td><td>";
+			me = new MarkupElement (markupDocument.delete (idA) + " "+markupDocument.rightArrow ()+" " + markupDocument.insert (idB));
 		
 		// check whether unit definition has changed
 		String oldDef = a.htmlMarkup ();
 		String newDef = a.htmlMarkup ();
 		if (oldDef.equals (newDef))
-			ret += "Defined by: " + oldDef + "<br/>";
+			me.addValue ("Defined by: " + oldDef);
 		else
-			ret += "Definition changed from <span class='"+CLASS_DELETED+"'>" + oldDef + "</span> to <span class='"+CLASS_INSERTED+"'>" + newDef + "</span><br/>";
+			me.addValue ("Definition changed from " + markupDocument.delete (oldDef) + " to " + markupDocument.insert (newDef));
 		
-		ret += Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
+		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
 		
-		return ret + "</td></tr>";
+		return me;
 	}
 
 	@Override
-	public String reportInsert ()
+	public MarkupElement reportInsert (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_INSERTED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_INSERTED+"'>inserted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.insert (getNameAndId ()));
+		me.addValue (markupDocument.insert ("inserted"));
+		return me;
 	}
 
 	@Override
-	public String reportDelete ()
+	public MarkupElement reportDelete (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_DELETED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_DELETED+"'>deleted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.delete (getNameAndId ()));
+		me.addValue (markupDocument.delete ("deleted"));
+		return me;
 	}
 
 	@Override

@@ -10,6 +10,8 @@ import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
 import de.unirostock.sems.bives.tools.Tools;
 
 
@@ -63,38 +65,39 @@ public class SBMLInitialAssignment
 	}
 	
 	@Override
-	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLInitialAssignment a = (SBMLInitialAssignment) docA;
 		SBMLInitialAssignment b = (SBMLInitialAssignment) docB;
 		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
-			return "";
+			return null;
 		
 		String idA = SBMLModel.getSidName (a.symbol), idB = SBMLModel.getSidName (b.symbol);
-		
-		String ret = "<tr><td>";
+		MarkupElement me = null;
 		if (idA.equals (idB))
-			ret += idA;
+			me = new MarkupElement (idA);
 		else
-			ret += "<span class='"+CLASS_DELETED+"'>" + idA + "</span> &rarr; <span class='"+CLASS_DELETED+"'>" + idB + "</span> ";
-		ret += "</td><td>";
+			me = new MarkupElement (markupDocument.delete (idA) + " "+markupDocument.rightArrow ()+" " + markupDocument.insert (idB));
 		
-		ret += Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath ());
+		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
+		Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
 		
-		ret += Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
-		
-		return ret + "</td></tr>";
+		return me;
 	}
 	
 	@Override
-	public String reportInsert ()
+	public MarkupElement reportInsert (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_INSERTED+"'>" + SBMLModel.getSidName (symbol) + "</span></td><td><span class='"+CLASS_INSERTED+"'>inserted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.insert (SBMLModel.getSidName (symbol)));
+		me.addValue (markupDocument.insert ("inserted"));
+		return me;
 	}
 	
 	@Override
-	public String reportDelete ()
+	public MarkupElement reportDelete (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_DELETED+"'>" + SBMLModel.getSidName (symbol) + "</span></td><td><span class='"+CLASS_DELETED+"'>deleted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.delete (SBMLModel.getSidName (symbol)));
+		me.addValue (markupDocument.delete ("deleted"));
+		return me;
 	}
 }

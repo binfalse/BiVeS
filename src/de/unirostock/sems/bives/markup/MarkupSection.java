@@ -23,7 +23,17 @@ public class MarkupSection
 	
 	public void addValue (MarkupElement element)
 	{
+		if (element != null)
 		values.add (element);
 	}
 	
+	public String getHeader ()
+	{
+		return header;
+	}
+	
+	public Vector<MarkupElement> getValues ()
+	{
+		return values;
+	}
 }

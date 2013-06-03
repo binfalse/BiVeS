@@ -3,7 +3,12 @@
  */
 package de.unirostock.sems.bives.ds.sbml;
 
+import java.util.Vector;
+
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
+import de.unirostock.sems.bives.ds.xml.TextNode;
+import de.unirostock.sems.bives.ds.xml.TreeNode;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -12,10 +17,29 @@ import de.unirostock.sems.bives.ds.xml.DocumentNode;
  */
 public class SBMLXHTML
 {
-	private DocumentNode rootNode;
+	// html is beneath
+	private Vector<TreeNode> nodes;
 	
-	public SBMLXHTML (DocumentNode rootNode)
+	public SBMLXHTML ()
 	{
-		this.rootNode = rootNode;
+		nodes = new Vector<TreeNode> ();
+	}
+	
+	public void addXHTML (TreeNode node)
+	{
+		nodes.add (node);
+	}
+	
+	public String toString ()
+	{
+		String ret = "";
+		for (TreeNode node : nodes)
+		{
+			if (node.getType () == TreeNode.DOC_NODE)
+				ret += Tools.printPrettySubDoc ((DocumentNode) node);
+			else if (node.getType () == TreeNode.TEXT_NODE)
+				ret += ((TextNode) node).getText ();
+		}
+		return ret;
 	}
 }

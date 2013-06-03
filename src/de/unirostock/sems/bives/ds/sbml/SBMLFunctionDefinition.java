@@ -10,6 +10,8 @@ import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
 import de.unirostock.sems.bives.tools.Tools;
 
 
@@ -45,37 +47,39 @@ implements SBMLDiffReporter
 	}
 
 	@Override
-	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLFunctionDefinition a = (SBMLFunctionDefinition) docA;
 		SBMLFunctionDefinition b = (SBMLFunctionDefinition) docB;
 		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
-			return "";
+			return null;
 		
 		String idA = a.getNameAndId (), idB = b.getNameAndId ();
-		String ret = "<tr><td>";
+		MarkupElement me = null;
 		if (idA.equals (idB))
-			ret += idA;
+			me = new MarkupElement (idA);
 		else
-			ret += "<span class='"+CLASS_DELETED+"'>" + idA + "</span> &rarr; <span class='"+CLASS_DELETED+"'>" + idB + "</span> ";
-		ret += "</td><td>";
+			me = new MarkupElement (markupDocument.delete (idA) + " "+markupDocument.rightArrow ()+" " + markupDocument.insert (idB));
+
+		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
+		Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
 		
-		ret += Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath ());
-		
-		ret += Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
-		
-		return ret + "</td></tr>";
+		return me;
 	}
 	
 	@Override
-	public String reportInsert ()
+	public MarkupElement reportInsert (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_INSERTED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_INSERTED+"'>inserted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.insert (getNameAndId ()));
+		me.addValue (markupDocument.insert ("inserted"));
+		return me;
 	}
 	
 	@Override
-	public String reportDelete ()
+	public MarkupElement reportDelete (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_DELETED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_DELETED+"'>deleted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.delete (getNameAndId ()));
+		me.addValue (markupDocument.delete ("deleted"));
+		return me;
 	}
 }

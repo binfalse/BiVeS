@@ -10,6 +10,7 @@ import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
 
 
 /**
@@ -18,7 +19,6 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  */
 public class SBMLSpeciesReference
 	extends SBMLSimpleSpeciesReference
-	implements SBMLDiffReporter
 {
 	private Double stoichiometry;
 	private MathML stoichiometryMath;
@@ -77,36 +77,46 @@ public class SBMLSpeciesReference
 			constant = false; // level <= 2
 	}
 
-	@Override
-	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	public String reportMofification (ClearConnectionManager conMgmt, SBMLSpeciesReference a, SBMLSpeciesReference b, MarkupDocument markupDocument)
 	{
-		SBMLSpeciesReference a = (SBMLSpeciesReference) docA;
-		SBMLSpeciesReference b = (SBMLSpeciesReference) docB;
+		/*SBMLSpeciesReference a = (SBMLSpeciesReference) docA;
+		SBMLSpeciesReference b = (SBMLSpeciesReference) docB;*/
 		//if (a.getDocumentNode ().getModification () == 0)
 		//	return stoichiometry + species.getNameAndId ();
 
 		//System.out.println (a + " - " + b);
 		//System.out.println (a.species + " - " + b.species);
 		
-		String retA = a.stoichiometry + a.species.getNameAndId ();
-		String retB = b.stoichiometry + b.species.getNameAndId ();
+		String retA = a.getStoichiometry () + a.species.getID ();
+		String retB = b.getStoichiometry () + b.species.getID ();
 		
 		if (retA.equals (retB))
 			return retA;
 		else
-			return "<span class='"+CLASS_DELETED+"'>" + retA + "</span> + <span class='"+CLASS_INSERTED +"'>" + retB + "</span>";
+			return markupDocument.delete (retA) + " + " + markupDocument.insert (retB);
+			//return "<span class='"+CLASS_DELETED+"'>" + retA + "</span> + <span class='"+CLASS_INSERTED +"'>" + retB + "</span>";
 	}
 
-	@Override
-	public String reportInsert ()
+	public String reportInsert (MarkupDocument markupDocument)
 	{
-		return "<span class='"+CLASS_INSERTED+"'>" + stoichiometry + species.getNameAndId () + "</span>";
+		return markupDocument.insert (getStoichiometry () + species.getID ());
 	}
 
-	@Override
-	public String reportDelete ()
+	public String reportDelete (MarkupDocument markupDocument)
 	{
-		return "<span class='"+CLASS_DELETED+"'>" + stoichiometry + species.getNameAndId () + "</span>";
+		return markupDocument.delete (getStoichiometry () + species.getID ());
+	}
+	
+	private String getStoichiometry ()
+	{
+		if ((stoichiometry == Math.rint (stoichiometry)) && !Double.isInfinite (stoichiometry) && !Double.isNaN (stoichiometry))
+		{
+			int s = stoichiometry.intValue ();
+			if (s == 1)
+				return "";
+	    return stoichiometry.intValue () + "";
+		}
+		return stoichiometry.toString ();
 	}
 	
 }

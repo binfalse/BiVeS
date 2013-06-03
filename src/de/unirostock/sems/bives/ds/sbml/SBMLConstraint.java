@@ -10,6 +10,8 @@ import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
 import de.unirostock.sems.bives.tools.Tools;
 
 
@@ -43,7 +45,13 @@ public class SBMLConstraint
 		if (nodes.size () > 1)
 			throw new BivesSBMLParseException ("constraint has "+nodes.size ()+" message elements. (expected not more than one element)");
 		if (nodes.size () == 1)
-			message = new SBMLXHTML ((DocumentNode) nodes.elementAt (0));
+		{
+			message = new SBMLXHTML ();
+			DocumentNode root = (DocumentNode) nodes.elementAt (0);
+			Vector<TreeNode> kids = root.getChildren ();
+			for (TreeNode n : kids)
+				message.addXHTML (n);
+		}
 		
 	}
 	
@@ -58,34 +66,48 @@ public class SBMLConstraint
 	}
 
 	@Override
-	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLConstraint a = (SBMLConstraint) docA;
 		SBMLConstraint b = (SBMLConstraint) docB;
 		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
-			return "";
+			return null;
 		
-		String ret = "<tr><td>-</td><td>";
+		MarkupElement me = new MarkupElement ("-");
 		
-		ret += Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath ());
+		Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
 		
-		ret += Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
+		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
 		
-		ret += "[change in message not implemented yet.]";
-		
-		return ret + "</td></tr>";
+		if (a.message != null && b.message != null)
+		{
+			String msgA = a.message.toString ();
+			String msgB = b.message.toString ();
+			
+			if (!msgA.equals (msgB))
+				me.addValue ("message changed from: " + markupDocument.delete (msgA) + " to " + markupDocument.insert (msgB));
+		}
+		else if (a.message != null)
+			me.addValue ("message deleted: " + markupDocument.delete (a.message.toString ()));
+		else if (b.message != null)
+			me.addValue ("message inserted: " + markupDocument.insert (b.message.toString ()));
+		return me;
 	}
 	
 	@Override
-	public String reportInsert ()
+	public MarkupElement reportInsert (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_INSERTED+"'>-</span></td><td><span class='"+CLASS_INSERTED+"'>inserted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.insert ("-"));
+		me.addValue (markupDocument.insert ("inserted"));
+		return me;
 	}
 	
 	@Override
-	public String reportDelete ()
+	public MarkupElement reportDelete (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_DELETED+"'>-</span></td><td><span class='"+CLASS_DELETED+"'>deleted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.delete ("-"));
+		me.addValue (markupDocument.delete ("deleted"));
+		return me;
 	}
 	
 }

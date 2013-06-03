@@ -39,6 +39,8 @@ import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.ds.sbml.SBMLDiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
 
 
 /**
@@ -211,47 +213,50 @@ UnsupportedEncodingException  {
 	  return byteToHex(sha1hash);
   }
   
-  public static String genMathHtmlStats (DocumentNode a, DocumentNode b)
+  public static void genMathHtmlStats (DocumentNode a, DocumentNode b, MarkupElement markupElement, MarkupDocument markupDocument)
   {
   	if (a == null && b == null)
-  		return "";
+  		return;
 
   	try
   	{
-  		String ret = ""; 
+  		//String ret = ""; 
 			if (a == null)
 			{
-				ret += "inserted math: <span class='inserted'>" + transformMathML (b) + "</span>";
+				markupElement.addValue ("inserted math: " + markupDocument.insert (transformMathML (b)));
+				//ret += "inserted math: <span class='inserted'>" + transformMathML (b) + "</span>";
 			}
 			else if (b == null)
 			{
-				ret += "deleted math: <span class='deleted'>" + transformMathML (a) + "</span>";
+				markupElement.addValue ("deleted math: " + markupDocument.delete (transformMathML (a)));
+				//ret += "deleted math: <span class='deleted'>" + transformMathML (a) + "</span>";
 			}
 			else if (a.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED))
 			{
 				//System.out.println ("pre math: " + printSubDoc (a));
 				//System.out.println ("post math: " + printMathML (getSubDoc (b)));
-				ret += "modified math from: <span class='deleted'>" + transformMathML (a);
-				ret += "</span> to: <span class='inserted'>" + transformMathML (b) + "</span>";
+				
+				markupElement.addValue ("modified math: " + markupDocument.delete (transformMathML (a)) + " to " + markupDocument.insert (transformMathML (b)));
+				
+				//ret += "modified math from: <span class='deleted'>" + transformMathML (a);
+				//ret += "</span> to: <span class='inserted'>" + transformMathML (b) + "</span>";
+				
 				//ret += "modified math from: <span class='deleted'>" + printSubDoc (a);
 				//ret += "</span> to: <span class='inserted'>" + printSubDoc (b) + "</span>";
 			}
-			return ret;
   	}
   	catch (Exception e)
   	{
   		LOGGER.error ("error generating math", e);
-  		return "error generating math" + e.getMessage ();
+  		markupElement.addValue ("error generating math" + e.getMessage ());
   	}
   }
   
-  public static String genAttributeHtmlStats (DocumentNode a, DocumentNode b)
+  public static void genAttributeHtmlStats (DocumentNode a, DocumentNode b, MarkupElement markupElement, MarkupDocument markupDocument)
   {
   	if (a == null || b == null)
-  		return "";
+  		return;
   	
-  	
-  	String ret = ""; 
   	Set<String> allAttr = new HashSet<String> ();
 		allAttr.addAll (a.getAttributes ());
 		allAttr.addAll (b.getAttributes ());
@@ -259,16 +264,15 @@ UnsupportedEncodingException  {
 		{
 			String aA = a.getAttribute (attr), bA = b.getAttribute (attr);
 			if (aA == null)
-				ret += "Attribute <span class='"+SBMLDiffReporter.CLASS_ATTRIBUTE+"'>" + attr + "</span> was inserted: <span class='inserted'>"+bA+"</span><br/>";
+				markupElement.addValue ("Attribute "+ markupDocument.attribute (attr) + " was inserted: "+markupDocument.insert (bA));
 			else if (bA == null)
-				ret += "Attribute <span class='"+SBMLDiffReporter.CLASS_ATTRIBUTE+"'>" + attr + "</span> was deleted: <span class='deleted'>"+aA+"</span><br/>";
+				markupElement.addValue ("Attribute "+ markupDocument.attribute (attr) + " was deleted: "+markupDocument.delete (aA));
 			else if (!aA.equals (bA))
-				ret += "Attribute <span class='"+SBMLDiffReporter.CLASS_ATTRIBUTE+"'>" + attr + "</span> has changed: <span class='deleted'>"+aA+"</span> &rarr; <span class='inserted'>"+bA+"</span><br/>";
+				markupElement.addValue ("Attribute "+ markupDocument.attribute (attr) + " has changed: "+markupDocument.delete (aA) +" "+markupDocument.rightArrow ()+" "+ markupDocument.insert (aA));
 		}
-		return ret;
   }
   
-  public static String genTableIdCol (DocumentNode a, DocumentNode b)
+  /*public static String genTableIdCol (DocumentNode a, DocumentNode b)
   {
   	if (a == null)
   		return getIdHtmlReport (null, b.getId ()) + " " + getNameHtmlReport (null, b.getAttribute ("name"));
@@ -304,7 +308,7 @@ UnsupportedEncodingException  {
 			return "<span class='deleted'>"+idA+"</span> &rarr; <span class='inserted'>"+idB+"</span>";
 		else
 			return idA;
-  }
+  }*/
   
   public static String transformMathML (DocumentNode doc) throws TransformerException
   {

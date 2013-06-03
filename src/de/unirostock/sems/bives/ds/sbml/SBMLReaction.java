@@ -10,6 +10,8 @@ import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
 import de.unirostock.sems.bives.tools.Tools;
 
 
@@ -179,37 +181,36 @@ public class SBMLReaction
 	}
 
 	@Override
-	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLReaction a = (SBMLReaction) docA;
 		SBMLReaction b = (SBMLReaction) docB;
 		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
-			return "";
+			return null;
 		
 		String idA = a.getNameAndId (), idB = b.getNameAndId ();
-		String ret = "<tr><td>";
+		MarkupElement me = null;
 		if (idA.equals (idB))
-			ret += idA;
+			me = new MarkupElement (idA);
 		else
-			ret += "<span class='"+CLASS_DELETED+"'>" + idA + "</span> &rarr; <span class='"+CLASS_DELETED+"'>" + idB + "</span> ";
-		ret += "</td><td>";
+			me = new MarkupElement (markupDocument.delete (idA) + " "+markupDocument.rightArrow ()+" " + markupDocument.insert (idB));
 		
-		ret += Tools.genAttributeHtmlStats (a.documentNode, b.documentNode);
+		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
 
 		Vector<SBMLSpeciesReference> aS = a.listOfReactants;
 		Vector<SBMLSpeciesReference> bS = b.listOfReactants;
-		String sub = "";
+		String sub = "", ret = "";
 		for (SBMLSpeciesReference sr : aS)
 		{
 			if (sub.length () > 0)
 				sub += " + ";
 			if (conMgmt.getConnectionForNode (sr.getDocumentNode ()) == null)
-				sub += sr.reportDelete ();
+				sub += sr.reportDelete (markupDocument);
 			else
 			{
 				Connection c = conMgmt.getConnectionForNode (sr.getDocumentNode ());
 				SBMLSpeciesReference partner = (SBMLSpeciesReference) b.sbmlModel.getFromNode (c.getPartnerOf (sr.getDocumentNode ()));
-				sub += sr.reportMofification (conMgmt, sr, partner);
+				sub += sr.reportMofification (conMgmt, sr, partner, markupDocument);
 			}
 		}
 		for (SBMLSpeciesReference sr : bS)
@@ -218,13 +219,13 @@ public class SBMLReaction
 			{
 				if (sub.length () > 0)
 					sub += " + ";
-				sub += sr.reportInsert ();
+				sub += sr.reportInsert (markupDocument);
 			}
 		}
 		if (sub.length () > 0)
-			ret += sub + " &rarr; ";
+			ret += sub + " "+markupDocument.rightArrow ()+" ";
 		else
-			ret += "&Oslash; &rarr; ";
+			ret += "&Oslash; "+markupDocument.rightArrow ()+" ";
 
 		aS = a.listOfProducts;
 		bS = b.listOfProducts;
@@ -236,14 +237,14 @@ public class SBMLReaction
 			if (conMgmt.getConnectionForNode (sr.getDocumentNode ()) == null)
 			{
 				//System.out.println ("reporting delete for " + sr.getDocumentNode ().getXPath ());
-				sub += sr.reportDelete ();
+				sub += sr.reportDelete (markupDocument);
 			}
 			else
 			{
 				//System.out.println ("reporting mod for " + sr.getDocumentNode ().getXPath ());
 				Connection c = conMgmt.getConnectionForNode (sr.getDocumentNode ());
 				SBMLSpeciesReference partner = (SBMLSpeciesReference) b.sbmlModel.getFromNode (c.getPartnerOf (sr.getDocumentNode ()));
-				sub += sr.reportMofification (conMgmt, sr, partner);
+				sub += sr.reportMofification (conMgmt, sr, partner, markupDocument);
 			}
 		}
 		for (SBMLSpeciesReference sr : bS)
@@ -253,7 +254,7 @@ public class SBMLReaction
 				//System.out.println ("reporting ins for " + sr.getDocumentNode ().getXPath ());
 				if (sub.length () > 0)
 					sub += " + ";
-				sub += sr.reportInsert ();
+				sub += sr.reportInsert (markupDocument);
 			}
 		}
 		if (sub.length () > 0)
@@ -261,7 +262,7 @@ public class SBMLReaction
 		else
 			ret += "&Oslash;";
 		
-		ret += "<br/>";
+		me.addValue (ret);
 		
 
 		Vector<SBMLSimpleSpeciesReference> aM = a.listOfModifiers;
@@ -272,12 +273,12 @@ public class SBMLReaction
 			if (sub.length () > 0)
 				sub += "; ";
 			if (conMgmt.getConnectionForNode (sr.getDocumentNode ()) == null)
-				sub += sr.reportDelete ();
+				sub += sr.reportDelete (markupDocument);
 			else
 			{
 				Connection c = conMgmt.getConnectionForNode (sr.getDocumentNode ());
 				SBMLSimpleSpeciesReference partner = (SBMLSimpleSpeciesReference) b.sbmlModel.getFromNode (c.getPartnerOf (sr.getDocumentNode ()));
-				sub += sr.reportMofification (conMgmt, sr, partner);
+				sub += sr.reportMofification (conMgmt, sr, partner, markupDocument);
 			}
 		}
 		for (SBMLSimpleSpeciesReference sr : bM)
@@ -285,30 +286,47 @@ public class SBMLReaction
 			if (sub.length () > 0)
 				sub += "; ";
 			if (conMgmt.getConnectionForNode (sr.getDocumentNode ()) == null)
-				sub += sr.reportInsert ();
+				sub += sr.reportInsert (markupDocument);
 		}
 		if (sub.length () > 0)
-			ret += "Modifiers: " + sub + "<br/>";
+			me.addValue ("Modifiers: " + sub);
 		
+		MarkupElement me2 = new MarkupElement ("Kinetic Law");
 		if (a.kineticLaw != null && b.kineticLaw != null)
-			ret += "<strong>Kinetic Law:</strong><br/>" + a.kineticLaw.reportMofification (conMgmt, a.kineticLaw, b.kineticLaw);
+		{
+			a.kineticLaw.reportMofification (conMgmt, a.kineticLaw, b.kineticLaw, me2, markupDocument);
+			me.addSubElements (me2);
+		}
+			//me.addValue (markupDocument.highlight ("Kinetic Law:") + a.kineticLaw.reportMofification (conMgmt, a.kineticLaw, b.kineticLaw, markupDocument));
 		else if (a.kineticLaw != null)
-			ret += "<strong>Kinetic Law:</strong><br/>" + a.kineticLaw.reportDelete ();
+		{
+			a.kineticLaw.reportDelete (me2, markupDocument);
+			me.addSubElements (me2);
+		}
+			//me.addValue (markupDocument.highlight ("Kinetic Law:") + a.kineticLaw.reportDelete (markupDocument));
 		else if (b.kineticLaw != null)
-			ret += "<strong>Kinetic Law:</strong><br/>" + b.kineticLaw.reportInsert ();
+		{
+			b.kineticLaw.reportInsert (me2, markupDocument);
+			me.addSubElements (me2);
+		}
+			//me.addValue (markupDocument.highlight ("Kinetic Law:") + b.kineticLaw.reportInsert (markupDocument));
 		
-		return ret + "</td></tr>";
+		return me;
 	}
 
 	@Override
-	public String reportInsert ()
+	public MarkupElement reportInsert (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_INSERTED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_INSERTED+"'>inserted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.insert (getNameAndId ()));
+		me.addValue (markupDocument.insert ("inserted"));
+		return me;
 	}
 
 	@Override
-	public String reportDelete ()
+	public MarkupElement reportDelete (MarkupDocument markupDocument)
 	{
-		return "<tr><td><span class='"+CLASS_DELETED+"'>" + getNameAndId () + "</span></td><td><span class='"+CLASS_DELETED+"'>deleted</span></td></tr>";
+		MarkupElement me = new MarkupElement (markupDocument.delete (getNameAndId ()));
+		me.addValue (markupDocument.delete ("deleted"));
+		return me;
 	}
 }

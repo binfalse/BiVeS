@@ -47,6 +47,8 @@ import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
+import de.unirostock.sems.bives.markup.MarkupSection;
 
 
 /**
@@ -65,7 +67,7 @@ public class SBMLDiffInterpreter
 	{
 		super (conMgmt, sbmlDocA.getTreeDocument (), sbmlDocB.getTreeDocument ());
 			//report = new SBMLDiffReport ();
-		markupDocument = new MarkupDocument ();
+		markupDocument = new MarkupDocument ("SBML Differences");
 			this.sbmlDocA = sbmlDocA;
 			this.sbmlDocB = sbmlDocB;
 	}
@@ -100,8 +102,23 @@ public class SBMLDiffInterpreter
 		else
 			markupDocument.addHeader ("Level/Version has changed: from " + markupDocument.delete (lvA) + " to " + markupDocument.delete (lvB));
 		
-		
-		MarkupSection msec = new MarkupSection ("Species");
+		checkUnits (modelA, modelB);
+		checkParameters (modelA, modelB);
+		checkCompartments (modelA, modelB);
+		checkCompartmentTypes (modelA, modelB);
+		checkSpecies (modelA, modelB);
+		checkSpeciesTypes (modelA, modelB);
+		checkReactions (modelA, modelB);
+		checkRules (modelA, modelB);
+		checkConstraints (modelA, modelB);
+		checkInitialAssignments (modelA, modelB);
+		checkFunctions (modelA, modelB);
+		checkEvents (modelA, modelB);
+	}
+	
+	private void checkRules (SBMLModel modelA, SBMLModel modelB)
+	{
+		MarkupSection msec = new MarkupSection ("Rules");
 		LOGGER.info ("searching for rules in A");
 		Vector<SBMLRule> rules = modelA.getRules ();
 		for (SBMLRule rule : rules)
@@ -112,10 +129,10 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyRules (rule.reportDelete ());
+				msec.addValue (rule.reportDelete (markupDocument));
 			else
 			{
-				report.modifyRules (rule.reportMofification (conMgmt, rule, (SBMLRule) modelB.getFromNode (con.getPartnerOf (dn))));
+				msec.addValue (rule.reportMofification (conMgmt, rule, (SBMLRule) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
 			}
 		}
 		LOGGER.info ("searching for rules in B");
@@ -128,10 +145,15 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyRules (rule.reportInsert ());
+				msec.addValue (rule.reportInsert(markupDocument));
 		}
-		
-
+		if (msec.getValues ().size () > 0)
+			markupDocument.addSection (msec);
+	}
+	
+	private void checkCompartments (SBMLModel modelA, SBMLModel modelB)
+	{
+		MarkupSection msec = new MarkupSection ("Compartments");
 		LOGGER.info ("searching for compartments in A");
 		HashMap<String, SBMLCompartment> compartments = modelA.getCompartments ();
 		for (SBMLCompartment compartment : compartments.values ())
@@ -142,10 +164,10 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyCompartments (compartment.reportDelete ());
+				msec.addValue (compartment.reportDelete(markupDocument));
 			else
 			{
-				report.modifyCompartments (compartment.reportMofification (conMgmt, compartment, (SBMLCompartment) modelB.getFromNode (con.getPartnerOf (dn))));
+				msec.addValue (compartment.reportMofification (conMgmt, compartment, (SBMLCompartment) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
 			}
 		}
 		LOGGER.info ("searching for compartments in B");
@@ -158,10 +180,15 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyCompartments (compartment.reportInsert ());
+				msec.addValue (compartment.reportInsert (markupDocument));
 		}
-		
-
+		if (msec.getValues ().size () > 0)
+			markupDocument.addSection (msec);
+	}
+	
+	private void checkCompartmentTypes (SBMLModel modelA, SBMLModel modelB)
+	{
+		MarkupSection msec = new MarkupSection ("Compartment Types");
 		LOGGER.info ("searching for compartmenttypes in A");
 		HashMap<String, SBMLCompartmentType> compartmenttypes = modelA.getCompartmentTypes ();
 		for (SBMLCompartmentType compartment : compartmenttypes.values ())
@@ -172,10 +199,10 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyCompartmentTypes (compartment.reportDelete ());
+				msec.addValue (compartment.reportDelete (markupDocument));
 			else
 			{
-				report.modifyCompartmentTypes (compartment.reportMofification (conMgmt, compartment, (SBMLCompartmentType) modelB.getFromNode (con.getPartnerOf (dn))));
+				msec.addValue (compartment.reportMofification (conMgmt, compartment, (SBMLCompartmentType) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
 			}
 		}
 		LOGGER.info ("searching for compartmenttypes in B");
@@ -188,10 +215,15 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyCompartmentTypes (compartment.reportInsert ());
+				msec.addValue (compartment.reportInsert (markupDocument));
 		}
-		
-
+		if (msec.getValues ().size () > 0)
+			markupDocument.addSection (msec);
+	}
+	
+	private void checkParameters (SBMLModel modelA, SBMLModel modelB)
+	{
+		MarkupSection msec = new MarkupSection ("Parameters");
 		LOGGER.info ("searching for parameters in A");
 		HashMap<String, SBMLParameter> parameters = modelA.getParameters();
 		for (SBMLParameter parameter : parameters.values ())
@@ -202,10 +234,10 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyParameter(parameter.reportDelete ());
+				msec.addValue (parameter.reportDelete (markupDocument));
 			else
 			{
-				report.modifyParameter (parameter.reportMofification (conMgmt, parameter, (SBMLParameter) modelB.getFromNode (con.getPartnerOf (dn))));
+				msec.addValue (parameter.reportMofification (conMgmt, parameter, (SBMLParameter) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
 			}
 		}
 		LOGGER.info ("searching for parameters in B");
@@ -218,10 +250,15 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyParameter (parameter.reportInsert ());
+				msec.addValue (parameter.reportInsert (markupDocument));
 		}
-		
-
+		if (msec.getValues ().size () > 0)
+			markupDocument.addSection (msec);
+	}
+	
+	private void checkEvents (SBMLModel modelA, SBMLModel modelB)
+	{
+		MarkupSection msec = new MarkupSection ("Events");
 		LOGGER.info ("searching for events in A");
 		Vector<SBMLEvent> events = modelA.getEvents ();
 		for (SBMLEvent event : events)
@@ -232,10 +269,10 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyEvents (event.reportDelete ());
+				msec.addValue (event.reportDelete (markupDocument));
 			else
 			{
-				report.modifyEvents (event.reportMofification (conMgmt, event, (SBMLEvent) modelB.getFromNode (con.getPartnerOf (dn))));
+				msec.addValue (event.reportMofification (conMgmt, event, (SBMLEvent) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
 			}
 		}
 		LOGGER.info ("searching for events in B");
@@ -248,10 +285,15 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyEvents (event.reportInsert ());
+				msec.addValue (event.reportInsert (markupDocument));
 		}
-		
-
+		if (msec.getValues ().size () > 0)
+			markupDocument.addSection (msec);
+	}
+	
+	private void checkSpecies (SBMLModel modelA, SBMLModel modelB)
+	{
+		MarkupSection msec = new MarkupSection ("Species");
 		LOGGER.info ("searching for species in A");
 		HashMap<String, SBMLSpecies> species = modelA.getSpecies();
 		for (SBMLSpecies spec : species.values ())
@@ -262,10 +304,10 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifySpecies(spec.reportDelete ());
+				msec.addValue (spec.reportDelete (markupDocument));
 			else
 			{
-				report.modifySpecies (spec.reportMofification (conMgmt, spec, (SBMLSpecies) modelB.getFromNode (con.getPartnerOf (dn))));
+				msec.addValue (spec.reportMofification (conMgmt, spec, (SBMLSpecies) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
 			}
 		}
 		LOGGER.info ("searching for species in B");
@@ -278,10 +320,15 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifySpecies (spec.reportInsert ());
+				msec.addValue (spec.reportInsert (markupDocument));
 		}
-		
-
+		if (msec.getValues ().size () > 0)
+			markupDocument.addSection (msec);
+	}
+	
+	private void checkSpeciesTypes (SBMLModel modelA, SBMLModel modelB)
+	{
+		MarkupSection msec = new MarkupSection ("Species Types");
 		LOGGER.info ("searching for speciestypes in A");
 		HashMap<String, SBMLSpeciesType> speciestypes = modelA.getSpeciesTypes();
 		for (SBMLSpeciesType spec : speciestypes.values ())
@@ -292,10 +339,10 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifySpeciesTypes(spec.reportDelete ());
+				msec.addValue (spec.reportDelete (markupDocument));
 			else
 			{
-				report.modifySpeciesTypes (spec.reportMofification (conMgmt, spec, (SBMLSpeciesType) modelB.getFromNode (con.getPartnerOf (dn))));
+				msec.addValue (spec.reportMofification (conMgmt, spec, (SBMLSpeciesType) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
 			}
 		}
 		LOGGER.info ("searching for speciestypes in B");
@@ -308,10 +355,15 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifySpeciesTypes (spec.reportInsert ());
+				msec.addValue (spec.reportInsert (markupDocument));
 		}
-		
-
+		if (msec.getValues ().size () > 0)
+			markupDocument.addSection (msec);
+	}
+	
+	private void checkReactions (SBMLModel modelA, SBMLModel modelB)
+	{
+		MarkupSection msec = new MarkupSection ("Reactions");
 		LOGGER.info ("searching for reactions in A");
 		HashMap<String, SBMLReaction> reactions = modelA.getReactions();
 		for (SBMLReaction reaction : reactions.values ())
@@ -322,10 +374,10 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyReaction(reaction.reportDelete ());
+				msec.addValue (reaction.reportDelete (markupDocument));
 			else
 			{
-				report.modifyReaction (reaction.reportMofification (conMgmt, reaction, (SBMLReaction) modelB.getFromNode (con.getPartnerOf (dn))));
+				msec.addValue (reaction.reportMofification (conMgmt, reaction, (SBMLReaction) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
 			}
 		}
 		LOGGER.info ("searching for reactions in B");
@@ -338,10 +390,15 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyReaction(reaction.reportInsert ());
+				msec.addValue (reaction.reportInsert (markupDocument));
 		}
-		
-
+		if (msec.getValues ().size () > 0)
+			markupDocument.addSection (msec);
+	}
+	
+	private void checkFunctions (SBMLModel modelA, SBMLModel modelB)
+	{
+		MarkupSection msec = new MarkupSection ("Functions");
 		LOGGER.info ("searching for functions in A");
 		HashMap<String, SBMLFunctionDefinition> functions = modelA.getFunctionDefinitions();
 		for (SBMLFunctionDefinition function : functions.values ())
@@ -352,10 +409,10 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyFunctions(function.reportDelete ());
+				msec.addValue (function.reportDelete (markupDocument));
 			else
 			{
-				report.modifyFunctions (function.reportMofification (conMgmt, function, (SBMLFunctionDefinition) modelB.getFromNode (con.getPartnerOf (dn))));
+				msec.addValue (function.reportMofification (conMgmt, function, (SBMLFunctionDefinition) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
 			}
 		}
 		LOGGER.info ("searching for functions in B");
@@ -368,10 +425,15 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyFunctions(function.reportInsert ());
+				msec.addValue (function.reportInsert (markupDocument));
 		}
-		
-
+		if (msec.getValues ().size () > 0)
+			markupDocument.addSection (msec);
+	}
+	
+	private void checkUnits (SBMLModel modelA, SBMLModel modelB)
+	{
+		MarkupSection msec = new MarkupSection ("Units");
 		LOGGER.info ("searching for units in A");
 		HashMap<String, SBMLUnitDefinition> units = modelA.getUnitDefinitions();
 		for (SBMLUnitDefinition unit : units.values ())
@@ -384,10 +446,10 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyUnits(unit.reportDelete ());
+				msec.addValue (unit.reportDelete (markupDocument));
 			else
 			{
-				report.modifyUnits(unit.reportMofification (conMgmt, unit, (SBMLUnitDefinition) modelB.getFromNode (con.getPartnerOf (dn))));
+				msec.addValue (unit.reportMofification (conMgmt, unit, (SBMLUnitDefinition) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
 			}
 		}
 		LOGGER.info ("searching for units in B");
@@ -402,11 +464,15 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyUnits(unit.reportInsert ());
+				msec.addValue (unit.reportInsert (markupDocument));
 		}
-		
-
-		
+		if (msec.getValues ().size () > 0)
+			markupDocument.addSection (msec);
+	}
+	
+	private void checkInitialAssignments (SBMLModel modelA, SBMLModel modelB)
+	{
+		MarkupSection msec = new MarkupSection ("Initial Assignments");
 		LOGGER.info ("searching for initial assignments in A");
 		Vector<SBMLInitialAssignment> initAss = modelA.getInitialAssignments ();
 		for (SBMLInitialAssignment ia : initAss)
@@ -417,10 +483,10 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyInitialAssignments (ia.reportDelete ());
+				msec.addValue (ia.reportDelete (markupDocument));
 			else
 			{
-				report.modifyInitialAssignments (ia.reportMofification (conMgmt, ia, (SBMLInitialAssignment) modelB.getFromNode (con.getPartnerOf (dn))));
+				msec.addValue (ia.reportMofification (conMgmt, ia, (SBMLInitialAssignment) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
 			}
 		}
 		LOGGER.info ("searching for initial assignments in B");
@@ -433,9 +499,15 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyInitialAssignments(ia.reportInsert ());
+				msec.addValue (ia.reportInsert (markupDocument));
 		}
-		
+		if (msec.getValues ().size () > 0)
+			markupDocument.addSection (msec);
+	}
+	
+	private void checkConstraints (SBMLModel modelA, SBMLModel modelB)
+	{
+		MarkupSection msec = new MarkupSection ("Constraints");
 		LOGGER.info ("searching for constraints in A");
 		Vector<SBMLConstraint> constraints = modelA.getConstraints ();
 		for (SBMLConstraint constraint : constraints)
@@ -446,10 +518,10 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyContraints (constraint.reportDelete ());
+				msec.addValue (constraint.reportDelete (markupDocument));
 			else
 			{
-				report.modifyContraints (constraint.reportMofification (conMgmt, constraint, (SBMLConstraint) modelB.getFromNode (con.getPartnerOf (dn))));
+				msec.addValue (constraint.reportMofification (conMgmt, constraint, (SBMLConstraint) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
 			}
 		}
 		LOGGER.info ("searching for constraints in B");
@@ -462,9 +534,9 @@ public class SBMLDiffInterpreter
 			Connection con = conMgmt.getConnectionForNode (dn);
 			
 			if (con == null)
-				report.modifyContraints (constraint.reportInsert ());
+				msec.addValue (constraint.reportInsert (markupDocument));
 		}
-		
-		return ;
+		if (msec.getValues ().size () > 0)
+			markupDocument.addSection (msec);
 	}
 }

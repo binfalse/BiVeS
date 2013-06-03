@@ -13,6 +13,8 @@ import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
 import de.unirostock.sems.bives.tools.Tools;
 
 
@@ -22,7 +24,6 @@ import de.unirostock.sems.bives.tools.Tools;
  */
 public class SBMLEventAssignment
 	extends SBMLSBase
-	implements SBMLDiffReporter
 {
 	private MathML math;
 	private SBMLSBase variable;
@@ -69,57 +70,43 @@ public class SBMLEventAssignment
 		return math;
 	}
 
-	@Override
-	public String reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB)
+	public void reportMofification (ClearConnectionManager conMgmt, SBMLEventAssignment a, SBMLEventAssignment b, MarkupElement me, MarkupDocument markupDocument)
 	{
-		SBMLEventAssignment a = (SBMLEventAssignment) docA;
-		SBMLEventAssignment b = (SBMLEventAssignment) docB;
 		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
-			return "";
+			return;
 		
-		String ret = "";
 		String varA = SBMLModel.getSidName (a.variable);
 		String varB = SBMLModel.getSidName (b.variable);
 		if (varA.equals (varB))
-			ret += "for: " + varA + " ";
+			me.addValue ("for: " + varA);
 		else
-			ret += "was for: <span class='"+CLASS_DELETED+"'>" + varA + "</span> but now for: <span class='"+CLASS_INSERTED+"'>" + varB + "</span> ";
+			me.addValue ("was for: " + markupDocument.delete (varA) + " but now for: " + markupDocument.insert (varB));
 
-		ret += Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath ());
+		Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
+	}
+
+	public void reportInsert (MarkupElement me, MarkupDocument markupDocument)
+	{
+		me.addValue (markupDocument.insert (SBMLModel.getSidName (variable) + " = " + flattenMath (math.getMath ())));
+	}
+
+	public void reportDelete (MarkupElement me, MarkupDocument markupDocument)
+	{
+		me.addValue (markupDocument.delete (SBMLModel.getSidName (variable) + " = " + flattenMath (math.getMath ())));
+	}
+	
+	private String flattenMath (DocumentNode math)
+	{
+		try
+		{
+			return Tools.transformMathML (math);
+		}
+		catch (TransformerException e)
+		{
+			LOGGER.error ("cannot parse math in event assignment", e);
+			return "[math parsing err]";
+		}
 		
-		return ret;
-	}
-
-	@Override
-	public String reportInsert ()
-	{
-		String ret = "<span class='"+CLASS_INSERTED+"'>" + SBMLModel.getSidName (variable) + " = ";
-		try
-		{
-			ret += Tools.transformMathML (math.getMath ());
-		}
-		catch (TransformerException e)
-		{
-			LOGGER.error ("cannot parse math in event assignment", e);
-			ret += "[math parsing err]";
-		}
-		return ret + "</span>";
-	}
-
-	@Override
-	public String reportDelete ()
-	{
-		String ret = "<span class='"+CLASS_DELETED+"'>" + SBMLModel.getSidName (variable) + " = ";
-		try
-		{
-			ret += Tools.transformMathML (math.getMath ());
-		}
-		catch (TransformerException e)
-		{
-			LOGGER.error ("cannot parse math in event assignment", e);
-			ret += "[math parsing err]";
-		}
-		return ret + "</span>";
 	}
 	
 }
