@@ -27,6 +27,10 @@ import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.Producer;
 import de.unirostock.sems.bives.ds.SBOTerm;
+import de.unirostock.sems.bives.ds.graph.CRN;
+import de.unirostock.sems.bives.ds.graph.CRNReaction;
+import de.unirostock.sems.bives.ds.graph.CRNSubstance;
+import de.unirostock.sems.bives.ds.graph.GraphTranslator;
 import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
 import de.unirostock.sems.bives.ds.sbml.SBMLModel;
 import de.unirostock.sems.bives.ds.sbml.SBMLReaction;
@@ -43,41 +47,142 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
  *
  */
 public class SBMLGraphProducer
-	extends Producer
 {
-	private Element graphRoot;
+	/*private Element graphRoot;
 	private Document graphDocument;
 	private HashMap<String, String> entityMapper;
 	private int maxSpecies;
 	private int maxReaction;
 	private static final String INSERT = "1";
 	private static final String DELETE = "-1";
-	private static final String MODIFIED = "2";
+	private static final String MODIFIED = "2";*/
 	private SBMLDocument sbmlDocA, sbmlDocB;
+	private CRN crn;
+	private ClearConnectionManager conMgmt;
 	
-	public SBMLGraphProducer () throws ParserConfigurationException
+	public SBMLGraphProducer (ClearConnectionManager conMgmt, SBMLDocument sbmlDocA, SBMLDocument sbmlDocB)
 	{
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			graphDocument = docBuilder.newDocument();
-			graphRoot = addGraphMLPreamble (graphDocument);
-			entityMapper = new HashMap<String, String> ();
-			maxSpecies = 0;
-			maxReaction = 0;
-	}
-	
-	public void init (ClearConnectionManager conMgmt, SBMLDocument sbmlDocA, SBMLDocument sbmlDocB)
-	{
-		super.init (conMgmt, sbmlDocA.getTreeDocument (), sbmlDocA.getTreeDocument ());
+		//super.init (conMgmt, sbmlDocA.getTreeDocument (), sbmlDocA.getTreeDocument ());
 		this.sbmlDocA = sbmlDocA;
 		this.sbmlDocB = sbmlDocB;
+		this.conMgmt = conMgmt;
+	}
+	
+	public String produce (GraphTranslator trans)
+	{
+		crn = new CRN ();
+		
+		processA ();
+		processB ();
+		
+		return trans.translate (crn);
+	}
+	
+	
+	public void processA ()
+	{
+		SBMLModel modelA = sbmlDocA.getModel ();
+		LOGGER.info ("searching for species in A");
+		HashMap<String, SBMLSpecies> species = modelA.getSpecies ();
+		for (SBMLSpecies s : species.values ())
+			crn.setSubstance (s.getDocumentNode (), new CRNSubstance (crn, s.getNameOrId (), null, s.getDocumentNode (), null));
+		
+		LOGGER.info ("searching for reactions in A");
+		HashMap<String, SBMLReaction> reactions = modelA.getReactions ();
+		for (SBMLReaction r : reactions.values ())
+		{
+			CRNReaction reaction = new CRNReaction (crn, r.getNameOrId (), null, r.getDocumentNode (), null);
+			crn.setReaction (r.getDocumentNode (), reaction);
+			
+			Vector<SBMLSpeciesReference> sRefs = r.getReactants ();
+			for (SBMLSpeciesReference sRef : sRefs)
+			{
+				reaction.addInputA (crn.getSubstance (sRef.getSpecies ().getDocumentNode ()));
+			}
+			
+			sRefs = r.getProducts ();
+			for (SBMLSpeciesReference sRef : sRefs)
+			{
+				reaction.addOutputA (crn.getSubstance (sRef.getSpecies ().getDocumentNode ()));
+			}
+			
+			Vector<SBMLSimpleSpeciesReference> ssRefs = r.getModifiers ();
+			for (SBMLSimpleSpeciesReference sRef : ssRefs)
+			{
+				SBMLSpecies spec = sRef.getSpecies ();
+				reaction.addModA (crn.getSubstance (spec.getDocumentNode ()), spec.getSBOTerm ());
+			}
+		}
+	}
+	
+	public void processB ()
+	{
+		SBMLModel modelB = sbmlDocB.getModel ();
+		LOGGER.info ("searching for species in B");
+		HashMap<String, SBMLSpecies> species = modelB.getSpecies ();
+		for (SBMLSpecies s : species.values ())
+		{
+			DocumentNode sDoc = s.getDocumentNode ();
+			Connection c = conMgmt.getConnectionForNode (sDoc);
+			if (c == null)
+			{
+				// no equivalent in doc a
+				crn.setSubstance (sDoc, new CRNSubstance (crn, null, s.getNameOrId (), null, sDoc));
+			}
+			else
+			{
+				CRNSubstance subst = crn.getSubstance (c.getPartnerOf (sDoc));
+				subst.setDocB (sDoc);
+				subst.setLabelB (s.getNameOrId ());
+				crn.setSubstance (sDoc, subst);
+			}
+		}
+		
+		LOGGER.info ("searching for reactions in B");
+		HashMap<String, SBMLReaction> reactions = modelB.getReactions ();
+		for (SBMLReaction r : reactions.values ())
+		{
+			DocumentNode rNode = r.getDocumentNode ();
+			Connection c = conMgmt.getConnectionForNode (rNode);
+			CRNReaction reaction = null;
+			if (c == null)
+			{
+				// no equivalent in doc a
+				reaction = new CRNReaction (crn, null, r.getNameOrId (), null, r.getDocumentNode ());
+				crn.setReaction (rNode, reaction);
+			}
+			else
+			{
+				reaction = crn.getReaction (c.getPartnerOf (rNode));
+				crn.setReaction (rNode, reaction);
+			}
+				
+			Vector<SBMLSpeciesReference> sRefs = r.getReactants ();
+			for (SBMLSpeciesReference sRef : sRefs)
+			{
+				reaction.addInputB (crn.getSubstance (sRef.getSpecies ().getDocumentNode ()));
+			}
+			
+			sRefs = r.getProducts ();
+			for (SBMLSpeciesReference sRef : sRefs)
+			{
+				reaction.addOutputB (crn.getSubstance (sRef.getSpecies ().getDocumentNode ()));
+			}
+			
+			Vector<SBMLSimpleSpeciesReference> ssRefs = r.getModifiers ();
+			for (SBMLSimpleSpeciesReference sRef : ssRefs)
+			{
+				SBMLSpecies spec = sRef.getSpecies ();
+				reaction.addModB (crn.getSubstance (spec.getDocumentNode ()), spec.getSBOTerm ());
+			}
+		}
 	}
 	
 
 	/* (non-Javadoc)
 	 * @see de.unirostock.sems.xmldiff.algorithm.Producer#produce()
 	 */
-	@Override
+	/*@Override
 	public String produce ()
 	{
 		SBMLModel modelA = sbmlDocA.getModel ();
@@ -312,7 +417,7 @@ public class SBMLGraphProducer
 	 *          the document
 	 * @return the graph node (root for the graph)
 	 */
-	private Element addGraphMLPreamble (Document doc)
+	/*private Element addGraphMLPreamble (Document doc)
 	{
 		Element graphML = doc.createElement("graphml");
 		//graphML.setNamespace (Namespace.getNamespace ("http://graphml.graphdrawing.org/xmlns"));
@@ -421,7 +526,7 @@ public class SBMLGraphProducer
 	 * @param fast
 	 *          reaction only: the fast attribute (should be null for non-reactions)
 	 */
-	private void createGraphMLNode (Element parent, String id,
+	/*private void createGraphMLNode (Element parent, String id,
 		String ns, String name, String modification, Boolean reversible, Boolean fast)
 	{
 		LOGGER.debug ("create gml node: " + id + " mod: " + modification);
@@ -486,7 +591,7 @@ public class SBMLGraphProducer
 	 * @param mod
 	 *          the mod
 	 */
-	private void createEdge (Element parent, String source,
+	/*private void createEdge (Element parent, String source,
 		String target, String modification, String mod)
 	{
 		LOGGER.debug ("create gml edge: " + source + " -> " + target + " mod: " + modification);
@@ -509,5 +614,5 @@ public class SBMLGraphProducer
 		}
 		
 		parent.appendChild (element);
-	}
+	}*/
 }

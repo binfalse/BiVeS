@@ -49,4 +49,8 @@ public class CellMLDocument
 		System.out.println (prefix + "cellml: " + doc.getBaseUri ());
 		model.debug (prefix + "  ");
 	}
+	public boolean containsImports ()
+	{
+		return model.containsImports ();
+	}
 }

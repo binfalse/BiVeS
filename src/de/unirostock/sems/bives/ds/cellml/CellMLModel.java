@@ -54,11 +54,13 @@ extends CellMLEntity
 	
 	private Vector<CellMLConnection> connections;
 	
+	private boolean containsImports;
+	
 	public CellMLModel (CellMLDocument doc, DocumentNode rootNode) throws CellMLReadException, BivesConsistencyException, BivesLogicalException, IOException, URISyntaxException, ParserConfigurationException, SAXException
 	{
 		super (rootNode, null);
 		this.doc = doc;
-		
+		containsImports = false;
 		name = rootNode.getAttribute ("name");
 		unitDict = new CellMLUnitDictionary (this);
 		components = new HashMap<String, CellMLComponent> ();
@@ -72,6 +74,11 @@ extends CellMLEntity
 	  DocumentBuilder db = dbf.newDocumentBuilder();
 	  Document doc = db.parse(file);
 	  readDocument (doc);*/
+	}
+	
+	public boolean containsImports ()
+	{
+		return containsImports;
 	}
 	
 	private void readDocument (DocumentNode root) throws CellMLReadException, BivesConsistencyException, BivesLogicalException, IOException, URISyntaxException, ParserConfigurationException, SAXException
@@ -150,6 +157,7 @@ extends CellMLEntity
 
 			CellMLImporter importer = new CellMLImporter ((DocumentNode) kid, this);
 			importer.parse ();
+			containsImports = true;
 		}
 	}
 

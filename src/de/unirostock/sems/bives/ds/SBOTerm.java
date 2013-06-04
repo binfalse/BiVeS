@@ -10,6 +10,11 @@ package de.unirostock.sems.bives.ds;
  */
 public class SBOTerm
 {
+	public static final String MOD_STIMULATOR = "stimulator";
+	public static final String MOD_UNKNOWN = "unknown";
+	public static final String MOD_INHIBITOR = "inhibitor";
+	public static final String MOD_NONE = "none";
+	
 	private String SBOTerm;
 	
 	public SBOTerm (String SBOTerm)
@@ -26,7 +31,7 @@ public class SBOTerm
 	public String resolvModifier ()
 	{
 		if (SBOTerm == null || !SBOTerm.startsWith ("SBO:"))
-			return "unknown";
+			return MOD_UNKNOWN;
 		
 		try
 		{
@@ -42,19 +47,19 @@ public class SBOTerm
 				case 533: // specific activator (is a)
 				case 462: // non-essential activator (is a)
 				case 21: // potentiator (is a)
-					return "stimulator";
+					return MOD_STIMULATOR;
 				case 20: // inhibitor (is a)
 				case 206: // competitive inhibitor (is a)
 				case 207: // non-competitive inhibitor (is a)
 				case 537: // complete inhibitor (is a)
 				case 536: // partial inhibitor (is a)
-					return "inhibitor";
+					return MOD_INHIBITOR;
 			}
 		}
 		catch (NumberFormatException e)
 		{
 			
 		}
-		return "unknown";
+		return MOD_UNKNOWN;
 	}
 }

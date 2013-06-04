@@ -24,7 +24,9 @@ import de.unirostock.sems.bives.algorithm.general.PatchProducer;
 import de.unirostock.sems.bives.algorithm.general.XyWeighter;
 import de.unirostock.sems.bives.algorithm.sbml.SBMLConnector;
 import de.unirostock.sems.bives.algorithm.sbml.SBMLDiffInterpreter;
+import de.unirostock.sems.bives.algorithm.sbml.SBMLGraphProducer;
 import de.unirostock.sems.bives.ds.cellml.CellMLDocument;
+import de.unirostock.sems.bives.ds.graph.GraphTranslatorGraphML;
 import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.exception.BivesConnectionException;
@@ -71,7 +73,7 @@ public class Tests
 	 */
 	public static void main (String[] args) throws ParserConfigurationException, BivesDocumentParseException, FileNotFoundException, SAXException, IOException, CellMLReadException, BivesConsistencyException, BivesLogicalException, URISyntaxException, BivesConnectionException
 	{
-		LOGGER.addLevel (LOGGER.DEBUG);
+		//LOGGER.addLevel (LOGGER.DEBUG);
 		//LOGGER.addLevel (LOGGER.INFO);
 		//LOGGER.setLogToStdErr (true);
 		//LOGGER.info ("test");
@@ -89,7 +91,7 @@ public class Tests
 		
 		File file1 = new File ("test/TestModel_for_IB2013-version-one");
 		URI uri1 = file1.toURI ();
-		System.out.println (uri1);
+		//System.out.println (uri1);
 		
 		TreeDocument td1 = new TreeDocument (DocumentBuilderFactory.newInstance ()
 			.newDocumentBuilder ().parse (new FileInputStream (file1)), new XyWeighter (), uri1);
@@ -97,7 +99,7 @@ public class Tests
 
 		File file2 = new File ("test/TestModel_for_IB2013-version-two");
 		URI uri2 = file2.toURI ();
-		System.out.println (uri2);
+		//System.out.println (uri2);
 		
 		TreeDocument td2 = new TreeDocument (DocumentBuilderFactory.newInstance ()
 			.newDocumentBuilder ().parse (new FileInputStream (file2)), new XyWeighter (), uri2);
@@ -120,14 +122,19 @@ public class Tests
 		SBMLDiffInterpreter inter = new SBMLDiffInterpreter (con2.getConnections (), sdoc1, sdoc2);
 		inter.interprete ();
 		MarkupDocument mdoc = inter.getReport ();
-		TypesettingMarkDown mhtml = new TypesettingMarkDown ();
-		//TypesettingHTML mhtml = new TypesettingHTML ();
+		TypesettingMarkDown mdown = new TypesettingMarkDown ();
+		TypesettingHTML mhtml = new TypesettingHTML ();
 		System.out.println (mhtml.markup (mdoc));
+		System.out.println (mdown.markup (mdoc));
 		
 		
     Producer producer = new PatchProducer ();
 		producer.init (con2.getConnections (), td1, td2);
 		System.out.println (producer.produce ());
+		
+		
+    SBMLGraphProducer gp = new SBMLGraphProducer (con2.getConnections (), sdoc1, sdoc2);
+		System.out.println (gp.produce (new GraphTranslatorGraphML ()));
 	}
 
 
