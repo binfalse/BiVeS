@@ -7,10 +7,15 @@ import java.util.Vector;
 
 import org.w3c.dom.Element;
 
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesLogicalException;
-import de.unirostock.sems.bives.exception.CellMLReadException;
+import de.unirostock.sems.bives.exception.BivesCellMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -19,6 +24,7 @@ import de.unirostock.sems.bives.exception.CellMLReadException;
  */
 public class CellMLVariable
 extends CellMLEntity
+implements DiffReporter
 {
 	public static final int INTERFACE_NONE = 0;
 	public static final int INTERFACE_IN = -1;
@@ -43,19 +49,22 @@ extends CellMLEntity
 	private int private_interface;
 	private Vector<CellMLVariable> private_interface_connection;
 	
-	public CellMLVariable (CellMLModel model, CellMLComponent component, DocumentNode node) throws CellMLReadException, BivesConsistencyException, BivesLogicalException
+	public CellMLVariable (CellMLModel model, CellMLComponent component, DocumentNode node) throws BivesCellMLParseException, BivesConsistencyException, BivesLogicalException
 	{
 		super (node, model);
 		this.component = component;
 		name = node.getAttribute ("name");
 		if (name == null || name.length () < 1)
-			throw new CellMLReadException ("variable doesn't have a name. (component: "+component.getName ()+")");
+			throw new BivesCellMLParseException ("variable doesn't have a name. (component: "+component.getName ()+")");
 		unit = component.getUnit (node.getAttribute ("units"));
 		if (unit == null)
-			throw new CellMLReadException ("variable doesn't have a unit. (component: "+component.getName ()+")");
+			throw new BivesCellMLParseException ("variable "+name+" doesn't have a valid unit. (component: "+component.getName ()+", searching for: "+node.getAttribute ("units")+")");
 		
 		public_interface = parseInterface (node.getAttribute ("public_interface"));
 		private_interface = parseInterface (node.getAttribute ("private_interface"));
+		
+		if (public_interface == private_interface && public_interface == INTERFACE_IN)
+			throw new BivesLogicalException ("variable " + name + " defines public and private interface to be 'in'. (component: "+component.getName ()+")");
 		
 		private_interface_connection = new Vector<CellMLVariable> ();
 		public_interface_connection = new Vector<CellMLVariable> ();
@@ -87,8 +96,10 @@ extends CellMLEntity
 		return public_interface;
 	}
 	
-	public void addPublicInterfaceConnection (CellMLVariable var)
+	public void addPublicInterfaceConnection (CellMLVariable var) throws BivesLogicalException
 	{
+		if (public_interface == INTERFACE_IN && public_interface_connection.size () > 0)
+			throw new BivesLogicalException ("variable " + name + " defines public interface to be 'in' but wants to add more than one connection. (component: "+component.getName ()+")");
 		public_interface_connection.add (var);
 	}
 	
@@ -102,14 +113,31 @@ extends CellMLEntity
 		return private_interface;
 	}
 	
-	public void addPrivateInterfaceConnection (CellMLVariable var)
+	public void addPrivateInterfaceConnection (CellMLVariable var) throws BivesLogicalException
 	{
+		if (private_interface == INTERFACE_IN && private_interface_connection.size () > 0)
+			throw new BivesLogicalException ("variable " + name + " defines private interface to be 'in' but wants to add more than one connection. (component: "+component.getName ()+")");
 		private_interface_connection.add (var);
 	}
 	
 	public Vector<CellMLVariable> getPrivateInterfaceConnections ()
 	{
 		return private_interface_connection;
+	}
+	
+	public CellMLVariable getRootVariable ()
+	{
+		if (private_interface == INTERFACE_IN && private_interface_connection.size () == 1)
+			return private_interface_connection.elementAt (0).getRootVariable ();
+		if (public_interface == INTERFACE_IN && public_interface_connection.size () == 1)
+			return public_interface_connection.elementAt (0).getRootVariable ();
+		return this;
+	}
+	
+	public void unconnect ()
+	{
+		public_interface_connection = new Vector<CellMLVariable> (); 
+		private_interface_connection = new Vector<CellMLVariable> (); 
 	}
 	
 	private String parseInterface (int attr)
@@ -140,5 +168,55 @@ extends CellMLEntity
 	public void debug (String prefix)
 	{
 		System.out.println (prefix + "var: " + name);
+	}
+
+	public void getDependencies (Vector<CellMLUserUnit> vector)
+	{
+		if (!unit.isStandardUnits ())
+		{
+			CellMLUserUnit u = (CellMLUserUnit) unit;
+			vector.add (u);
+			u.getDependencies (vector);
+		}
+	}
+
+	@Override
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt,
+		DiffReporter docA, DiffReporter docB, MarkupDocument markupDocument)
+	{
+		CellMLVariable a = (CellMLVariable) docA;
+		CellMLVariable b = (CellMLVariable) docB;
+		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
+			return null;
+		
+		String idA = a.name, idB = b.name;
+		MarkupElement me = null;
+		if (idA.equals (idB))
+			me = new MarkupElement ("Variable: " + idA);
+		else
+		{
+			me = new MarkupElement ("Variable: " + markupDocument.delete (idA) + " "+markupDocument.rightArrow ()+" " + markupDocument.insert (idB));
+		}
+		
+		Tools.genAttributeHtmlStats (a.getDocumentNode (), b.getDocumentNode (), me, markupDocument);
+		
+		return me;
+		
+	}
+
+	@Override
+	public MarkupElement reportInsert (MarkupDocument markupDocument)
+	{
+		MarkupElement me = new MarkupElement ("Variable: " + markupDocument.insert (name));
+		me.addValue (markupDocument.insert ("inserted"));
+		return me;
+	}
+
+	@Override
+	public MarkupElement reportDelete (MarkupDocument markupDocument)
+	{
+		MarkupElement me = new MarkupElement ("Variable: " + markupDocument.delete (name));
+		me.addValue (markupDocument.delete ("deleted"));
+		return me;
 	}
 }

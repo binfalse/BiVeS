@@ -4,6 +4,7 @@
 package de.unirostock.sems.bives.ds.sbml;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
 import de.unirostock.sems.bives.markup.MarkupDocument;
@@ -43,7 +44,7 @@ public class SBMLAssignmentRule
 	}
 
 	@Override
-	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, DiffReporter docA, DiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLAssignmentRule a = (SBMLAssignmentRule) docA;
 		SBMLAssignmentRule b = (SBMLAssignmentRule) docB;
@@ -58,7 +59,7 @@ public class SBMLAssignmentRule
 			me = new MarkupElement ("AssignmentRule for " + markupDocument.delete (idA)+ " &rarr; " + markupDocument.insert (idB));
 		
 		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
-		Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
+		Tools.genMathHtmlStats (a.math.getDocumentNode (), b.math.getDocumentNode (), me, markupDocument);
 		
 		return me;
 	}

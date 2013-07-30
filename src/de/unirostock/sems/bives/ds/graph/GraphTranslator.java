@@ -10,5 +10,5 @@ package de.unirostock.sems.bives.ds.graph;
  */
 public abstract class GraphTranslator
 {
-	public abstract String translate (CRN crn);
+	public abstract Object translate (CRN crn);
 }

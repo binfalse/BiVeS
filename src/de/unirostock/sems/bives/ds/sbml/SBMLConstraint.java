@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.ds.MathML;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -21,7 +22,7 @@ import de.unirostock.sems.bives.tools.Tools;
  */
 public class SBMLConstraint
 	extends SBMLSBase
-	implements SBMLDiffReporter
+	implements DiffReporter
 {
 	private MathML math;
 	private SBMLXHTML message;
@@ -66,7 +67,7 @@ public class SBMLConstraint
 	}
 
 	@Override
-	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, DiffReporter docA, DiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLConstraint a = (SBMLConstraint) docA;
 		SBMLConstraint b = (SBMLConstraint) docB;
@@ -75,7 +76,7 @@ public class SBMLConstraint
 		
 		MarkupElement me = new MarkupElement ("-");
 		
-		Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
+		Tools.genMathHtmlStats (a.math.getDocumentNode (), b.math.getDocumentNode (), me, markupDocument);
 		
 		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
 		

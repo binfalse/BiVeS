@@ -24,6 +24,7 @@ public class CRN
 	
 	private int reactionID;
 	private int substanceID;
+	private int compartmentID;
 	private HashMap<TreeNode, CRNReaction> crnR;
 	private HashMap<TreeNode, CRNSubstance> crnS;
 	private HashMap<CRNReaction, CRNReaction> ucrnR;
@@ -33,10 +34,25 @@ public class CRN
 	{
 		reactionID = 0;
 		substanceID = 0;
+		compartmentID = 0;
 		crnR = new HashMap<TreeNode, CRNReaction> ();
 		crnS = new HashMap<TreeNode, CRNSubstance> ();
 		ucrnR = new HashMap<CRNReaction, CRNReaction> ();
 		ucrnS = new HashMap<CRNSubstance, CRNSubstance> ();
+	}
+	
+	public static String modToString (int modification)
+	{
+		switch (modification)
+		{
+			case INSERT:
+				return "inserted";
+			case DELETE:
+				return "deleted";
+			case MODIFIED:
+				return "modified";
+		}
+		return "unmodified";
 	}
 	
 	public Collection<CRNSubstance> getSubstances ()
@@ -52,6 +68,11 @@ public class CRN
 	public int getNextSubstanceID ()
 	{
 		return ++substanceID;
+	}
+	
+	public int getNextCompartmentID ()
+	{
+		return ++compartmentID;
 	}
 	
 	public int getNextReactionID ()
@@ -75,11 +96,21 @@ public class CRN
 	
 	public CRNSubstance getSubstance (TreeNode node)
 	{
+		//for (TreeNode tn : crnS.keySet ())
+			//System.out.println ("have: " + tn.getXPath ());
 		return crnS.get (node);
 	}
 	
 	public CRNReaction getReaction (TreeNode node)
 	{
 		return crnR.get (node);
+	}
+
+	public void setSingleDocument ()
+	{
+		for (CRNReaction r : crnR.values ())
+			r.setSingleDocument ();
+		for (CRNSubstance s : crnS.values ())
+			s.setSingleDocument ();
 	}
 }

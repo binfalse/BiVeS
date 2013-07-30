@@ -11,7 +11,7 @@ import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesLogicalException;
-import de.unirostock.sems.bives.exception.CellMLReadException;
+import de.unirostock.sems.bives.exception.BivesCellMLParseException;
 
 
 /**
@@ -37,7 +37,7 @@ public class CellMLHierarchy
 		componentMapper = new HashMap<CellMLComponent, CellMLHierarchyNode> ();
 	}
 	
-	public void parseGroup (DocumentNode node) throws CellMLReadException, BivesLogicalException
+	public void parseGroup (DocumentNode node) throws BivesCellMLParseException, BivesLogicalException
 	{
 		CellMLHierarchyRelationship relationship = new CellMLHierarchyRelationship ();
 		
@@ -60,7 +60,7 @@ public class CellMLHierarchy
 		
 		if (relationship.getRelationship ().size () < 0)
 		{
-			LOGGER.warn ("skipping group definition: no valid relation ship defined.");
+			LOGGER.warn ("skipping group definition: no recognizable relation ship defined.");
 			return;
 		}
 		
@@ -68,12 +68,12 @@ public class CellMLHierarchy
 		recursiveParseGroup (node, parents, relationship);
 	}
 	
-	private void recursiveParseGroup (DocumentNode cur, Stack<CellMLHierarchyNode> parents, CellMLHierarchyRelationship relationship) throws CellMLReadException, BivesLogicalException
+	private void recursiveParseGroup (DocumentNode cur, Stack<CellMLHierarchyNode> parents, CellMLHierarchyRelationship relationship) throws BivesCellMLParseException, BivesLogicalException
 	{
 		Vector<TreeNode> kids = cur.getChildrenWithTag ("component_ref");
 		
 		if (kids.size () == 0 && parents.size () == 0)
-			throw new CellMLReadException ("group doesn't contain component_refs");
+			throw new BivesCellMLParseException ("group doesn't contain component_refs");
 		
 		for (TreeNode kid : kids)
 		{
@@ -84,7 +84,7 @@ public class CellMLHierarchy
 			
 			String componentName = (next).getAttribute ("component");
 			if (componentName == null)
-				throw new CellMLReadException ("no component defined in component_ref of grouping.");
+				throw new BivesCellMLParseException ("no component defined in component_ref of grouping.");
 			
 			CellMLComponent component = model.getComponent (componentName);
 			if (component == null)
@@ -102,7 +102,7 @@ public class CellMLHierarchy
 			{
 				if (child.getParent () != null)
 				{
-					throw new BivesLogicalException ("encapsulation failed: child wants to have to parents? (component: " + component.getName () + ")");
+					throw new BivesLogicalException ("encapsulation failed: child wants to have two parents? (component: " + component.getName () + ")");
 				}
 				CellMLHierarchyNode parent = parents.peek ();
 				child.setParent (parent);

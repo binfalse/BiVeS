@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -20,14 +19,11 @@ import java.util.Vector;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.w3c.dom.Document;
@@ -36,8 +32,9 @@ import org.w3c.dom.ls.LSOutput;
 import org.w3c.dom.ls.LSSerializer;
 
 import de.binfalse.bflog.LOGGER;
-import de.unirostock.sems.bives.ds.sbml.SBMLDiffReporter;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
+import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.markup.MarkupDocument;
 import de.unirostock.sems.bives.markup.MarkupElement;
@@ -49,6 +46,45 @@ import de.unirostock.sems.bives.markup.MarkupElement;
  */
 public class Tools
 {
+	
+	/**
+	 * Beautify the display of a double <code>d</code>. If the double is an int
+	 * we'll omit the <code>.0</code>. Additionally you may define an int to
+	 * neglect (e.g. <code>0</code> or <code>1</code>), thus, if
+	 * <code>d == neglect</code> you'll get an empty string. Especially designed
+	 * to display equations and stuff (e.g. omit an multiplier
+	 * of <code>1</code> or an offset of <code>0</code>).
+	 * 
+	 * @param d
+	 *          the double to print
+	 * @param neglect
+	 *          an integer to neglect. Can be null if you don't want to omit any
+	 *          number
+	 * @return the pretty string
+	 */
+	public static String prettyDouble (Double d, Integer neglect)
+	{
+		if (d == null)
+			return "";
+		
+		if ((d == Math.rint (d)) && !Double.isInfinite (d) && !Double.isNaN (d))
+		{
+			int s = d.intValue ();
+			if (neglect != null && s == neglect)
+				return "";
+	    return s + "";
+		}
+		
+		return d.toString ();
+	}
+	
+	
+	/**
+	 * Hash a message.
+	 *
+	 * @param msg the message
+	 * @return the hash
+	 */
 	public static String hash (String msg)
 	{
 		MessageDigest md;
@@ -70,99 +106,6 @@ public class Tools
 			return null;
 		}
 	}
-
-	public static Document getSubDoc (DocumentNode node)
-	{
-		try 
-		{
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			
-			Document d = docBuilder.newDocument ();
-			node.getSubDoc (d, null);
-			return d;
-		}
-		catch (Exception e)
-		{
-			LOGGER.error ("error creating subdoc", e);
-			return null;
-		}
-	}
-	
-
-	public static String printSubDoc (DocumentNode node)
-	{
-		try 
-		{
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			
-			Document d = docBuilder.newDocument ();
-			node.getSubDoc (d, null);
-			return printDocument (d);
-		}
-		catch (Exception e)
-		{
-			LOGGER.error ("error creating subdoc", e);
-			return "error creating doc: " + e.getMessage ();
-		}
-	}
-	
-	public static String printPrettySubDoc (DocumentNode node)
-	{
-		try 
-		{
-			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
-			
-			Document d = docBuilder.newDocument ();
-			d.createElementNS ("http://www.cellml.org/cellml/1.0", "cellml");
-			node.getSubDoc (d, null);
-			return prettyPrintDocument (d, new Tools.SimpleOutputStream ()).toString ();
-		}
-		catch (Exception e)
-		{
-			LOGGER.error ("error creating subdoc", e);
-			return "error creating doc: " + e.getMessage ();
-		}
-	}
-	
-	public static String printDocument (Document doc)
-	{
-		DOMImplementationLS domImplLS = (DOMImplementationLS) doc
-	    .getImplementation();
-	//LSSerializer serializer = domImplLS.createLSSerializer();
-	//return serializer.writeToString(doc);
-	
-  ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-	
-	LSOutput lso = domImplLS.createLSOutput();
-	lso.setByteStream(baos);
-	LSSerializer lss = domImplLS.createLSSerializer();
-	lss.write(doc, lso);
-	return baos.toString ();
-	
-	}
-	
-	public static String prettyPrintDocument(Document doc) throws IOException, TransformerException
-	{
-		return prettyPrintDocument (doc, new SimpleOutputStream ()).toString ();
-  }
-	
-	public static OutputStream prettyPrintDocument(Document doc, OutputStream out) throws IOException, TransformerException
-	{
-    TransformerFactory tf = TransformerFactory.newInstance();
-    Transformer transformer = tf.newTransformer();
-    transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "no");
-    transformer.setOutputProperty(OutputKeys.METHOD, "xml");
-    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-    transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-    transformer.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "4");
-
-    transformer.transform(new DOMSource(doc), new StreamResult(new OutputStreamWriter(out, "UTF-8")));
-    return out;
-  }
 	
 	public static class SimpleOutputStream extends OutputStream
 	{
@@ -223,12 +166,12 @@ UnsupportedEncodingException  {
   		//String ret = ""; 
 			if (a == null)
 			{
-				markupElement.addValue ("inserted math: " + markupDocument.insert (transformMathML (b)));
+				markupElement.addValue ("inserted math: " + markupDocument.insert (TreeTools.transformMathML (b)));
 				//ret += "inserted math: <span class='inserted'>" + transformMathML (b) + "</span>";
 			}
 			else if (b == null)
 			{
-				markupElement.addValue ("deleted math: " + markupDocument.delete (transformMathML (a)));
+				markupElement.addValue ("deleted math: " + markupDocument.delete (TreeTools.transformMathML (a)));
 				//ret += "deleted math: <span class='deleted'>" + transformMathML (a) + "</span>";
 			}
 			else if (a.hasModification (TreeNode.MODIFIED | TreeNode.SUB_MODIFIED))
@@ -236,7 +179,7 @@ UnsupportedEncodingException  {
 				//System.out.println ("pre math: " + printSubDoc (a));
 				//System.out.println ("post math: " + printMathML (getSubDoc (b)));
 				
-				markupElement.addValue ("modified math: " + markupDocument.delete (transformMathML (a)) + " to " + markupDocument.insert (transformMathML (b)));
+				markupElement.addValue ("modified math: " + markupDocument.delete (TreeTools.transformMathML (a)) + " to " + markupDocument.insert (TreeTools.transformMathML (b)));
 				
 				//ret += "modified math from: <span class='deleted'>" + transformMathML (a);
 				//ret += "</span> to: <span class='inserted'>" + transformMathML (b) + "</span>";
@@ -248,7 +191,7 @@ UnsupportedEncodingException  {
   	catch (Exception e)
   	{
   		LOGGER.error ("error generating math", e);
-  		markupElement.addValue ("error generating math" + e.getMessage ());
+  		markupElement.addValue ("error generating math: " + e.getMessage ());
   	}
   }
   
@@ -268,7 +211,7 @@ UnsupportedEncodingException  {
 			else if (bA == null)
 				markupElement.addValue ("Attribute "+ markupDocument.attribute (attr) + " was deleted: "+markupDocument.delete (aA));
 			else if (!aA.equals (bA))
-				markupElement.addValue ("Attribute "+ markupDocument.attribute (attr) + " has changed: "+markupDocument.delete (aA) +" "+markupDocument.rightArrow ()+" "+ markupDocument.insert (aA));
+				markupElement.addValue ("Attribute "+ markupDocument.attribute (attr) + " has changed: "+markupDocument.delete (aA) +" "+markupDocument.rightArrow ()+" "+ markupDocument.insert (bA));
 		}
   }
   
@@ -310,33 +253,6 @@ UnsupportedEncodingException  {
 			return idA;
   }*/
   
-  public static String transformMathML (DocumentNode doc) throws TransformerException
-  {
-
-		TransformerFactory tFactory = 
-		TransformerFactory.newInstance();
-		
-		// 2. Use the TransformerFactory to process the stylesheet Source and
-		//    generate a Transformer.
-		InputStream input = Tools.class.getResourceAsStream("/res/mmlctop2_0.xsl");
-		//Transformer transformer = tFactory.newTransformer (new javax.xml.transform.stream.StreamSource("/tmp/mmlctop2_0.xsl"));
-		Transformer transformer = tFactory.newTransformer (new javax.xml.transform.stream.StreamSource(input));
-		
-		// 3. Use the Transformer to transform an XML Source and send the
-		//    output to a Result object.
-		
-
-    SimpleOutputStream out = new SimpleOutputStream ();
-		
-		//transformer.transform (new javax.xml.transform.stream.StreamSource("/tmp/math2.xml")/*new DOMSource(doc)*/, new javax.xml.transform.stream.StreamResult(out));
-    String math = printSubDoc (doc);
-    // xslt cannot namespace
-    math = math.replaceAll ("\\S+:\\S+\\s*=\\s*\"[^\"]*\"", "");
-    //System.out.println ("pre " + math);
-		transformer.transform (new javax.xml.transform.stream.StreamSource(new ByteArrayInputStream(math.getBytes()))/*new DOMSource(doc)*/, new javax.xml.transform.stream.StreamResult(out));
-		//System.out.println ("post " + out.toString ());
-		return out.toString ();
-  }
   
   /*public static String printMathML (Document doc) throws TransformerException
   {

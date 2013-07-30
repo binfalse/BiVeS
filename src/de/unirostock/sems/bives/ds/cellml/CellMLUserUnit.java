@@ -10,10 +10,16 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import de.binfalse.bflog.LOGGER;
+import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
-import de.unirostock.sems.bives.exception.CellMLReadException;
+import de.unirostock.sems.bives.exception.BivesCellMLParseException;
+import de.unirostock.sems.bives.markup.Markup;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.MarkupElement;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -22,17 +28,19 @@ import de.unirostock.sems.bives.exception.CellMLReadException;
  */
 public class CellMLUserUnit
 	extends CellMLUnit
+	implements DiffReporter, Markup
 {
 	// A modeller might want to define and use units for which no simple conversion to SI units exist. A good example of this is pH, which is dimensionless, but uses a log scale. Ideally, pH should not simply be defined as dimensionless because software might then attempt to map variables defined with units of pH to any other dimensionless variables.
 	// CellML addresses this by allowing the model author to indicate that a units definition is a new type of base unit, the definition of which cannot be resolved into simpler subunits. This is done by defining a base_units attribute value of "yes" on the <units> element. This element must then be left empty. The base_units attribute is optional and has a default value of "no".
-	public boolean base_units;
+	private boolean base_units;
 	
 	private CellMLUnitDictionary dict;
 	private CellMLComponent component;
 
-	public Vector<BaseQuantity> baseQuantities;
+	private Vector<BaseQuantity> baseQuantities;
 	
 	public class BaseQuantity
+	implements Markup
 	{
 		public CellMLUnit unit;
 		public double multiplier;
@@ -49,11 +57,13 @@ public class CellMLUserUnit
 			exponent = 1;
 		}
 		
-		public BaseQuantity (DocumentNode node) throws BivesConsistencyException, CellMLReadException
+		public BaseQuantity (DocumentNode node) throws BivesConsistencyException, BivesCellMLParseException
 		{
 			LOGGER.debug ("reading base quantity from: " + node.getXPath () + " -> " + node.getAttribute ("units"));
 			
 			this.unit = dict.getUnit (node.getAttribute ("units"), component);
+			if (this.unit == null)
+				throw new BivesConsistencyException ("no such base unit: " + node.getAttribute ("units"));
 			multiplier = 1;
 			offset = 0;
 			prefix = 0;
@@ -76,15 +86,33 @@ public class CellMLUserUnit
 			}
 		}
 		
-		public String toString ()
+		/*public String toString ()
 		{
-			return "{" + multiplier + "*10^"+prefix+"*("+unit.toString ()+")^"+exponent+"+"+offset + "}";
+			return "";
+			String ret = multiplier == 1 ? "" : Tools.niceDouble (multiplier, 1) + markupDocument.multiply ();
+			ret += prefix == 0 ? "" : "10^" + prefix + markupDocument.multiply ();
+			ret += "[" + unit.toString () + "]";
+			ret += exponent == 1 ? "" : "^" + Tools.niceDouble (exponent, 1);
+			ret += offset == 0 ? "" : "+"+Tools.niceDouble (offset, 0);
+			return "(" + ret + ")";
+		}*/
+
+		@Override
+		public String markup (MarkupDocument markupDocument)
+		{
+			String ret = multiplier == 1 ? "" : Tools.prettyDouble (multiplier, 1) + markupDocument.multiply ();
+			ret += prefix == 0 ? "" : "10^" + prefix + markupDocument.multiply ();
+			ret += "[" + unit.toString () + "]";
+			ret += exponent == 1 ? "" : "^" + Tools.prettyDouble (exponent, 1);
+			ret += offset == 0 ? "" : "+"+Tools.prettyDouble (offset, 0);
+			return "(" + ret + ")";
 		}
 	}
 	
-	public CellMLUserUnit (CellMLModel model, CellMLUnitDictionary dict, CellMLComponent component, DocumentNode node) throws BivesConsistencyException, CellMLReadException
+	public CellMLUserUnit (CellMLModel model, CellMLUnitDictionary dict, CellMLComponent component, DocumentNode node) throws BivesConsistencyException, BivesCellMLParseException
 	{
 		super (model, node.getAttribute ("name"), node);
+		//System.out.println ("should be mapped: " + node.getXPath () + model);
 		
 		this.dict = dict;
 		this.component = component;
@@ -135,12 +163,12 @@ public class CellMLUserUnit
 			}
 			catch (NumberFormatException ex)
 			{
-				throw new CellMLReadException ("unknown number format: " + ex.getMessage ());
+				throw new BivesCellMLParseException ("unknown number format: " + ex.getMessage ());
 			}
 		}
 	}
 	
-	public static final int scale (String s) throws CellMLReadException
+	public static final int scale (String s) throws BivesCellMLParseException
 	{
 		if (s.equals ("yotta"))
 			return 24;
@@ -183,17 +211,20 @@ public class CellMLUserUnit
 		if (s.equals ("yocto"))
 			return -24;
 		
-		throw new CellMLReadException ("unknown prefix: " + s);
+		throw new BivesCellMLParseException ("unknown prefix: " + s);
 	}
 	
-	public String toString ()
+	public String markup (MarkupDocument markupDocument)
 	{
+		if (base_units || baseQuantities == null)
+			return "base units";
+		
 		String ret = "";
 		for (int i = 0; i < baseQuantities.size (); i++)
 		{
-			ret += baseQuantities.elementAt (i).toString ();
+			ret += baseQuantities.elementAt (i).markup (markupDocument);//.toString ();
 			if (i < baseQuantities.size () - 1)
-				ret += " * ";
+				ret += " "+markupDocument.multiply ()+" ";
 		}
 		return ret;
 	}
@@ -201,5 +232,67 @@ public class CellMLUserUnit
 	public void debug (String prefix)
 	{
 		System.out.println (prefix + getName () + ": " + toString ());
+	}
+
+	public Vector<CellMLUserUnit> getDependencies (Vector<CellMLUserUnit> vector)
+	{
+		if (base_units || baseQuantities == null)
+			return vector;
+		
+		for (BaseQuantity bq : baseQuantities)
+		{
+			if (!bq.unit.isStandardUnits ())
+				vector.add ((CellMLUserUnit) bq.unit);
+		}
+		return vector;
+	}
+
+	@Override
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt,
+		DiffReporter docA, DiffReporter docB, MarkupDocument markupDocument)
+	{
+		CellMLUserUnit a = (CellMLUserUnit) docA;
+		CellMLUserUnit b = (CellMLUserUnit) docB;
+		if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
+			return null;
+		
+		String idA = a.getName (), idB = b.getName ();
+		MarkupElement me = null;
+		if (idA.equals (idB))
+			me = new MarkupElement ("Units: " + idA);
+		else
+		{
+			me = new MarkupElement ("Units: " + markupDocument.delete (idA) + " "+markupDocument.rightArrow ()+" " + markupDocument.insert (idB));
+		}
+
+		String oldDef = a.markup (markupDocument);
+		String newDef = b.markup (markupDocument);
+		if (oldDef.equals (newDef))
+			me.addValue ("defined by: " + oldDef);
+		else
+		{
+			me.addValue (markupDocument.delete ("old definition: " + oldDef));
+			me.addValue (markupDocument.insert ("new definition: " + newDef));
+		}
+		
+		Tools.genAttributeHtmlStats (a.getDocumentNode (), b.getDocumentNode (), me, markupDocument);
+		
+		return me;
+	}
+
+	@Override
+	public MarkupElement reportInsert (MarkupDocument markupDocument)
+	{
+		MarkupElement me = new MarkupElement ("Units: " + markupDocument.insert (getName ()));
+		me.addValue (markupDocument.insert ("inserted: " + this.markup (markupDocument)));
+		return me;
+	}
+
+	@Override
+	public MarkupElement reportDelete (MarkupDocument markupDocument)
+	{
+		MarkupElement me = new MarkupElement ("Units: " + markupDocument.delete (getName ()));
+		me.addValue (markupDocument.delete ("deleted: " + this.markup (markupDocument)));
+		return me;
 	}
 }

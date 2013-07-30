@@ -25,6 +25,7 @@ import org.w3c.dom.Element;
 import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
+import de.unirostock.sems.bives.algorithm.GraphProducer;
 import de.unirostock.sems.bives.algorithm.Producer;
 import de.unirostock.sems.bives.ds.SBOTerm;
 import de.unirostock.sems.bives.ds.graph.CRN;
@@ -47,6 +48,7 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
  *
  */
 public class SBMLGraphProducer
+extends GraphProducer
 {
 	/*private Element graphRoot;
 	private Document graphDocument;
@@ -57,7 +59,6 @@ public class SBMLGraphProducer
 	private static final String DELETE = "-1";
 	private static final String MODIFIED = "2";*/
 	private SBMLDocument sbmlDocA, sbmlDocB;
-	private CRN crn;
 	private ClearConnectionManager conMgmt;
 	
 	public SBMLGraphProducer (ClearConnectionManager conMgmt, SBMLDocument sbmlDocA, SBMLDocument sbmlDocB)
@@ -66,17 +67,22 @@ public class SBMLGraphProducer
 		this.sbmlDocA = sbmlDocA;
 		this.sbmlDocB = sbmlDocB;
 		this.conMgmt = conMgmt;
+		processA ();
+			processB ();
 	}
 	
-	public String produce (GraphTranslator trans)
+	public SBMLGraphProducer (SBMLDocument sbmlDoc)
 	{
-		crn = new CRN ();
-		
+		//super.init (conMgmt, sbmlDocA.getTreeDocument (), sbmlDocA.getTreeDocument ());
+		this.sbmlDocA = sbmlDoc;
 		processA ();
-		processB ();
-		
-		return trans.translate (crn);
+		crn.setSingleDocument ();
 	}
+	
+	/*public Object translate (GraphTranslator trans)
+	{
+		return trans.translate (crn);
+	}*/
 	
 	
 	public void processA ()
@@ -91,26 +97,26 @@ public class SBMLGraphProducer
 		HashMap<String, SBMLReaction> reactions = modelA.getReactions ();
 		for (SBMLReaction r : reactions.values ())
 		{
-			CRNReaction reaction = new CRNReaction (crn, r.getNameOrId (), null, r.getDocumentNode (), null);
+			CRNReaction reaction = new CRNReaction (crn, r.getNameOrId (), null, r.getDocumentNode (), null, r.isReversible ());
 			crn.setReaction (r.getDocumentNode (), reaction);
 			
 			Vector<SBMLSpeciesReference> sRefs = r.getReactants ();
 			for (SBMLSpeciesReference sRef : sRefs)
 			{
-				reaction.addInputA (crn.getSubstance (sRef.getSpecies ().getDocumentNode ()));
+				reaction.addInputA (crn.getSubstance (sRef.getSpecies ().getDocumentNode ()), sRef.getSBOTerm ());
 			}
 			
 			sRefs = r.getProducts ();
 			for (SBMLSpeciesReference sRef : sRefs)
 			{
-				reaction.addOutputA (crn.getSubstance (sRef.getSpecies ().getDocumentNode ()));
+				reaction.addOutputA (crn.getSubstance (sRef.getSpecies ().getDocumentNode ()), sRef.getSBOTerm ());
 			}
 			
 			Vector<SBMLSimpleSpeciesReference> ssRefs = r.getModifiers ();
 			for (SBMLSimpleSpeciesReference sRef : ssRefs)
 			{
 				SBMLSpecies spec = sRef.getSpecies ();
-				reaction.addModA (crn.getSubstance (spec.getDocumentNode ()), spec.getSBOTerm ());
+					reaction.addModA (crn.getSubstance (spec.getDocumentNode ()), sRef.getSBOTerm ());
 			}
 		}
 	}
@@ -148,32 +154,34 @@ public class SBMLGraphProducer
 			if (c == null)
 			{
 				// no equivalent in doc a
-				reaction = new CRNReaction (crn, null, r.getNameOrId (), null, r.getDocumentNode ());
+				reaction = new CRNReaction (crn, null, r.getNameOrId (), null, r.getDocumentNode (), r.isReversible ());
 				crn.setReaction (rNode, reaction);
 			}
 			else
 			{
 				reaction = crn.getReaction (c.getPartnerOf (rNode));
+				reaction.setDocB (rNode);
 				crn.setReaction (rNode, reaction);
 			}
 				
 			Vector<SBMLSpeciesReference> sRefs = r.getReactants ();
 			for (SBMLSpeciesReference sRef : sRefs)
 			{
-				reaction.addInputB (crn.getSubstance (sRef.getSpecies ().getDocumentNode ()));
+				reaction.addInputB (crn.getSubstance (sRef.getSpecies ().getDocumentNode ()), sRef.getSBOTerm ());
 			}
 			
 			sRefs = r.getProducts ();
 			for (SBMLSpeciesReference sRef : sRefs)
 			{
-				reaction.addOutputB (crn.getSubstance (sRef.getSpecies ().getDocumentNode ()));
+				reaction.addOutputB (crn.getSubstance (sRef.getSpecies ().getDocumentNode ()), sRef.getSBOTerm ());
 			}
 			
 			Vector<SBMLSimpleSpeciesReference> ssRefs = r.getModifiers ();
 			for (SBMLSimpleSpeciesReference sRef : ssRefs)
 			{
 				SBMLSpecies spec = sRef.getSpecies ();
-				reaction.addModB (crn.getSubstance (spec.getDocumentNode ()), spec.getSBOTerm ());
+				//if (spec.getSBOTerm () == null)
+					reaction.addModB (crn.getSubstance (spec.getDocumentNode ()), sRef.getSBOTerm ());
 			}
 		}
 	}

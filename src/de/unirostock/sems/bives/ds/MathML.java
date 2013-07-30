@@ -19,7 +19,7 @@ public class MathML
 		this.math = math;
 	}
 	
-	public DocumentNode getMath ()
+	public DocumentNode getDocumentNode ()
 	{
 		return math;
 	}

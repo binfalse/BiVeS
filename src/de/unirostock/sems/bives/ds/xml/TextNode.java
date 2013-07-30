@@ -31,31 +31,47 @@ public class TextNode
 	private String text;
 	
 	private double weight;
+	private Weighter weighter;
+	
+	private TreeDocument doc;
 	
 	public String getText ()
 	{
 		return text;
 	}
 	
-	public TextNode (String text, DocumentNode parent, int numChild, Weighter w, NodeMapper<TreeNode> pathMapper, MultiNodeMapper<TreeNode> hashMapper, MultiNodeMapper<DocumentNode> tagMapper, Vector<TreeNode> subtreesBySize)
+	public TextNode (TextNode toCopy)
 	{
-		super (TreeNode.TEXT_NODE, parent);
+		super (TreeNode.TEXT_NODE, null, null, 0);
+		this.text = toCopy.text;//element.getNodeValue ();
+		// create xpath
+		xPath = null;
+		ownHash = toCopy.ownHash;
+		weight = toCopy.weight;
+		weighter = toCopy.weighter;
+	}
+	
+	public TextNode (String text, DocumentNode parent, TreeDocument doc, int numChild, Weighter w, int level)//, NodeMapper<TreeNode> pathMapper, MultiNodeMapper<TreeNode> hashMapper, MultiNodeMapper<DocumentNode> tagMapper, Vector<TreeNode> subtreesBySize)
+	{
+		super (TreeNode.TEXT_NODE, parent, doc, level);
 		this.text = text;//element.getNodeValue ();
 		// create xpath
 		if (parent == null)
 			xPath = "";
 		else
 			xPath = parent.getXPath ();
-		xPath += "/text()[" + numChild + "]";
-		pathMapper.putNode (xPath, this);
+		xPath += "/"+TEXT_TAG+"[" + numChild + "]";
+		//pathMapper.putNode (xPath, this);
 		//tagMapper.addNode ("text()", this);
 		
 		ownHash = Tools.hash (text);
 		
-		hashMapper.addNode (ownHash, this);
+		//hashMapper.addNode (ownHash, this);
+		weighter = w;
 		weight = w.getWeight (this);
 		
-		subtreesBySize.add (this);
+		//subtreesBySize.add (this);
+		doc.integrate (this);
 	}
 
 	@Override
@@ -171,5 +187,31 @@ public class TextNode
 	public void getSubDoc (Document doc, Element parent)
 	{
 		parent.appendChild (doc.createTextNode (text));
+	}
+
+	@Override
+	protected void reSetupStructureDown (TreeDocument doc, int numChild)
+	{
+		if (this.doc != null)
+			this.doc.separate (this);
+		this.doc = doc;
+		this.xPath = parent.xPath + "/" + TEXT_TAG + "[" + numChild + "]";
+		this.level = parent.level + 1;
+		
+		this.doc.integrate (this);
+	}
+
+	@Override
+	protected void reSetupStructureUp ()
+	{
+		this.doc.separate (this);
+		ownHash = Tools.hash (text);
+		this.doc.integrate (this);
+
+		weight = weighter.getWeight (this);
+		
+		if (parent != null)
+			parent.reSetupStructureUp ();
+		
 	}
 }

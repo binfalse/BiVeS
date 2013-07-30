@@ -8,12 +8,13 @@ import java.util.Vector;
 
 import org.w3c.dom.Element;
 
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesLogicalException;
-import de.unirostock.sems.bives.exception.CellMLReadException;
+import de.unirostock.sems.bives.exception.BivesCellMLParseException;
 
 
 /**
@@ -39,7 +40,7 @@ extends CellMLEntity
 	// A component may contain a set of mathematical relationships between the variables declared in this component.
 	private Vector<MathML> math;
 	
-	public CellMLComponent (CellMLModel model, DocumentNode node) throws BivesConsistencyException, CellMLReadException, BivesLogicalException
+	public CellMLComponent (CellMLModel model, DocumentNode node) throws BivesConsistencyException, BivesCellMLParseException, BivesLogicalException
 	{
 		super (node, model);
 		
@@ -50,19 +51,41 @@ extends CellMLEntity
 
 		name = node.getAttribute ("name");
 		if (name == null || name.length () < 1)
-			throw new CellMLReadException ("component doesn't have a name.");
+			throw new BivesCellMLParseException ("component doesn't have a name.");
 		
 		Vector<TreeNode> kids = node.getChildrenWithTag ("units");
-		for (TreeNode kid : kids)
-		{
-			units.addUnit (this, new CellMLUserUnit (model, units, this, (DocumentNode) kid));
-		}
-		
-		kids = node.getChildrenWithTag ("variable");
+		Vector<String> problems = new Vector<String> ();
 		boolean nextRound = true;
 		while (nextRound && kids.size () > 0)
 		{
 			nextRound = false;
+			problems.clear ();
+			for (int i = kids.size () - 1; i >= 0; i--)
+			{
+				TreeNode kid = kids.elementAt (i);
+				if (kid.getType () != TreeNode.DOC_NODE)
+					continue;
+				try
+				{
+					units.addUnit (this, new CellMLUserUnit (model, units, this, (DocumentNode) kid));
+				}
+				catch (BivesConsistencyException ex)
+				{
+					problems.add (ex.getMessage ());
+					continue;
+				}
+				kids.remove (i);
+				nextRound = true;
+			}
+		}
+		if (kids.size () != 0)
+			throw new BivesConsistencyException ("inconsistencies for "+kids.size ()+" units in component "+name+", problems: " + problems);
+		
+		kids = node.getChildrenWithTag ("variable");
+		while (nextRound && kids.size () > 0)
+		{
+			nextRound = false;
+			problems.clear ();
 			for (int i = kids.size () - 1; i >= 0; i--)
 			{
 				TreeNode kid = kids.elementAt (i);
@@ -71,10 +94,13 @@ extends CellMLEntity
 				try
 				{
 					CellMLVariable var = new CellMLVariable (model, this, (DocumentNode) kid);
+					if (variables.get (var.getName ()) != null)
+						throw new BivesConsistencyException ("variable name is not unique: " + var.getName ());
 					variables.put (var.getName (), var);
 				}
 				catch (BivesConsistencyException ex)
 				{
+					problems.add (ex.getMessage ());
 					continue;
 				}
 				kids.remove (i);
@@ -82,7 +108,7 @@ extends CellMLEntity
 			}
 		}
 		if (kids.size () != 0)
-			throw new BivesConsistencyException ("inconsistencies for "+kids.size ()+" variables in component "+name+", e.q. "+kids.elementAt (0).getXPath ());
+			throw new BivesConsistencyException ("inconsistencies for "+kids.size ()+" variables in component "+name+", problems: " + problems);
 		
 		kids = node.getChildrenWithTag ("reaction");
 		for (TreeNode kid : kids)
@@ -105,7 +131,7 @@ extends CellMLEntity
 		return var;
 	}
 	
-	public CellMLUnit getUnit (String name) throws BivesConsistencyException
+	public CellMLUnit getUnit (String name)// throws BivesConsistencyException
 	{
 		return units.getUnit (name, this);
 	}
@@ -118,6 +144,7 @@ extends CellMLEntity
 	public void setName (String name)
 	{
 		this.name = name;
+		getDocumentNode ().setAttribute ("name", name);
 	}
 	
 	public void debug (String prefix)
@@ -125,5 +152,36 @@ extends CellMLEntity
 		System.out.println (prefix + "comp: " + name);
 		for (CellMLVariable v : variables.values ())
 			v.debug (prefix + "  ");
+	}
+	
+	public void unconnect ()
+	{
+		for (CellMLVariable var : variables.values ())
+			var.unconnect ();
+	}
+
+	public Vector<CellMLUserUnit> getDependencies (Vector<CellMLUserUnit> vector)
+	{
+		for (CellMLVariable var : variables.values ())
+		{
+			var.getDependencies (vector);
+		}
+		
+		return vector;
+	}
+	
+	public Vector<CellMLReaction> getReactions ()
+	{
+		return reactions;
+	}
+	
+	public HashMap<String, CellMLVariable> getVariables ()
+	{
+		return variables;
+	}
+	
+	public Vector<MathML> getMath ()
+	{
+		return math;
 	}
 }

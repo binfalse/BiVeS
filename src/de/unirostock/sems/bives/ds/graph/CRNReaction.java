@@ -22,24 +22,55 @@ public class CRNReaction
 	private String labelA, labelB;
 	private DocumentNode docA, docB;
 	private CRN crn;
+	private boolean singleDoc;
+	private boolean reversible;
 
 	private HashMap<CRNSubstance, SubstanceRef> in;
 	private HashMap<CRNSubstance, SubstanceRef> out;
 	private HashMap<CRNSubstance, ModifierRef> mod;
 	
+	public String getSBO ()
+	{
+		String a = docA.getAttribute ("sboTerm");
+		String b = docA.getAttribute ("sboTerm");
+		if (a == null || b == null || !a.equals (b))
+			return "";
+		return a;
+	}
+	
+	public boolean isReversible ()
+	{
+		return reversible;
+	}
+	
 	public class SubstanceRef
 	{
 		public CRNSubstance subst;
 		public boolean a, b;
-		public SubstanceRef (CRNSubstance subst, boolean a, boolean b)
+		public SBOTerm modTermA, modTermB;
+		public SubstanceRef (CRNSubstance subst, boolean a, boolean b, SBOTerm modTermA, SBOTerm modTermB)
 		{
 			this.subst = subst;
 			this.a = a;
 			this.b = b;
+			this.modTermA = modTermA;
+			this.modTermB = modTermB;
+		}
+		
+		public String getSBO ()
+		{
+			if (modTermA == null && modTermB == null)
+				return "";
+			if (modTermA == null)
+				return modTermB.getSBOTerm ();
+			return modTermA.getSBOTerm ();
 		}
 		
 		public int getModification ()
 		{
+			if (singleDoc)
+				return CRN.UNMODIFIED;
+			
 			if (a && b)
 				return CRN.UNMODIFIED;
 			if (a)
@@ -52,42 +83,72 @@ public class CRNReaction
 	{
 		public CRNSubstance subst;
 		public boolean a, b;
-		public SBOTerm sboA, sboB;
-		public ModifierRef (CRNSubstance subst, boolean a, boolean b, SBOTerm sboA, SBOTerm sboB)
+		public SBOTerm modTermA, modTermB;
+		public ModifierRef (CRNSubstance subst, boolean a, boolean b, SBOTerm modTermA, SBOTerm modTermB)
 		{
 			this.subst = subst;
 			this.a = a;
 			this.b = b;
-			this.sboA = sboA;
-			this.sboB = sboB;
+			this.modTermA = modTermA;
+			this.modTermB = modTermB;
 		}
 		
-		public String getSboTerm ()
+		public String getSBO ()
 		{
-			if (sboA == null && sboB == null)
+			if (modTermA == null && modTermB == null)
+				return "";
+			if (modTermA == null)
+				return modTermB.getSBOTerm ();
+			return modTermA.getSBOTerm ();
+		}
+		
+		public String getSBOA ()
+		{
+			if (modTermA == null)
+				return "";
+			return modTermA.getSBOTerm ();
+		}
+		
+		public String getSBOB ()
+		{
+			if (modTermB == null)
+				return "";
+			return modTermB.getSBOTerm ();
+		}
+		
+		public String getModTerm ()
+		{
+			if (modTermA == null && modTermB == null)
 				return SBOTerm.MOD_UNKNOWN;
-			if (sboA == null)
-				return sboB.resolvModifier ();
-			return sboA.resolvModifier ();
+			if (modTermA == null)
+				return modTermB.resolvModifier ();
+			return modTermA.resolvModifier ();
 		}
 		
-		public String getSboTermB ()
+		public String getModTermB ()
 		{
-			return sboB.resolvModifier ();
+			if (modTermB == null)
+				return SBOTerm.MOD_UNKNOWN;
+			return modTermB.resolvModifier ();
 		}
 		
-		public String getSboTermA ()
+		public String getModTermA ()
 		{
-			return sboA.resolvModifier ();
+			if (modTermA == null)
+				return SBOTerm.MOD_UNKNOWN;
+			return modTermA.resolvModifier ();
 		}
 		
 		public int getModification ()
 		{
+			if (singleDoc)
+				return CRN.UNMODIFIED;
+			
 			if (a && b)
 			{
-				if (sboA == null && sboB == null)
+				if (modTermA == null && modTermB == null)
 					return CRN.UNMODIFIED;
-				if (sboA != null && sboB != null && sboA.resolvModifier ().equals (sboB.resolvModifier ()))
+				if (modTermA != null && modTermB != null && modTermA.resolvModifier ().equals (modTermB.resolvModifier ()))
 						return CRN.UNMODIFIED;
 				return CRN.MODIFIED;
 			}
@@ -98,7 +159,7 @@ public class CRNReaction
 		
 	}
 	
-	public CRNReaction (CRN crn, String labelA, String labelB, DocumentNode docA, DocumentNode docB)
+	public CRNReaction (CRN crn, String labelA, String labelB, DocumentNode docA, DocumentNode docB, boolean reversible)
 	{
 		this.crn = crn;
 		this.id = crn.getNextReactionID ();
@@ -109,6 +170,8 @@ public class CRNReaction
 		in = new HashMap<CRNSubstance, SubstanceRef> ();
 		out = new HashMap<CRNSubstance, SubstanceRef> ();
 		mod = new HashMap<CRNSubstance, ModifierRef> ();
+		singleDoc = false;
+		this.reversible = reversible;
 	}
 	
 	public void setDocA (DocumentNode docA)
@@ -141,22 +204,22 @@ public class CRNReaction
 		return docB;
 	}
 	
-	public void addInputA (CRNSubstance subst)
+	public void addInputA (CRNSubstance subst, SBOTerm sbo)
 	{
 		SubstanceRef r = in.get (subst);
 		if (r == null)
-			in.put (subst, new SubstanceRef (subst, true, false));
+			in.put (subst, new SubstanceRef (subst, true, false, sbo, null));
 		else
 		{
 			r.a = true;
 		}
 	}
 	
-	public void addOutputA (CRNSubstance subst)
+	public void addOutputA (CRNSubstance subst, SBOTerm sbo)
 	{
 		SubstanceRef r = out.get (subst);
 		if (r == null)
-			out.put (subst, new SubstanceRef (subst, true, false));
+			out.put (subst, new SubstanceRef (subst, true, false, sbo, null));
 		else
 		{
 			r.a = true;
@@ -171,26 +234,26 @@ public class CRNReaction
 		else
 		{
 			r.a = true;
-			r.sboA = sbo;
+			r.modTermA = sbo;
 		}
 	}
 	
-	public void addInputB (CRNSubstance subst)
+	public void addInputB (CRNSubstance subst, SBOTerm sbo)
 	{
 		SubstanceRef r = in.get (subst);
 		if (r == null)
-			in.put (subst, new SubstanceRef (subst, false, true));
+			in.put (subst, new SubstanceRef (subst, false, true, null, sbo));
 		else
 		{
 			r.b = true;
 		}
 	}
 	
-	public void addOutputB (CRNSubstance subst)
+	public void addOutputB (CRNSubstance subst, SBOTerm sbo)
 	{
 		SubstanceRef r = out.get (subst);
 		if (r == null)
-			out.put (subst, new SubstanceRef (subst, false, true));
+			out.put (subst, new SubstanceRef (subst, false, true, null, sbo));
 		else
 		{
 			r.b = true;
@@ -205,7 +268,7 @@ public class CRNReaction
 		else
 		{
 			r.b = true;
-			r.sboB = sbo;
+			r.modTermB = sbo;
 		}
 	}
 	
@@ -227,6 +290,9 @@ public class CRNReaction
 	
 	public int getModification ()
 	{
+		if (singleDoc)
+			return CRN.UNMODIFIED;
+		
 		if (docA == null)
 			return CRN.INSERT;
 		if (docB == null)
@@ -249,5 +315,10 @@ public class CRNReaction
 	public Collection<ModifierRef> getModifiers ()
 	{
 		return mod.values ();
+	}
+
+	public void setSingleDocument ()
+	{
+		singleDoc = true;
 	}
 }

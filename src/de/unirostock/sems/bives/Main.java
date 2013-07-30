@@ -25,7 +25,6 @@ import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.algorithm.Producer;
-import de.unirostock.sems.bives.algorithm.cellmldeprecated.CellMLConnector;
 import de.unirostock.sems.bives.algorithm.general.PatchProducer;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
 import de.unirostock.sems.bives.algorithm.general.XyWeighter;
@@ -80,7 +79,7 @@ public class Main
 	{
 		//LOGGER.setLogToStdErr (false);
 
-		args = new String [] {"--sbml-graph", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
+		/*args = new String [] {"--sbml-graph", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
 		args = new String [] {"--sbml-graph", "test/TestModel_for_IB2013-version-one", "test/TestModel_for_IB2013-version-two"};
     
     String file1 = null, file2 = null;
@@ -137,20 +136,20 @@ public class Main
 			td.getRoot ().evaluate (con2.getConnections ());
 			
 			td2.getRoot ().resetModifications ();
-			td2.getRoot ().evaluate (con2.getConnections ());
+			td2.getRoot ().evaluate (con2.getConnections ());*/
 			//System.out.println ("a");
 			/*System.out.println (con2.getConnections ());
 			System.out.println (doc1.getModel ().getReaction ("v2").getDocumentNode ().getModification ());
 			System.out.println (doc2.getModel ().getReaction ("v2").getDocumentNode ().getModification ());*/
 			
-			SBMLGraphProducer producer2 = new SBMLGraphProducer ();
-			producer2.init (con2.getConnections (), doc1, doc2);
+			/*SBMLGraphProducer producer2 = new SBMLGraphProducer ();
+			producer2.init (con2.getConnections (), doc1, doc2);*/
 			//System.out.println (producer2.produce ());
 
 			/*System.out.println (doc1.getModel ().getReaction ("v2").getDocumentNode ().getModification ());
 			System.out.println (doc2.getModel ().getReaction ("v2").getDocumentNode ().getModification ());*/
 			
-			producer.init (con2.getConnections (), td, td2);
+			/*producer.init (con2.getConnections (), td, td2);
 			//System.out.println (producer.produce ());
 			
 			SBMLDiffInterpreter inter = new SBMLDiffInterpreter (con2.getConnections (), doc1, doc2);
@@ -178,7 +177,7 @@ public class Main
 		System.out.println (con.getConnections ());
 		System.out.println ("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB");*/
 		
-		td.getRoot ().resetModifications ();
+		/*td.getRoot ().resetModifications ();
 		td.getRoot ().evaluate (con.getConnections ());
 		
 		td2.getRoot ().resetModifications ();

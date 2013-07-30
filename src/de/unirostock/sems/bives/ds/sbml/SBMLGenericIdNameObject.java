@@ -21,6 +21,15 @@ extends SBMLSBase
 		throws BivesSBMLParseException
 	{
 		super (documentNode, sbmlModel);
+		
+		if (documentNode != null)
+		{
+			id = documentNode.getAttribute ("id");
+			if (id == null || id.length () < 1)
+				throw new BivesSBMLParseException ("node doesn't provide a valid id: " + documentNode.getXPath ());
+			
+			name = documentNode.getAttribute ("name");
+		}
 	}
 	
 	/**

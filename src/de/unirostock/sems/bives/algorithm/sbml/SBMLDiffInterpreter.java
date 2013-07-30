@@ -27,11 +27,11 @@ import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.Interpreter;
 import de.unirostock.sems.bives.algorithm.Producer;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.sbml.SBMLCompartment;
 import de.unirostock.sems.bives.ds.sbml.SBMLCompartmentType;
 import de.unirostock.sems.bives.ds.sbml.SBMLConstraint;
 import de.unirostock.sems.bives.ds.sbml.SBMLDiffReport;
-import de.unirostock.sems.bives.ds.sbml.SBMLDiffReporter;
 import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
 import de.unirostock.sems.bives.ds.sbml.SBMLEvent;
 import de.unirostock.sems.bives.ds.sbml.SBMLFunctionDefinition;
@@ -132,7 +132,9 @@ public class SBMLDiffInterpreter
 				msec.addValue (rule.reportDelete (markupDocument));
 			else
 			{
-				msec.addValue (rule.reportMofification (conMgmt, rule, (SBMLRule) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
+				MarkupElement me = rule.reportMofification (conMgmt, rule, (SBMLRule) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument);
+				if (me != null && me.getValues ().size () > 0)
+				msec.addValue (me);
 			}
 		}
 		LOGGER.info ("searching for rules in B");
@@ -167,7 +169,9 @@ public class SBMLDiffInterpreter
 				msec.addValue (compartment.reportDelete(markupDocument));
 			else
 			{
-				msec.addValue (compartment.reportMofification (conMgmt, compartment, (SBMLCompartment) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
+				MarkupElement me = compartment.reportMofification (conMgmt, compartment, (SBMLCompartment) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument);
+				if (me != null && me.getValues ().size () > 0)
+				msec.addValue (me);
 			}
 		}
 		LOGGER.info ("searching for compartments in B");
@@ -202,7 +206,9 @@ public class SBMLDiffInterpreter
 				msec.addValue (compartment.reportDelete (markupDocument));
 			else
 			{
-				msec.addValue (compartment.reportMofification (conMgmt, compartment, (SBMLCompartmentType) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
+				MarkupElement me = compartment.reportMofification (conMgmt, compartment, (SBMLCompartmentType) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument);
+				if (me != null && me.getValues ().size () > 0)
+				msec.addValue (me);
 			}
 		}
 		LOGGER.info ("searching for compartmenttypes in B");
@@ -237,7 +243,9 @@ public class SBMLDiffInterpreter
 				msec.addValue (parameter.reportDelete (markupDocument));
 			else
 			{
-				msec.addValue (parameter.reportMofification (conMgmt, parameter, (SBMLParameter) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
+				MarkupElement me = parameter.reportMofification (conMgmt, parameter, (SBMLParameter) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument);
+				if (me != null && me.getValues ().size () > 0)
+				msec.addValue (me);
 			}
 		}
 		LOGGER.info ("searching for parameters in B");
@@ -272,7 +280,9 @@ public class SBMLDiffInterpreter
 				msec.addValue (event.reportDelete (markupDocument));
 			else
 			{
-				msec.addValue (event.reportMofification (conMgmt, event, (SBMLEvent) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
+				MarkupElement me = event.reportMofification (conMgmt, event, (SBMLEvent) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument);
+				if (me != null && me.getValues ().size () > 0)
+				msec.addValue (me);
 			}
 		}
 		LOGGER.info ("searching for events in B");
@@ -307,7 +317,9 @@ public class SBMLDiffInterpreter
 				msec.addValue (spec.reportDelete (markupDocument));
 			else
 			{
-				msec.addValue (spec.reportMofification (conMgmt, spec, (SBMLSpecies) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
+				MarkupElement me = spec.reportMofification (conMgmt, spec, (SBMLSpecies) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument);
+				if (me != null && me.getValues ().size () > 0)
+				msec.addValue (me);
 			}
 		}
 		LOGGER.info ("searching for species in B");
@@ -342,7 +354,9 @@ public class SBMLDiffInterpreter
 				msec.addValue (spec.reportDelete (markupDocument));
 			else
 			{
-				msec.addValue (spec.reportMofification (conMgmt, spec, (SBMLSpeciesType) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
+				MarkupElement me = spec.reportMofification (conMgmt, spec, (SBMLSpeciesType) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument);
+				if (me != null && me.getValues ().size () > 0)
+				msec.addValue (me);
 			}
 		}
 		LOGGER.info ("searching for speciestypes in B");
@@ -377,7 +391,9 @@ public class SBMLDiffInterpreter
 				msec.addValue (reaction.reportDelete (markupDocument));
 			else
 			{
-				msec.addValue (reaction.reportMofification (conMgmt, reaction, (SBMLReaction) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
+				MarkupElement me = reaction.reportMofification (conMgmt, reaction, (SBMLReaction) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument);
+				if (me != null && me.getValues ().size () > 0)
+				msec.addValue (me);
 			}
 		}
 		LOGGER.info ("searching for reactions in B");
@@ -412,7 +428,9 @@ public class SBMLDiffInterpreter
 				msec.addValue (function.reportDelete (markupDocument));
 			else
 			{
-				msec.addValue (function.reportMofification (conMgmt, function, (SBMLFunctionDefinition) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
+				MarkupElement me = function.reportMofification (conMgmt, function, (SBMLFunctionDefinition) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument);
+				if (me != null && me.getValues ().size () > 0)
+				msec.addValue (me);
 			}
 		}
 		LOGGER.info ("searching for functions in B");
@@ -449,7 +467,9 @@ public class SBMLDiffInterpreter
 				msec.addValue (unit.reportDelete (markupDocument));
 			else
 			{
-				msec.addValue (unit.reportMofification (conMgmt, unit, (SBMLUnitDefinition) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
+				MarkupElement me = unit.reportMofification (conMgmt, unit, (SBMLUnitDefinition) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument);
+				if (me != null && me.getValues ().size () > 0)
+				msec.addValue (me);
 			}
 		}
 		LOGGER.info ("searching for units in B");
@@ -486,7 +506,9 @@ public class SBMLDiffInterpreter
 				msec.addValue (ia.reportDelete (markupDocument));
 			else
 			{
-				msec.addValue (ia.reportMofification (conMgmt, ia, (SBMLInitialAssignment) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
+				MarkupElement me = ia.reportMofification (conMgmt, ia, (SBMLInitialAssignment) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument);
+				if (me != null && me.getValues ().size () > 0)
+				msec.addValue (me);
 			}
 		}
 		LOGGER.info ("searching for initial assignments in B");
@@ -521,7 +543,9 @@ public class SBMLDiffInterpreter
 				msec.addValue (constraint.reportDelete (markupDocument));
 			else
 			{
-				msec.addValue (constraint.reportMofification (conMgmt, constraint, (SBMLConstraint) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument));
+				MarkupElement me = constraint.reportMofification (conMgmt, constraint, (SBMLConstraint) modelB.getFromNode (con.getPartnerOf (dn)), markupDocument);
+				if (me != null && me.getValues ().size () > 0)
+				msec.addValue (me);
 			}
 		}
 		LOGGER.info ("searching for constraints in B");

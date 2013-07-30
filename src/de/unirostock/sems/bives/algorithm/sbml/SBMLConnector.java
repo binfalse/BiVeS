@@ -47,7 +47,7 @@ public class SBMLConnector
 		// TODO: maybe preporcessing -> instead of id's use annotations/ontologies etc
 		// use id's
 		// use variables for rules
-		super.init (sbmlDocA.getTreeDocument (), sbmlDocA.getTreeDocument ());
+		super.init (sbmlDocA.getTreeDocument (), sbmlDocB.getTreeDocument ());
 
 		// preprocessor connects by id and stuff
 		// xy propagates connections
@@ -67,6 +67,8 @@ public class SBMLConnector
 	@Override
 	protected void connect ()
 	{
+		//System.out.println ("vorher:");
+		//System.out.println (conMgmt);
 		
 		// post processing
 		
@@ -89,6 +91,9 @@ public class SBMLConnector
 			TreeNode partner = con.getTreeB ();
 			if (tn.networkDiffers (partner, conMgmt, con))
 			{
+				System.out.println ("network differs: ");
+				System.out.println ("nwd: " + tn.getXPath ());
+				System.out.println ("nwd: " + partner.getXPath ());
 				conMgmt.dropConnection (tn);
 			}
 			
@@ -142,7 +147,9 @@ public class SBMLConnector
 			}*/
 			
 		}
-		
+
+		//System.out.println ("nachher:");
+		//System.out.println (conMgmt);
 	}
 
 	/**

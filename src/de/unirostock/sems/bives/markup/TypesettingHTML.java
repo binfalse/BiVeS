@@ -42,6 +42,7 @@ public class TypesettingHTML
 		s = MarkupDocument.replaceDeletes (s, "<span class='delete'>", "</span>");
 		s = MarkupDocument.replaceAttributes (s, "<span class='attr'>", "</span>");
 		s = MarkupDocument.replaceRightArrow (s, "&rarr;");
+		s = MarkupDocument.replaceMultiplication (s, "&middot;");
 		
 		return s;
 	}

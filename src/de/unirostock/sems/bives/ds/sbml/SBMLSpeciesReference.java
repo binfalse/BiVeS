@@ -11,6 +11,7 @@ import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
 import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -87,8 +88,8 @@ public class SBMLSpeciesReference
 		//System.out.println (a + " - " + b);
 		//System.out.println (a.species + " - " + b.species);
 		
-		String retA = a.getStoichiometry () + a.species.getID ();
-		String retB = b.getStoichiometry () + b.species.getID ();
+		String retA = Tools.prettyDouble (a.stoichiometry, 1) + a.species.getID ();
+		String retB = Tools.prettyDouble (b.stoichiometry, 1) + b.species.getID ();
 		
 		if (retA.equals (retB))
 			return retA;
@@ -99,24 +100,24 @@ public class SBMLSpeciesReference
 
 	public String reportInsert (MarkupDocument markupDocument)
 	{
-		return markupDocument.insert (getStoichiometry () + species.getID ());
+		return markupDocument.insert (Tools.prettyDouble (stoichiometry, 1) + species.getID ());
 	}
 
 	public String reportDelete (MarkupDocument markupDocument)
 	{
-		return markupDocument.delete (getStoichiometry () + species.getID ());
+		return markupDocument.delete (Tools.prettyDouble (stoichiometry, 1) + species.getID ());
 	}
 	
-	private String getStoichiometry ()
+	/*private String getStoichiometry ()
 	{
 		if ((stoichiometry == Math.rint (stoichiometry)) && !Double.isInfinite (stoichiometry) && !Double.isNaN (stoichiometry))
 		{
 			int s = stoichiometry.intValue ();
 			if (s == 1)
 				return "";
-	    return stoichiometry.intValue () + "";
+	    return stoichiometry.intValue () + " ";
 		}
-		return stoichiometry.toString ();
-	}
+		return stoichiometry.toString () + " ";
+	}*/
 	
 }

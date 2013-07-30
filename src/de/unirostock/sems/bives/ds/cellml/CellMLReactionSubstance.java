@@ -11,7 +11,7 @@ import de.unirostock.sems.bives.ds.MathML;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
-import de.unirostock.sems.bives.exception.CellMLReadException;
+import de.unirostock.sems.bives.exception.BivesCellMLParseException;
 
 
 /**
@@ -19,6 +19,7 @@ import de.unirostock.sems.bives.exception.CellMLReadException;
  *
  */
 public class CellMLReactionSubstance
+extends CellMLEntity
 {
 	public static final int ROLE_REACTANT = 1;
 	public static final int ROLE_PRODUCT = 2;
@@ -32,6 +33,7 @@ public class CellMLReactionSubstance
 	public static final int DIRECTION_BOTH = 2;
 	
 	public class Role
+	extends CellMLEntity
 	{
 		// The role attribute must have a value of "reactant", "product", "catalyst", "activator", "inhibitor", "modifier", or "rate"
 		public int role;
@@ -40,15 +42,16 @@ public class CellMLReactionSubstance
 		// The optional delta_variable attribute indicates which variable is used to store the change in concentration of the species represented by the variable referenced by the current <variable_ref> element
 		public CellMLVariable delta_variable;
 		// The optional stoichiometry attribute stores the stoichiometry of the current variable relative to the other reaction participants.
-		public double stoichiometry;
+		public Double stoichiometry;
 		// The <role> elements may also contain <math> elements in the MathML namespace, which define equations using MathML
 		public Vector<MathML> math;
 		
-		public Role (DocumentNode node) throws CellMLReadException, BivesConsistencyException
+		public Role (CellMLModel model, DocumentNode node) throws BivesCellMLParseException, BivesConsistencyException
 		{
+			super (node, model);
 			direction = DIRECTION_FORWARD;
 			delta_variable = null;
-			stoichiometry = -1;
+			stoichiometry = null;
 			math = new Vector<MathML> ();
 			
 			role = resolveRole (node.getAttribute ("role"));
@@ -66,30 +69,62 @@ public class CellMLReactionSubstance
 				}
 				catch (NumberFormatException ex)
 				{
-					throw new CellMLReadException ("no proper stoichiometry: " + node.getAttribute ("stoichiometry"));
+					throw new BivesCellMLParseException ("no proper stoichiometry: " + node.getAttribute ("stoichiometry"));
 				}
 			
 			Vector<TreeNode> kids = node.getChildrenWithTag ("math");
 			for (TreeNode kid : kids)
 				math.add (new MathML ((DocumentNode) kid));
 		}
+		
+		/*public String getStoichiometry ()
+		{
+			if (stoichiometry == null)
+				return "";
+			if ((stoichiometry == Math.rint (stoichiometry)) && !Double.isInfinite (stoichiometry) && !Double.isNaN (stoichiometry))
+			{
+				int s = stoichiometry.intValue ();
+				if (s == 1)
+					return "";
+		    return stoichiometry.intValue () + "";
+			}
+			return stoichiometry.toString ();
+		}*/
 	}
 	
-	public CellMLVariable variable;
-	public Vector<Role> role;
-	public CellMLComponent component;
+	private CellMLVariable variable;
+	private Vector<Role> roles;
+	private CellMLComponent component;
 	
-	public CellMLReactionSubstance (CellMLComponent component, DocumentNode node) throws BivesConsistencyException, CellMLReadException
+	public CellMLReactionSubstance (CellMLModel model, CellMLComponent component, DocumentNode node) throws BivesConsistencyException, BivesCellMLParseException
 	{
+		super (node, model);
 		this.component = component;
-		variable = component.getVariable (node.getAttribute ("variable"));
+		String var = node.getAttribute ("variable");
+		if (var == null)
+			throw new BivesCellMLParseException ("variable ref in reaction of component " + component.getName () + " doesn't define a variable. ("+var+", "+node.getXPath ()+")");
+		variable = component.getVariable (var);
+		if (variable == null)
+			throw new BivesCellMLParseException ("variable ref in reaction of component " + component.getName () + " doesn't define a valid variable. ("+var+", "+node.getXPath ()+")");
+		
+		roles = new Vector<Role> ();
 		
 		Vector<TreeNode> kids = node.getChildrenWithTag ("role");
 		for (TreeNode kid : kids)
-			role.add (new Role ((DocumentNode) kid));
+			roles.add (new Role (model, (DocumentNode) kid));
+	}
+	
+	public CellMLVariable getVariable ()
+	{
+		return variable;
+	}
+	
+	public Vector<Role> getRoles ()
+	{
+		return roles;
 	}
 
-	public static final String resolveDirection (int direction) throws CellMLReadException
+	public static final String resolveDirection (int direction) throws BivesCellMLParseException
 	{
 		if (direction == DIRECTION_FORWARD)
 			return "forward";
@@ -97,9 +132,9 @@ public class CellMLReactionSubstance
 			return "reverse";
 		if (direction == DIRECTION_BOTH)
 			return "both";
-		throw  new CellMLReadException ("unknown direction: " + direction);
+		throw  new BivesCellMLParseException ("unknown direction: " + direction);
 	}
-	public static final int resolveDirection (String direction) throws CellMLReadException
+	public static final int resolveDirection (String direction) throws BivesCellMLParseException
 	{
 		if (direction.equals ("forward"))
 			return DIRECTION_FORWARD;
@@ -107,10 +142,10 @@ public class CellMLReactionSubstance
 			return DIRECTION_REVERSE;
 		if (direction.equals ("both"))
 			return DIRECTION_BOTH;
-		throw  new CellMLReadException ("unknown direction: " + direction);
+		throw  new BivesCellMLParseException ("unknown direction: " + direction);
 	}
 
-	public static final String resolveRole (int role) throws CellMLReadException
+	public static final String resolveRole (int role) throws BivesCellMLParseException
 	{
 		if (role == ROLE_REACTANT)
 			return "reactant";
@@ -126,9 +161,9 @@ public class CellMLReactionSubstance
 			return "modifier";
 		if (role == ROLE_RATE)
 			return "rate";
-		throw  new CellMLReadException ("unknown role: " + role);
+		throw  new BivesCellMLParseException ("unknown role: " + role);
 	}
-	public static final int resolveRole (String role) throws CellMLReadException
+	public static final int resolveRole (String role) throws BivesCellMLParseException
 	{
 		if (role.equals ("reactant"))
 			return ROLE_REACTANT;
@@ -144,6 +179,6 @@ public class CellMLReactionSubstance
 			return ROLE_MODIFIER;
 		if (role.equals ("rate"))
 			return ROLE_RATE;
-		throw  new CellMLReadException ("unknown role: " + role);
+		throw  new BivesCellMLParseException ("unknown role: " + role);
 	}
 }

@@ -6,10 +6,12 @@ package de.unirostock.sems.bives.ds.sbml;
 import java.util.Vector;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
-import de.unirostock.sems.bives.ds.HTMLMarkup;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
+import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.Markup;
 import de.unirostock.sems.bives.markup.MarkupDocument;
 import de.unirostock.sems.bives.markup.MarkupElement;
 import de.unirostock.sems.bives.tools.Tools;
@@ -21,7 +23,7 @@ import de.unirostock.sems.bives.tools.Tools;
  */
 public class SBMLUnitDefinition
 	extends SBMLGenericIdNameObject
-	implements SBMLDiffReporter, HTMLMarkup
+	implements DiffReporter, Markup
 {
 	private boolean baseUnit; // is this a base unit?
 	private Vector<SBMLUnit> listOfUnits;
@@ -34,7 +36,7 @@ public class SBMLUnitDefinition
 	 */
 	public SBMLUnitDefinition (String name, SBMLModel sbmlModel) throws BivesSBMLParseException
 	{
-		super (DocumentNode.getDummyNode (), sbmlModel);
+		super (null, sbmlModel);
 		id = name;
 		this.name = name;
 		baseUnit = true;
@@ -43,17 +45,12 @@ public class SBMLUnitDefinition
 	/**
 	 * @param documentNode
 	 * @throws BivesSBMLParseException 
+	 * @throws BivesConsistencyException 
 	 */
-	public SBMLUnitDefinition (DocumentNode documentNode, SBMLModel sbmlModel) throws BivesSBMLParseException
+	public SBMLUnitDefinition (DocumentNode documentNode, SBMLModel sbmlModel) throws BivesSBMLParseException, BivesConsistencyException
 	{
 		super (documentNode, sbmlModel);
 		baseUnit = false;
-		
-		id = documentNode.getAttribute ("id");
-		if (id == null || id.length () < 1)
-			throw new BivesSBMLParseException ("UnitDefinition "+id+" doesn't provide a valid id.");
-		
-		name = documentNode.getAttribute ("name");
 		
 		listOfUnits = new Vector<SBMLUnit> ();
 		Vector<TreeNode> lounits = documentNode.getChildrenWithTag ("listOfUnits");
@@ -79,7 +76,7 @@ public class SBMLUnitDefinition
 	}
 
 	@Override
-	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, DiffReporter docA, DiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLUnitDefinition a = (SBMLUnitDefinition) docA;
 		SBMLUnitDefinition b = (SBMLUnitDefinition) docB;
@@ -94,8 +91,8 @@ public class SBMLUnitDefinition
 			me = new MarkupElement (markupDocument.delete (idA) + " "+markupDocument.rightArrow ()+" " + markupDocument.insert (idB));
 		
 		// check whether unit definition has changed
-		String oldDef = a.htmlMarkup ();
-		String newDef = a.htmlMarkup ();
+		String oldDef = a.markup (markupDocument);
+		String newDef = a.markup (markupDocument);
 		if (oldDef.equals (newDef))
 			me.addValue ("Defined by: " + oldDef);
 		else
@@ -123,14 +120,14 @@ public class SBMLUnitDefinition
 	}
 
 	@Override
-	public String htmlMarkup ()
+	public String markup (MarkupDocument markupDocument)
 	{
 		String ret = "";
 		for (int i = 0; i < listOfUnits.size (); i++)
 		{
-			ret += listOfUnits.elementAt (i).unitToHTMLString ();
+			ret += listOfUnits.elementAt (i).markup (markupDocument);//.unitToHTMLString ();
 			if (i+1 < listOfUnits.size ())
-				ret += " &middot; ";
+				ret += " "+markupDocument.multiply ()+" ";
 		}
 		return ret;
 	}

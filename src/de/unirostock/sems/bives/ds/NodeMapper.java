@@ -31,6 +31,11 @@ public class NodeMapper<T>
 	{
 		mapper.put (id, node);
 	}
+
+	public void rmNode (String id)
+	{
+		mapper.remove (id);
+	}
 	
 	public T getNode (String id)
 	{

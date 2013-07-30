@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -21,7 +22,7 @@ import de.unirostock.sems.bives.tools.Tools;
  */
 public class SBMLEvent
 	extends SBMLSBase
-	implements SBMLDiffReporter
+	implements DiffReporter
 {
 	private String id; //optional
 	private String name; //optional
@@ -95,7 +96,7 @@ public class SBMLEvent
 	}
 
 	@Override
-	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, DiffReporter docA, DiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLEvent a = (SBMLEvent) docA;
 		SBMLEvent b = (SBMLEvent) docB;

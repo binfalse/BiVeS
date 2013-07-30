@@ -25,7 +25,8 @@ import de.binfalse.bflog.LOGGER;
  */
 public class FileRetriever
 {
-	
+	public static boolean FIND_LOCAL = true;
+	public static boolean FIND_REMOTE = true;
 	
 	private static boolean isLocal (String uri)
 	{
@@ -38,6 +39,10 @@ public class FileRetriever
 	
 	private static void copy (URI from, File to) throws IOException
 	{
+		if (!FIND_LOCAL)
+			throw new IOException ("local resolving disabled");
+		
+		
 		BufferedWriter bw = new BufferedWriter (new FileWriter (to));
 		BufferedReader br = new BufferedReader (new FileReader (
 			from.toURL ().getFile ()));
@@ -53,6 +58,9 @@ public class FileRetriever
 	
 	private static void download (URI from, File to) throws IOException
 	{
+		if (!FIND_REMOTE)
+			throw new IOException ("remote resolving disabled");
+		
 		URL website = from.toURL ();
 		ReadableByteChannel rbc = Channels.newChannel (website.openStream ());
 		FileOutputStream fos = new FileOutputStream (to);
@@ -92,17 +100,22 @@ public class FileRetriever
 		}
 		else if (base == null)
 		{
+			if (!FIND_LOCAL)
+				throw new IOException ("local resolving disabled");
 			if (!file.startsWith ("/"))
 				throw new IOException ("don't know where this relative path points to: "+file+" (no base provided).");
+			theFile = new URI ("file://" + theFile);
 			copy (theFile, dest);
 		}
 		// is realtive
 		else if (isLocal (base.toString ()))
 		{
-			//System.out.println ("else if: " + base);
 			// copy
 			if (file.startsWith ("/"))
+			{
+				theFile = new URI ("file://" + theFile);
 				copy (theFile, dest);
+			}
 			else
 			{
 				theFile = base.resolve (theFile);
@@ -111,7 +124,7 @@ public class FileRetriever
 		}
 		else
 		{
-			System.out.println ("else");
+			//System.out.println ("else");
 			// download
 			theFile = base.resolve (theFile);
 			download (theFile, dest);

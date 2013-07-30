@@ -27,16 +27,21 @@ public class SBOTerm
 		return SBOTerm;
 	}
 	
-	
-	public String resolvModifier ()
+	public static SBOTerm createStimulator ()
 	{
-		if (SBOTerm == null || !SBOTerm.startsWith ("SBO:"))
-			return MOD_UNKNOWN;
-		
+		return new SBOTerm ("SBO:0000459");
+	}
+	public static SBOTerm createInhibitor ()
+	{
+		return new SBOTerm ("SBO:0000020");
+	}
+	
+	public static String resolvModifier (String mod)
+	{
 		try
 		{
 			// TODO: resolve the stuff dynamically from db...
-			switch (Integer.parseInt (SBOTerm.substring (4)))
+			switch (Integer.parseInt (mod.substring (4)))
 			{
 				case 459: // stimulator
 				case 13: // catalyst
@@ -61,5 +66,12 @@ public class SBOTerm
 			
 		}
 		return MOD_UNKNOWN;
+	}
+	
+	public String resolvModifier ()
+	{
+		if (SBOTerm == null || !SBOTerm.startsWith ("SBO:"))
+			return MOD_UNKNOWN;
+		return resolvModifier (SBOTerm);
 	}
 }

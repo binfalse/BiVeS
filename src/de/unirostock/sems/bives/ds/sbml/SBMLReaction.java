@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -21,7 +22,7 @@ import de.unirostock.sems.bives.tools.Tools;
  */
 public class SBMLReaction
 	extends SBMLGenericIdNameObject
-	implements SBMLDiffReporter
+	implements DiffReporter
 {
 	private boolean reversible;
 	private boolean fast;
@@ -45,12 +46,6 @@ public class SBMLReaction
 		throws BivesSBMLParseException
 	{
 		super (documentNode, sbmlModel);
-		
-		id = documentNode.getAttribute ("id");
-		if (id == null || id.length () < 1)
-			throw new BivesSBMLParseException ("parameter "+id+" doesn't provide a valid id.");
-		
-		name = documentNode.getAttribute ("name");
 		
 		if (documentNode.getAttribute ("reversible") != null)
 		{
@@ -181,7 +176,7 @@ public class SBMLReaction
 	}
 
 	@Override
-	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, DiffReporter docA, DiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLReaction a = (SBMLReaction) docA;
 		SBMLReaction b = (SBMLReaction) docB;
@@ -295,7 +290,8 @@ public class SBMLReaction
 		if (a.kineticLaw != null && b.kineticLaw != null)
 		{
 			a.kineticLaw.reportMofification (conMgmt, a.kineticLaw, b.kineticLaw, me2, markupDocument);
-			me.addSubElements (me2);
+			if (me2.getValues ().size () > 0)
+				me.addSubElements (me2);
 		}
 			//me.addValue (markupDocument.highlight ("Kinetic Law:") + a.kineticLaw.reportMofification (conMgmt, a.kineticLaw, b.kineticLaw, markupDocument));
 		else if (a.kineticLaw != null)

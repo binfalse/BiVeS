@@ -19,7 +19,7 @@ import de.unirostock.sems.bives.algorithm.Producer;
 import de.unirostock.sems.bives.ds.Patch;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
-import de.unirostock.sems.bives.tools.Tools;
+import de.unirostock.sems.bives.tools.XmlTools;
 
 
 /**
@@ -48,7 +48,7 @@ public class PatchProducer
 	{
 		super.init (conMgmt, docA, docB);
 		fullDiff = true;
-		LOGGER.info ("creating patch producer: " + conMgmt + " " + docA + " " + docB);
+		LOGGER.info ("creating patch producer: ");// + conMgmt + " " + docA + " " + docB);
 	}
 
 	/* (non-Javadoc)
@@ -117,7 +117,7 @@ public class PatchProducer
 			
 			try
 			{
-				return Tools.prettyPrintDocument (patch.getDocument (), new OutputStream()
+				return XmlTools.prettyPrintDocument (patch.getDocument (), new OutputStream()
 				{
 				  private StringBuilder string = new StringBuilder();
 				  

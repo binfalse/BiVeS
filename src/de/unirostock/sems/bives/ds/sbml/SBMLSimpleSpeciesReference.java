@@ -4,6 +4,7 @@
 package de.unirostock.sems.bives.ds.sbml;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.ds.SBOTerm;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
 import de.unirostock.sems.bives.markup.MarkupDocument;
@@ -48,8 +49,9 @@ extends SBMLSBase
 		//if (a.getDocumentNode ().getModification () == 0 && b.getDocumentNode ().getModification () == 0)
 		//	return species.getNameAndId ();
 		
-		String retA = a.species.getID ();
-		String retB = b.species.getID ();
+		SBOTerm sboA = a.getSBOTerm (), sboB = b.getSBOTerm ();
+		String retA = a.species.getID () + (sboA == null? "("+SBOTerm.resolvModifier (SBOTerm.MOD_UNKNOWN)+")" : "("+sboA.resolvModifier ()+")");
+		String retB = b.species.getID () + (sboB == null? "("+SBOTerm.resolvModifier (SBOTerm.MOD_UNKNOWN)+")" : "("+sboB.resolvModifier ()+")");
 		
 		if (retA.equals (retB))
 			return retA;
@@ -59,11 +61,13 @@ extends SBMLSBase
 
 	public String reportInsert (MarkupDocument markupDocument)
 	{
-		return markupDocument.insert (species.getID ());
+		SBOTerm sbo = getSBOTerm ();
+		return markupDocument.insert (species.getID () + (sbo == null? "("+SBOTerm.resolvModifier (SBOTerm.MOD_UNKNOWN)+")" : "("+sbo.resolvModifier ()+")"));
 	}
 
 	public String reportDelete (MarkupDocument markupDocument)
 	{
-		return markupDocument.delete (species.getID ());
+		SBOTerm sbo = getSBOTerm ();
+		return markupDocument.delete (species.getID () + (sbo == null? "("+SBOTerm.resolvModifier (SBOTerm.MOD_UNKNOWN)+")" : "("+sbo.resolvModifier ()+")"));
 	}
 }

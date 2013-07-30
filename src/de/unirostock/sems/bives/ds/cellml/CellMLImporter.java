@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.HashMap;
 import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -25,7 +26,7 @@ import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesLogicalException;
-import de.unirostock.sems.bives.exception.CellMLReadException;
+import de.unirostock.sems.bives.exception.BivesCellMLParseException;
 import de.unirostock.sems.bives.tools.FileRetriever;
 
 
@@ -40,24 +41,25 @@ extends CellMLEntity
 	private String href;
 	private DocumentNode node;
 	
-	public CellMLImporter (DocumentNode node, CellMLModel model) throws CellMLReadException
+	public CellMLImporter (DocumentNode node, CellMLModel model) throws BivesCellMLParseException
 	{
 		super (node, model);
 		
 		this.node = node;
 		href = node.getAttribute ("xlink:href");
 		if (href == null)
-			throw new CellMLReadException ("href attribute in import is empty");
+			throw new BivesCellMLParseException ("href attribute in import is empty");
 		
 	}
 
 
 
-	public void parse () throws IOException, URISyntaxException, ParserConfigurationException, SAXException, CellMLReadException, BivesConsistencyException, BivesLogicalException
+	public void parse () throws IOException, URISyntaxException, ParserConfigurationException, SAXException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException
 	{
 		URI baseUri = model.getDocument ().getBaseUri ();
 		LOGGER.info ("parsing import from " + href + " (base uri is: "+baseUri+")");
 		File tmp = File.createTempFile ("cellmlimporter", "cellml");
+		tmp.deleteOnExit ();
 		
 		URI fileUri = FileRetriever.getFile (href, baseUri, tmp);
 	  
@@ -75,15 +77,21 @@ extends CellMLEntity
 			String name = ukid.getAttribute ("name");
 			
 			if (ref == null || name == null || ref.length () < 1 || name.length () < 1)
-				throw new CellMLReadException ("unit import should define a name _and_ a units_ref! (name: "+name+", units_ref: "+ref+")");
+				throw new BivesCellMLParseException ("unit import should define a name _and_ a units_ref! (name: "+name+", units_ref: "+ref+")");
 			
 
 			CellMLUnit u = units.getUnit (ref, null);
+			if (u == null)
+				throw new BivesConsistencyException ("cannot import unit " + ref + " from " + href + " (base uri is: "+baseUri+")");
+				
 			if (u instanceof CellMLUserUnit)
 			{
 				CellMLUserUnit uu = (CellMLUserUnit) u;
 				uu.setName (name);
-				model.addUnit (uu);
+				Vector<CellMLUserUnit> unitsToImport = uu.getDependencies (new Vector<CellMLUserUnit> ());
+				for (CellMLUserUnit unit : unitsToImport)
+					model.importDependencyUnit (unit);
+				model.importUnit (uu);
 				LOGGER.info ("imported unit " + name + " from " + ref + "@" + href);
 			}
 			else
@@ -93,6 +101,7 @@ extends CellMLEntity
 		}
 		
 
+		HashMap<String, CellMLComponent> tmpConMapper = new HashMap<String, CellMLComponent> ();
 		kids = node.getChildrenWithTag ("component");
 		for (TreeNode kid : kids)
 		{
@@ -101,13 +110,32 @@ extends CellMLEntity
 			String name = ckid.getAttribute ("name");
 			
 			if (ref == null || name == null || ref.length () < 1 || name.length () < 1)
-				throw new CellMLReadException ("component import should define a name _and_ a component_ref! (name: "+name+", component_ref: "+ref+")");
+				throw new BivesCellMLParseException ("component import should define a name _and_ a component_ref! (name: "+name+", component_ref: "+ref+")");
 			
 			CellMLComponent c = modelToImport.getComponent (ref);
+			if (c == null)
+				throw new BivesConsistencyException ("cannot import component " + ref + " from " + href + " (base uri is: "+baseUri+")");
+			tmpConMapper.put (c.getName (), c);
+			// kill all connections
+			c.unconnect ();
 			c.setName (name);
-			model.addComponent (c);
+			Vector<CellMLUserUnit> unitsToImport = c.getDependencies (new Vector<CellMLUserUnit> ());
+			for (CellMLUserUnit unit : unitsToImport)
+				model.importDependencyUnit (unit);
+			model.importComponent (c);
 			LOGGER.info ("imported component " + name + " from " + ref + "@" + href);
 		}
-		
+
+		// reconnect a subset
+		kids = node.getChildrenWithTag ("connection");
+		for (TreeNode kid : kids)
+		{
+			if (kid.getType () != TreeNode.DOC_NODE)
+				continue;
+
+			DocumentNode dkid = (DocumentNode) kid;
+			if (CellMLConnection.parseConnection (modelToImport, modelToImport.getHierarchy (), (DocumentNode) dkid, tmpConMapper))
+				model.importConnection (dkid);
+		}
 	}
 }

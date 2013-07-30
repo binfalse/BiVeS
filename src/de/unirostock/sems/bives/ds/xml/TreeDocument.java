@@ -43,7 +43,7 @@ public class TreeDocument
 		hashMapper = new MultiNodeMapper<TreeNode> ();
 		tagMapper = new MultiNodeMapper<DocumentNode> ();
 		subtreesBySize = new Vector<TreeNode> ();
-		root = new DocumentNode (d.getDocumentElement (), null, this, w, 1, 0, pathMapper, idMapper, hashMapper, tagMapper, subtreesBySize);
+		root = new DocumentNode (d.getDocumentElement (), null, this, w, 1, 0);//, pathMapper, idMapper, hashMapper, tagMapper, subtreesBySize);
 		Collections.sort (subtreesBySize, new TreeNode.TreeNodeComparatorBySubtreeSize ());
 		ordered = true;
 		uniqueIds = true;
@@ -58,22 +58,63 @@ public class TreeDocument
 		hashMapper = new MultiNodeMapper<TreeNode> ();
 		tagMapper = new MultiNodeMapper<DocumentNode> ();
 		subtreesBySize = new Vector<TreeNode> ();
-		root = new DocumentNode (d.getDocumentElement (), null, this, w, 1, 0, pathMapper, idMapper, hashMapper, tagMapper, subtreesBySize);
+		root = new DocumentNode (d.getDocumentElement (), null, this, w, 1, 0);//, pathMapper, idMapper, hashMapper, tagMapper, subtreesBySize);
 		Collections.sort (subtreesBySize, new TreeNode.TreeNodeComparatorBySubtreeSize ());
 		this.ordered = ordered;
 		uniqueIds = true;
 		this.baseUri = baseUri;
 	}
 	
+	public void resortSubtrees ()
+	{
+		Collections.sort (subtreesBySize, new TreeNode.TreeNodeComparatorBySubtreeSize ());
+	}
+	
+	public void integrate (TreeNode node)
+	{
+		pathMapper.putNode (node.getXPath (), node);
+		subtreesBySize.add (node);
+		if (node.getType () == TreeNode.DOC_NODE)
+		{
+			DocumentNode dnode = (DocumentNode) node;
+			hashMapper.addNode (node.getSubTreeHash (), node);
+			tagMapper.addNode (dnode.getTagName (), dnode);
+			String id = dnode.getId ();
+			if (id != null)
+			{
+				if (idMapper.getNode (id) != null)
+					uniqueIds = false;
+				else
+					idMapper.putNode (id, dnode);
+			}
+		}
+		else
+		{
+			hashMapper.addNode (node.getOwnHash (), node);
+		}
+	}
+	
+	public void separate (TreeNode node)
+	{
+		pathMapper.rmNode (node.getXPath ());
+		subtreesBySize.remove (node);
+
+		if (node.getType () == TreeNode.DOC_NODE)
+		{
+			DocumentNode dnode = (DocumentNode) node;
+			hashMapper.rmNode (dnode.getSubTreeHash (), dnode);
+			tagMapper.rmNode (dnode.getTagName (), dnode);
+			if (dnode.getId () != null)
+				idMapper.rmNode (dnode.getId ());
+		}
+		else
+			hashMapper.rmNode (node.getOwnHash (), node);
+	}
+	
 
 	public URI getBaseUri ()
 	{
 		return baseUri;
-	}
-	
-	public void setIdsNotUnique ()
-	{
-		uniqueIds = false;
 	}
 	
 	/**

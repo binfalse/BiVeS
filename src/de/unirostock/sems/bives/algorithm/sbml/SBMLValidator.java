@@ -19,6 +19,8 @@ import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
 import de.unirostock.sems.bives.tools.Tools;
+import de.unirostock.sems.bives.tools.TreeTools;
+import de.unirostock.sems.bives.tools.XmlTools;
 
 
 /**
@@ -35,7 +37,7 @@ public class SBMLValidator
 	@Override
 	public boolean validate (TreeDocument d) throws XMLStreamException, ParserConfigurationException, SAXException, IOException
 	{
-		return validate (Tools.printSubDoc (d.getRoot ()));
+		return validate (TreeTools.printSubDoc (d.getRoot ()));
 	}
 	
 	
@@ -45,7 +47,7 @@ public class SBMLValidator
 	@Override
 	public boolean validate (String d) throws XMLStreamException, ParserConfigurationException, SAXException, IOException
 	{
-		DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
+		/*DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
 			.newDocumentBuilder ();
 		TreeDocument td = new TreeDocument (builder.parse (new ByteArrayInputStream(d.getBytes ())), new XyWeighter ());
 		doc = new SBMLDocument (td);

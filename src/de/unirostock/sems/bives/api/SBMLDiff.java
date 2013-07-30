@@ -15,10 +15,16 @@ import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.sbml.SBMLConnector;
 import de.unirostock.sems.bives.algorithm.sbml.SBMLDiffInterpreter;
 import de.unirostock.sems.bives.algorithm.sbml.SBMLGraphProducer;
+import de.unirostock.sems.bives.ds.graph.GraphTranslatorDot;
+import de.unirostock.sems.bives.ds.graph.GraphTranslatorGraphML;
 import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
 import de.unirostock.sems.bives.exception.BivesConnectionException;
+import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.TypesettingHTML;
+import de.unirostock.sems.bives.markup.TypesettingMarkDown;
 
 /**
  * @author Martin Scharm
@@ -26,10 +32,17 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
  */
 public class SBMLDiff extends Diff
 {
-	private SBMLDocument doc1;
-	private SBMLDocument doc2;
+	protected SBMLDocument doc1;
+	protected SBMLDocument doc2;
 	
-	public SBMLDiff (File a, File b) throws BivesDocumentParseException, FileNotFoundException, ParserConfigurationException, SAXException, IOException
+	public SBMLDiff (File a, File b) throws BivesDocumentParseException, FileNotFoundException, ParserConfigurationException, SAXException, IOException, BivesConsistencyException
+	{
+		super (a,b);
+		doc1 = new SBMLDocument (treeA);
+		doc2 = new SBMLDocument (treeB);
+	}
+	
+	public SBMLDiff (String a, String b) throws BivesDocumentParseException, FileNotFoundException, ParserConfigurationException, SAXException, IOException, BivesConsistencyException
 	{
 		super (a,b);
 		doc1 = new SBMLDocument (treeA);
@@ -47,8 +60,9 @@ public class SBMLDiff extends Diff
 	 * @throws FileNotFoundException 
 	 * @throws BivesDocumentParseException 
 	 * @throws BivesConnectionException 
+	 * @throws BivesConsistencyException 
 	 */
-	public static void main(String[] args) throws ParserConfigurationException, BivesDocumentParseException, FileNotFoundException, SAXException, IOException, BivesConnectionException
+	/*public static void main(String[] args) throws ParserConfigurationException, BivesDocumentParseException, FileNotFoundException, SAXException, IOException, BivesConnectionException, BivesConsistencyException
 	{
 		//args = new String [] {"test/TestModel_for_IB2013-version-one", "--graphml", "test/TestModel_for_IB2013-version-two"};
 		
@@ -67,13 +81,13 @@ public class SBMLDiff extends Diff
 				System.out.println(diff.getGraphML());
 				break;
 			case Diff.PROD_REPORT:
-				System.out.println (diff.getReport());
+				System.out.println (diff.getHTMLReport());
 				break;
 			default:
 				System.out.println(diff.getDiff());
 		}
 		
-	}
+	}*/
 
 
 
@@ -99,24 +113,52 @@ public class SBMLDiff extends Diff
 
 
 
-
+	protected SBMLGraphProducer graphProducer;
+	protected SBMLDiffInterpreter interpreter;
 
 
 	@Override
-	public String getGraphML() throws ParserConfigurationException {
-		SBMLGraphProducer producer = new SBMLGraphProducer ();
-		producer.init (connections, doc1, doc2);
-		return producer.produce ();
+	public String getCRNGraphML() throws ParserConfigurationException {
+		if (graphProducer == null)
+			graphProducer = new SBMLGraphProducer (connections, doc1, doc2);
+		return new GraphTranslatorGraphML ().translate (graphProducer.getCRN ());
 	}
 
 
 
 
 	@Override
-	public String getReport() {
-		SBMLDiffInterpreter inter = new SBMLDiffInterpreter (connections, doc1, doc2);
-		inter.interprete ();
-		return inter.getReport ().generateHTMLReport ();
+	public String getMarkDownReport() {
+		if (interpreter == null)
+		{
+			interpreter = new SBMLDiffInterpreter (connections, doc1, doc2);
+			interpreter.interprete ();
+		}
+		return new TypesettingMarkDown ().markup (interpreter.getReport ());
+	}
+
+
+
+
+	@Override
+	public String getHTMLReport() {
+		if (interpreter == null)
+		{
+			interpreter = new SBMLDiffInterpreter (connections, doc1, doc2);
+			interpreter.interprete ();
+		}
+		return new TypesettingHTML ().markup (interpreter.getReport ());
+	}
+
+
+
+
+	@Override
+	public String getCRNDotGraph () throws ParserConfigurationException
+	{
+		if (graphProducer == null)
+			graphProducer = new SBMLGraphProducer (connections, doc1, doc2);
+		return new GraphTranslatorDot ().translate (graphProducer.getCRN ());
 	}
 
 }

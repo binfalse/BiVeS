@@ -3,6 +3,7 @@
  */
 package de.unirostock.sems.bives.api;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -46,22 +47,34 @@ public abstract class Diff
 		DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
 			.newDocumentBuilder ();
 		
-		treeA = new TreeDocument (builder.parse (new FileInputStream (a)), new XyWeighter ());
-		treeB = new TreeDocument (builder.parse (new FileInputStream (b)), new XyWeighter ());
+		treeA = new TreeDocument (builder.parse (new FileInputStream (a)), new XyWeighter (), a.toURI ());
+		treeB = new TreeDocument (builder.parse (new FileInputStream (b)), new XyWeighter (), b.toURI ());
+	}
+
+	public Diff (String a, String b) throws ParserConfigurationException, BivesDocumentParseException, FileNotFoundException, SAXException, IOException
+	{
+		this.a = null;
+		this.b = null;
+
+		DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
+			.newDocumentBuilder ();
+		
+		treeA = new TreeDocument (builder.parse (new ByteArrayInputStream(a.getBytes ())), new XyWeighter (), null);
+		treeB = new TreeDocument (builder.parse (new ByteArrayInputStream (b.getBytes ())), new XyWeighter (), null);
 	}
 	
 	public abstract boolean mapTrees () throws Exception;
 	
-	public String getJSON () throws ParserConfigurationException
+	/*public String getJSON () throws ParserConfigurationException
 	{
 		Map<String, Object> json=new LinkedHashMap<String, Object>();
 
 		json.put("graphml", getGraphML ());
-		json.put("htmlreport", getReport ());
+		json.put("htmlreport", getHTMLReport ());
 		json.put("xmldiff", getDiff ());
 		return JSONValue.toJSONString(json);
 		
-	}
+	}*/
 	
 	public String getDiff ()
 	{
@@ -70,10 +83,13 @@ public abstract class Diff
 		return producer.produce ();
 	}
 	
-	public abstract String getGraphML () throws ParserConfigurationException;
+	public abstract String getCRNGraphML () throws ParserConfigurationException;
 	
-	public abstract String getReport ();
+	public abstract String getCRNDotGraph () throws ParserConfigurationException;
 	
+	public abstract String getHTMLReport ();
+	
+	public abstract String getMarkDownReport ();
 	
 	protected static class ArgsParser
 	{

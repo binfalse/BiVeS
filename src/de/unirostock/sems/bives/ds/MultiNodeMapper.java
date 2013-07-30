@@ -39,6 +39,16 @@ public class MultiNodeMapper<T>
 		nodes.add (node);
 	}
 	
+	public void rmNode (String id, T node)
+	{
+		Vector<T> nodes = mapper.get (id);
+		if (nodes == null)
+		{
+			return;
+		}
+		nodes.remove (node);
+	}
+	
 	public Vector<T> getNodes (String id)
 	{
 		return mapper.get (id);

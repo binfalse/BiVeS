@@ -26,6 +26,7 @@ import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Weighter;
 import de.unirostock.sems.bives.ds.MultiNodeMapper;
 import de.unirostock.sems.bives.ds.NodeMapper;
+import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
 import de.unirostock.sems.bives.tools.Tools;
 
@@ -72,11 +73,10 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 	private String subTreeHash, ownHash;
 	
 	/** The num leaves. */
-	private int level, sizeSubtree, numLeaves;
-	
-	private TreeDocument doc;
+	private int sizeSubtree, numLeaves;
 	
 	private double weight;
+	private Weighter weighter;
 	
 	/**
 	 * Gets the tag name.
@@ -98,17 +98,64 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 		return id;
 	}
 	
-	public static DocumentNode getDummyNode ()
+	/*public static DocumentNode getDummyNode ()
 	{
 		return new DocumentNode ();
-	}
+	}*/
 	
-	private DocumentNode ()
+	private DocumentNode (DocumentNode toCopy)
 	{
-		super (TreeNode.DOC_NODE, null);
+		super (TreeNode.DOC_NODE, null, null, 0);
+		tagName = toCopy.tagName;
+		id = toCopy.id;
+		sizeSubtree = toCopy.sizeSubtree;
+		numLeaves = toCopy.numLeaves;
+		weight = toCopy.weight;
+		weighter = toCopy.weighter;
+		
 		attributes = new HashMap<String, String> ();
+		for (String attr : toCopy.attributes.keySet ())
+			attributes.put (attr, toCopy.attributes.get (attr));
+		
 		children = new Vector<TreeNode> ();
 		childrenByTag = new HashMap<String, Vector<TreeNode>> ();
+		
+		for (TreeNode tn : toCopy.getChildren ())
+		{
+			if (tn.getType () == TreeNode.DOC_NODE)
+			{
+					DocumentNode c = (DocumentNode) tn;
+					DocumentNode cc = new DocumentNode (c);
+					children.add (cc);
+					cc.parent = this;
+					Vector<TreeNode> v = childrenByTag.get (cc.tagName);
+					if (v == null)
+					{
+						v = new Vector<TreeNode> ();
+						childrenByTag.put (cc.tagName, v);
+					}
+					v.add (cc);
+			}
+			else
+			{
+					TextNode c = (TextNode) tn;
+					TextNode cc = new TextNode (c);
+					children.add (cc);
+					cc.parent = this;
+					Vector<TreeNode> v = childrenByTag.get (TEXT_TAG);
+					if (v == null)
+					{
+						v = new Vector<TreeNode> ();
+						childrenByTag.put (TEXT_TAG, v);
+					}
+					v.add (cc);
+			}
+		}
+		
+		doc = null;
+
+		ownHash = toCopy.ownHash;
+		subTreeHash = toCopy.subTreeHash;
 	}
 	
 	/**
@@ -125,26 +172,24 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 	 * @param subtreesBySize 
 	 * @throws BivesDocumentParseException 
 	 */
-	public DocumentNode (Element element, DocumentNode parent, TreeDocument doc, Weighter w, int numChild, int level, NodeMapper<TreeNode> pathMapper, NodeMapper<DocumentNode> idMapper, MultiNodeMapper<TreeNode> hashMapper, MultiNodeMapper<DocumentNode> tagMapper, Vector<TreeNode> subtreesBySize) throws BivesDocumentParseException
+	public DocumentNode (Element element, DocumentNode parent, TreeDocument doc, Weighter w, int numChild, int level)//, NodeMapper<TreeNode> pathMapper, NodeMapper<DocumentNode> idMapper, MultiNodeMapper<TreeNode> hashMapper, MultiNodeMapper<DocumentNode> tagMapper, Vector<TreeNode> subtreesBySize) throws BivesDocumentParseException
 	{
-		super (TreeNode.DOC_NODE, parent);
+		super (TreeNode.DOC_NODE, parent, doc, level);
 		// init objects
-		this.doc = doc;
 		//interTreeConnections = new HashMap<DocumentNode, Connection> ();
 		attributes = new HashMap<String, String> ();
 		children = new Vector<TreeNode> ();
 		tagName = element.getTagName ();
-		tagMapper.addNode (tagName, this);
-		this.level = level;
+		//tagMapper.addNode (tagName, this);
 		sizeSubtree = numLeaves = 0;
-		
+		weighter = w;
 		// create xpath
 		if (parent == null)
 			xPath = "";
 		else
 			xPath = parent.getXPath ();
 		xPath += "/" + tagName + "[" + numChild + "]";
-		pathMapper.putNode (xPath, this);
+		//pathMapper.putNode (xPath, this);
 		
 		// find attributes
 		NamedNodeMap a = element.getAttributes();
@@ -157,13 +202,13 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 		
 		// id mapper
 		id = attributes.get (ID_ATTR);
-		if (id != null)
+		/*if (id != null)
 		{
 			if (idMapper.getNode (id) != null)
 				doc.setIdsNotUnique ();
 				//throw new BivesDocumentParseException ("multiple entities w/ same id: " + id);
 			idMapper.putNode (id, this);
-		}
+		}*/
 		
 		// add kids
 		NodeList kids = element.getChildNodes ();
@@ -177,11 +222,11 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 				Element cur = (Element) current;
 				if (childrenByTag.get (cur.getTagName ()) == null)
 					childrenByTag.put (cur.getTagName (), new Vector<TreeNode> ());
-				DocumentNode kid = new DocumentNode (cur, this, doc, w, childrenByTag.get (cur.getTagName ()).size () + 1, level + 1, pathMapper, idMapper, hashMapper, tagMapper, subtreesBySize);
+				DocumentNode kid = new DocumentNode (cur, this, doc, w, childrenByTag.get (cur.getTagName ()).size () + 1, level + 1);//, pathMapper, idMapper, hashMapper, tagMapper, subtreesBySize);
 				
 				children.add (kid);
 				childrenByTag.get (cur.getTagName ()).add (kid);
-				subTreeHash += kid.getSubTreeHash ();
+				//subTreeHash += kid.getSubTreeHash ();
 				sizeSubtree += kid.getSizeSubtree () + 1;
 				numLeaves += kid.getNumLeaves ();
 			}
@@ -196,10 +241,10 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 				if (childrenByTag.get ("text()") == null)
 					childrenByTag.put ("text()", new Vector<TreeNode> ());
 				
-				TextNode kid = new TextNode (text, this, childrenByTag.get ("text()").size () + 1, w, pathMapper, hashMapper, tagMapper, subtreesBySize);
+				TextNode kid = new TextNode (text, this, doc, childrenByTag.get (TEXT_TAG).size () + 1, w, level + 1);//, pathMapper, hashMapper, tagMapper, subtreesBySize);
 				children.add (kid);
 				childrenByTag.get ("text()").add (kid);
-				subTreeHash += kid.getSubTreeHash ();
+				//subTreeHash += kid.getSubTreeHash ();
 				sizeSubtree += 1;
 				numLeaves += 1;
 				//Element cur = (Element) current;
@@ -212,15 +257,111 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 		if (numLeaves == 0)
 			numLeaves = 1;
 		
-		subtreesBySize.add (this);
+		//subtreesBySize.add (this);
 		
 		/*DocumentNode dn = hashMapper.getNode (hash);
 		if (dn != null)
 		{
 			System.out.println ("-------- same: " + xPath + "    " + dn.getXPath ());
 		}*/
-		hashMapper.addNode (subTreeHash, this);
+		//hashMapper.addNode (subTreeHash, this);
 		weight = w.getWeight (this);
+		doc.integrate (this);
+	}
+	
+	protected void reSetupStructureDown (TreeDocument doc, int numChild)
+	{
+		if (this.doc != null)
+			this.doc.separate (this);
+		this.doc = doc;
+		//LOGGER.debug (parent.xPath);
+		this.xPath = parent.xPath + "/" + tagName + "[" + numChild + "]";
+		this.level = parent.level + 1;
+		
+		for (String tag : childrenByTag.keySet ())
+		{
+			Vector<TreeNode> kids = childrenByTag.get (tag);
+			for (int i = 0; i < kids.size (); i++)
+				kids.elementAt (i).reSetupStructureDown (doc, i+1);
+		}
+		
+		this.doc.integrate (this);
+	}
+	
+	protected void reSetupStructureUp ()
+	{
+		if (this.doc != null)
+			this.doc.separate (this);
+		
+		calcHash ();
+		numLeaves = 0;
+		sizeSubtree = 0;
+		for (TreeNode kid : children)
+		{
+			if (kid.type == TreeNode.DOC_NODE)
+			{
+				DocumentNode k = (DocumentNode) kid;
+				numLeaves += k.numLeaves;
+				sizeSubtree += k.getSizeSubtree () + 1;
+			}
+			else
+			{
+				numLeaves++;
+				sizeSubtree++;
+			}
+		}
+			
+		if (numLeaves == 0)
+			numLeaves = 1;
+
+		if (this.doc != null)
+			this.doc.integrate (this);
+		weight = weighter.getWeight (this);
+		if (parent != null)
+			parent.reSetupStructureUp ();
+	}
+	
+	
+	public void addChild (DocumentNode toAdd)
+	{
+		// integrate subtree
+		toAdd.parent = this;
+		if (childrenByTag.get (toAdd.getTagName ()) == null)
+			childrenByTag.put (toAdd.getTagName (), new Vector<TreeNode> ());
+		children.add (toAdd);
+		toAdd.reSetupStructureDown (doc, childrenByTag.get (toAdd.getTagName ()).size () + 1);
+		childrenByTag.get (toAdd.getTagName ()).add (toAdd);
+		
+		// update parents
+		reSetupStructureUp ();
+		
+		// resort subtreesizes
+		doc.resortSubtrees ();
+	}
+	
+	public void rmChild (DocumentNode toRemove) throws BivesConsistencyException
+	{
+		Vector<TreeNode> nodes = childrenByTag.get (toRemove.getTagName ());
+		if (nodes == null)
+			throw new BivesConsistencyException ("removing a child that isn't a child");
+		if (!nodes.remove (toRemove) || !children.remove (toRemove))
+			throw new BivesConsistencyException ("removing a child that isn't a child");
+
+		// update parents
+		reSetupStructureUp ();
+		
+		// resort subtreesizes
+		doc.resortSubtrees ();
+	}
+	
+	/**
+	 * Extracts this subtree. Creates a DocumentNode that has no parent, e.g. to transfer it to another document.
+	 *
+	 * @return the copy of this DocumentNode
+	 */
+	public DocumentNode extract ()
+	{
+		return new DocumentNode (this);
 	}
 	
 	/**
@@ -275,8 +416,11 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 			h += ";" + a + "=" + attributes.get (a);
 		ownHash = Tools.hash (h);
 		
-		if (subTreeHash != null)
-			h += subTreeHash;
+		//subTreeHash = "";
+		for (TreeNode kid : children)
+			h += kid.getSubTreeHash ();
+		//if (subTreeHash != null)
+		//h += subTreeHash;
 		/*if (text != null)
 			h += text;*/
 		
@@ -286,12 +430,24 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 	/**
 	 * Gets the attribute. Don't use it to get the id, use getId () instead!
 	 *
-	 * @param attr the attr
-	 * @return the attribute
+	 * @param attr the name of the attribute
+	 * @return the value of the attribute
 	 */
 	public String getAttribute (String attr)
 	{
 		return attributes.get (attr);
+	}
+	
+	/**
+	 * Overrides an attribute.
+	 *
+	 * @param attr the name of the attribute
+	 * @param value the new value
+	 */
+	public void setAttribute (String attr, String value)
+	{
+		attributes.put (attr, value);
+		reSetupStructureUp ();
 	}
 	
 	public Set<String> getAttributes ()
@@ -479,5 +635,31 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 			parent.appendChild (node);
 		for (TreeNode kid : children)
 			kid.getSubDoc (doc, node);
+	}
+	
+	/**
+	 * Calculates the distance of attributes. Returns a double in [0,1]. If all attributes match the distance will be 0, if none of the attributes match the distance will be 1.
+	 *
+	 * @param cmp the node to compare
+	 * @return the attribute distance in [0,1]
+	 */
+	public double getAttributeDistance (DocumentNode cmp)
+	{
+		if (attributes.size () == 0 && cmp.attributes.size () == 0)
+			return 0;
+		double unmatch = 0.;
+		for (String name : attributes.keySet ())
+		{
+			if (cmp.attributes.get (name) == null)
+				unmatch += 1;
+			else if (!cmp.attributes.get (name).equals (attributes.get (name)))
+				unmatch += 2;
+		}
+		for (String name : cmp.attributes.keySet ())
+		{
+			if (attributes.get (name) == null)
+				unmatch += 1;
+		}
+		return unmatch / (double)(attributes.size () + cmp.attributes.size ());
 	}
 }

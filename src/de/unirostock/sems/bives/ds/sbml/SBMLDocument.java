@@ -9,6 +9,7 @@ import java.util.Vector;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
+import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
 
 
@@ -25,7 +26,7 @@ public class SBMLDocument
 	private int version;
 	private SBMLModel model;
 	
-	public SBMLDocument (TreeDocument tree) throws BivesSBMLParseException
+	public SBMLDocument (TreeDocument tree) throws BivesSBMLParseException, BivesConsistencyException
 	{
 		this.tree = tree;
 		DocumentNode root = tree.getRoot ();

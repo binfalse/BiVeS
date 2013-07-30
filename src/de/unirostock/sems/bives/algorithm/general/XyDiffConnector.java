@@ -3,6 +3,7 @@
  */
 package de.unirostock.sems.bives.algorithm.general;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -14,6 +15,7 @@ import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
+import de.unirostock.sems.bives.ds.xml.NodeComparer;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesConnectionException;
@@ -82,9 +84,10 @@ public class XyDiffConnector
 			conMgmt.addConnection (new Connection (docA.getRoot (), docB.getRoot ()));
 
 		if (debug)
-			System.out.println ("\n\n\n\n\n");
+			LOGGER.debug ("\n\n\n\n\n");
 		
-		
+
+		LOGGER.debug ("doing full bottom up");
 		FullBottomUp (docB.getRoot ());
 
 		if (debug)
@@ -92,7 +95,8 @@ public class XyDiffConnector
 			LOGGER.debug (conMgmt.toString ());
 			LOGGER.debug ("\n\n\n\n\n");
 		}
-		
+
+		LOGGER.debug ("doing top down");
 		topdownMatch (docA.getRoot (), docB.getRoot ());
 
 		if (debug)
@@ -100,7 +104,8 @@ public class XyDiffConnector
 			LOGGER.debug (conMgmt.toString ());
 			LOGGER.debug ("\n\n\n\n\n");
 		}
-		
+
+		LOGGER.debug ("doing optimizations");
 		optimize (docA.getRoot ());
 
 		if (debug)
@@ -244,9 +249,111 @@ public class XyDiffConnector
 		}
 	}
 	
-	private void optimize (TreeNode rootA)
+	private void optimize (DocumentNode nodeA) throws BivesConnectionException
 	{
+		// If node is matched, we can try to do some work
+		Connection c = conMgmt.getConnectionForNode (nodeA);
+		if (c != null)
+		{
+			TreeNode tnb = c.getPartnerOf (nodeA);
+			if (tnb.getType () != TreeNode.DOC_NODE)
+				return;
+			DocumentNode nodeB = (DocumentNode) tnb;
+			
+			// Get Free nodes in v0
+			HashMap<String, Vector<DocumentNode>> kidsMapA = new HashMap<String, Vector<DocumentNode>> ();
+			Vector<TreeNode> kidsA = nodeA.getChildren ();
+			for (TreeNode node : kidsA)
+			{
+				if (node.getType () != TreeNode.DOC_NODE || conMgmt.getConnectionForNode (node) != null)
+					continue;
+				DocumentNode dnode = (DocumentNode) node;
+				String tag = dnode.getTagName ();
+				if (kidsMapA.get (tag) == null)
+					kidsMapA.put (tag, new Vector<DocumentNode> ());
+				kidsMapA.get (tag).add (dnode);
+			}
+			
+			// Look for similar nodes in v1
+			HashMap<String, Vector<DocumentNode>> kidsMapB = new HashMap<String, Vector<DocumentNode>> ();
+			Vector<TreeNode> kidsB = nodeB.getChildren ();
+			for (TreeNode node : kidsB)
+			{
+				if (node.getType () != TreeNode.DOC_NODE || conMgmt.getConnectionForNode (node) != null)
+					continue;
+				DocumentNode dnode = (DocumentNode) node;
+				String tag = dnode.getTagName ();
+				if (kidsMapB.get (tag) == null)
+					kidsMapB.put (tag, new Vector<DocumentNode> ());
+				kidsMapB.get (tag).add (dnode);
+			}
+
+			// Now match unique children
+			for (String tag : kidsMapA.keySet ())
+			{
+				optimize (kidsMapA.get (tag), kidsMapB.get (tag));
+			}
+			
+			/*std::map<std::string, int>::iterator i ;
+			for(i=v0freeChildren.begin(); i!=v0freeChildren.end(); i++) {
+				if ((i->second>0)&&(v1freeChildren.find(i->first)!=v1freeChildren.end())) {
+					int v1ID = v1freeChildren[i->first];
+					if (v1ID>0) {
+						vddprintf(("matching v0(%d) with v1(%d)\n", i->second, v1ID));
+						nodeAssign(i->second, v1ID);
+						}
+					}
+				}
+
+			// End-if - Assigned(v0nodeID)
+			}*/
+		} //endif
 		
+		// Apply recursivly on children
+		Vector<TreeNode> children = nodeA.getChildren ();
+		for (TreeNode child : children)
+		{
+			if (child.getType () == TreeNode.DOC_NODE)
+				optimize ((DocumentNode) child);
+		}
+	}// end optimize
+	
+	private void optimize (Vector<DocumentNode> nodesA, Vector<DocumentNode> nodesB) throws BivesConnectionException
+	{
+		// try to find mappings of children w/ same tag name and same parents
+		if (nodesA == null || nodesB == null || nodesA.size () == 0 || nodesB.size () == 0)
+			return;
+		
+		if (nodesA.size () == 1 && nodesB.size () == 1)
+		{
+			// lets match both if they are not too different
+			DocumentNode nodeA = nodesA.firstElement (), nodeB = nodesB.firstElement ();
+			if (nodeA.getAttributeDistance (nodeB) < .9)
+			{
+				LOGGER.debug ("connect unambiguos nodes during optimization: " + nodeA.getXPath () + " --> " + nodeB.getXPath ());
+				conMgmt.addConnection (new Connection (nodeA, nodeB));
+			}
+			return;
+		}
+		
+		// calculate distances between nodes
+		Vector<NodeComparer> distances = new Vector<NodeComparer> ();
+		for (DocumentNode nodeA : nodesA)
+			for (DocumentNode nodeB : nodesB)
+				distances.add (new NodeComparer (nodeA, nodeB, nodeA.getAttributeDistance (nodeB)));
+		// sort by distance
+		Collections.sort (distances, new NodeComparer.NodeComparator (false));
+		
+		// greedy connect nodes
+		for (NodeComparer comp : distances)
+		{
+			// stop at too different nodes
+			if (comp.distance > 0.9)
+				break;
+			TreeNode na = comp.nodeA, nb = comp.nodeB;
+			if (conMgmt.getConnectionForNode (na) == null && conMgmt.getConnectionForNode (nb) == null)
+				conMgmt.addConnection (new Connection (na, nb));
+		}
 	}
 	
 	private boolean nodeAssign (TreeNode a, TreeNode b) throws BivesConnectionException
@@ -363,7 +470,7 @@ public class XyDiffConnector
 				
 			} //end ancestor is matched
 			candidateRelativeLevel++;
-		} // next level
+		} // endwhile: next level
 		return null;
 	}
 	

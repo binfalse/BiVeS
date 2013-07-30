@@ -29,7 +29,7 @@ public class CellMLUnitDictionary
 		init ();
 	}
 	
-	public CellMLUnit getUnit (String name, CellMLComponent c) throws BivesConsistencyException
+	public CellMLUnit getUnit (String name, CellMLComponent c)
 	{
 		HashMap<String, CellMLUserUnit> cu = componentUnits.get (c);
 		if (cu != null)
@@ -47,7 +47,17 @@ public class CellMLUnitDictionary
 		if (u != null)
 			return u;
 		
-		throw new BivesConsistencyException ("no such unit: " + name);
+		return null;
+	}
+	
+	public HashMap<String, CellMLUserUnit> getComponetUnits (CellMLComponent component)
+	{
+		return componentUnits.get (component);
+	}
+	
+	public HashMap<String, CellMLUserUnit> getModelUnits ()
+	{
+		return modelUnits;
 	}
 	
 	public void addUnit (CellMLComponent c, CellMLUserUnit u) throws BivesConsistencyException
@@ -70,7 +80,7 @@ public class CellMLUnitDictionary
 				componentUnits.put (c, cu);
 			}
 			if (cu.get (u.getName ()) != null)
-				throw new BivesConsistencyException ("unit name is not unique in component: " + u.getName ());
+				throw new BivesConsistencyException ("unit name is not unique: " + u.getName ());
 			cu.put (u.getName (), u);
 		}
 	}
@@ -79,7 +89,7 @@ public class CellMLUnitDictionary
 	{
 		String [] common = new String [] {"ampere", "farad", "katal", "lux", "pascal", "tesla", "becquerel", "gram", "kelvin", "meter", "radian", "volt", "candela", "gray", "kilogram", "metre", "second", "watt", "celsius", "henry", "liter", "mole", "siemens", "weber", "coulomb", "hertz", "litre", "newton", "sievert", "dimensionless", "joule", "lumen", "ohm", "steradian"};
 		for (String c : common)
-			commonUnits.put (c, new CellMLUnit (model, c, null));
+			commonUnits.put (c, CellMLUnit.createStandardUnit (c));
 	}
 	
 	public void debug (String prefix)

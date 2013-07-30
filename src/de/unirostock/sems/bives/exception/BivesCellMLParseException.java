@@ -10,10 +10,10 @@ import de.binfalse.bflog.LOGGER;
  * @author Martin Scharm
  *
  */
-public class CellMLReadException
+public class BivesCellMLParseException
 	extends Exception
 {
-	public CellMLReadException (String msg)
+	public BivesCellMLParseException (String msg)
 	{
 		super (msg);
 	}

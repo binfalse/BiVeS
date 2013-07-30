@@ -13,6 +13,7 @@ import de.unirostock.sems.bives.algorithm.general.IdConnector;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
 import de.unirostock.sems.bives.ds.sbml.SBMLAssignmentRule;
 import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
+import de.unirostock.sems.bives.ds.sbml.SBMLListOf;
 import de.unirostock.sems.bives.ds.sbml.SBMLModel;
 import de.unirostock.sems.bives.ds.sbml.SBMLRateRule;
 import de.unirostock.sems.bives.ds.sbml.SBMLReaction;
@@ -50,7 +51,7 @@ public class SBMLConnectorPreprocessor
 	@Override
 	public void init (TreeDocument docA, TreeDocument docB) throws BivesConnectionException
 	{
-		super.init (sbmlDocA.getTreeDocument (), sbmlDocA.getTreeDocument ());
+		super.init (sbmlDocA.getTreeDocument (), sbmlDocB.getTreeDocument ());
 		
 		// not yet initialized?
 		if (preprocessor == null)
@@ -91,11 +92,20 @@ public class SBMLConnectorPreprocessor
 			if (rB == null)
 				continue;
 			SBMLReaction rA = reactionsA.get (id);
-			
-			if (conMgmt.getConnectionForNode (rA.getDocumentNode ()) == null)
+
+			if (conMgmt.getConnectionForNode (rA.getDocumentNode ()) == null && conMgmt.getConnectionForNode (rB.getDocumentNode ()) == null)
+			{
 				conMgmt.addConnection (new Connection (rA.getDocumentNode (), rB.getDocumentNode ()));
+			}
+			else
+			{
+				if (conMgmt.getConnectionForNode (rA.getDocumentNode ()) == null || conMgmt.getConnectionForNode (rB.getDocumentNode ()) == null)
+					continue;
+				if (conMgmt.getConnectionForNode (rA.getDocumentNode ()).getPartnerOf (rA.getDocumentNode ()) != rB.getDocumentNode ())
+					continue;
+			}
 			
-			SBMLSBase loA = rA.getListOfReactantsNode (), loB = rB.getListOfReactantsNode ();
+			SBMLListOf loA = rA.getListOfReactantsNode (), loB = rB.getListOfReactantsNode ();
 			if (loA != null && loB != null)
 				conMgmt.addConnection (new Connection (loA.getDocumentNode (), loB.getDocumentNode ()));
 			
@@ -143,6 +153,8 @@ public class SBMLConnectorPreprocessor
 					conMgmt.addConnection (new Connection (a.getDocumentNode (), rule.getDocumentNode ()));
 			}
 		}
+		//System.out.println ("after pre:");
+		//System.out.println (conMgmt);
 		
 	}
 	

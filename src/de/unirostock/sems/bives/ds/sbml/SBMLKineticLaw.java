@@ -59,13 +59,13 @@ public class SBMLKineticLaw
 		for (String key : locParA.keySet ())
 		{
 			if (locParB.get (key) == null)
-				me.addValue ("local parameter: " + markupDocument.delete (locParA.get (key).htmlMarkup ()));
+				me.addValue ("local parameter: " + markupDocument.delete (locParA.get (key).markup (markupDocument)));
 				//ret += "<span class='"+CLASS_DELETED+"'>local parameter: " + locParA.get (key).htmlMarkup () + "</span><br/>";
 			else
 			{
 				SBMLParameter parA = locParA.get (key);
-				String aS = parA.htmlMarkup ();
-				String bS = locParB.get (key).htmlMarkup ();
+				String aS = parA.markup (markupDocument);
+				String bS = locParB.get (key).markup (markupDocument);
 				if (!aS.equals (bS))
 					me.addValue ("local parameter: " + parA.getNameAndId ()+ " modified from " +markupDocument.delete (aS) + " to " + markupDocument.insert (bS));
 					//ret += "local parameter: "+parA.getNameAndId ()+" modified from <span class='"+CLASS_DELETED+"'>" + aS + "</span> to <span class='"+CLASS_INSERTED+"'>" + bS + "</span><br/>";
@@ -74,16 +74,16 @@ public class SBMLKineticLaw
 		for (String key : locParB.keySet ())
 		{
 			if (locParA.get (key) == null)
-				me.addValue ("local parameter: " + markupDocument.insert (locParB.get (key).htmlMarkup ()));
+				me.addValue ("local parameter: " + markupDocument.insert (locParB.get (key).markup (markupDocument)));
 				//ret += "<span class='"+CLASS_INSERTED+"'>local parameter: " + locParA.get (key).htmlMarkup () + "</span><br/>";
 		}
 		
 		if (a.math != null && b.math != null)
-			Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
+			Tools.genMathHtmlStats (a.math.getDocumentNode (), b.math.getDocumentNode (), me, markupDocument);
 		else if (a.math != null)
-			Tools.genMathHtmlStats (a.math.getMath (), null, me, markupDocument);
+			Tools.genMathHtmlStats (a.math.getDocumentNode (), null, me, markupDocument);
 		else if (b.math != null)
-			Tools.genMathHtmlStats (null, b.math.getMath (), me, markupDocument);
+			Tools.genMathHtmlStats (null, b.math.getDocumentNode (), me, markupDocument);
 		
 		//return ret;
 	}
@@ -91,10 +91,10 @@ public class SBMLKineticLaw
 	public void reportInsert (MarkupElement me, MarkupDocument markupDocument)
 	{
 		for (SBMLParameter locPar : listOfLocalParameters.values ())
-			me.addValue ("local parameter: " + markupDocument.insert (locPar.htmlMarkup ()));
+			me.addValue ("local parameter: " + markupDocument.insert (locPar.markup (markupDocument)));
 			//ret += "<span class='"+CLASS_DELETED+"'>local parameter: " + locPar.htmlMarkup () + "</span><br/>";
 		if (math != null)
-			Tools.genAttributeHtmlStats (null, math.getMath (), me, markupDocument);
+			Tools.genAttributeHtmlStats (null, math.getDocumentNode (), me, markupDocument);
 		/*String ret = "";
 		for (SBMLParameter locPar : listOfLocalParameters.values ())
 			ret += "<span class='"+CLASS_INSERTED+"'>local parameter: " + locPar.htmlMarkup () + "</span><br/>";
@@ -106,10 +106,10 @@ public class SBMLKineticLaw
 	public void reportDelete (MarkupElement me, MarkupDocument markupDocument)
 	{
 		for (SBMLParameter locPar : listOfLocalParameters.values ())
-			me.addValue ("local parameter: " + markupDocument.delete (locPar.htmlMarkup ()));
+			me.addValue ("local parameter: " + markupDocument.delete (locPar.markup (markupDocument)));
 			//ret += "<span class='"+CLASS_DELETED+"'>local parameter: " + locPar.htmlMarkup () + "</span><br/>";
 		if (math != null)
-			Tools.genAttributeHtmlStats (math.getMath (), null, me, markupDocument);
+			Tools.genAttributeHtmlStats (math.getDocumentNode (), null, me, markupDocument);
 	}
 	
 }

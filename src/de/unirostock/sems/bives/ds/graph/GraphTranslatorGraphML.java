@@ -22,6 +22,7 @@ import org.w3c.dom.Element;
 import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.ds.SBOTerm;
 import de.unirostock.sems.bives.tools.Tools;
+import de.unirostock.sems.bives.tools.XmlTools;
 
 
 /**
@@ -67,17 +68,17 @@ public class GraphTranslatorGraphML
 			{
 				if (s.getModification () == CRN.MODIFIED)
 				{
-					createEdge (graphRoot, s.subst.getId (), r.getId (), s.getModification () + "", s.getSboTermA ());
-					createEdge (graphRoot, s.subst.getId (), r.getId (), s.getModification () + "", s.getSboTermB ());
+					createEdge (graphRoot, s.subst.getId (), r.getId (), CRN.DELETE + "", s.getModTermA ());
+					createEdge (graphRoot, s.subst.getId (), r.getId (), CRN.INSERT + "", s.getModTermB ());
 				}
 				else
-					createEdge (graphRoot, s.subst.getId (), r.getId (), s.getModification () + "", s.getSboTerm ());
+					createEdge (graphRoot, s.subst.getId (), r.getId (), s.getModification () + "", s.getModTerm ());
 			}
 		}
 		
 		try
 		{
-			return Tools.prettyPrintDocument (graphDocument);
+			return XmlTools.prettyPrintDocument (graphDocument);
 		}
 		catch (IOException | TransformerException e)
 		{
@@ -93,7 +94,7 @@ public class GraphTranslatorGraphML
 	 *          the document
 	 * @return the graph node (root for the graph)
 	 */
-	private Element addGraphMLPreamble (Document doc)
+	public static Element addGraphMLPreamble (Document doc)
 	{
 		Element graphML = doc.createElement("graphml");
 		//graphML.setNamespace (Namespace.getNamespace ("http://graphml.graphdrawing.org/xmlns"));

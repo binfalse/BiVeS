@@ -42,7 +42,7 @@ public class XyWeighter
 	@Override
 	public double getWeight (TextNode node)
 	{
-		return Math.log (node.getText ().length ());
+		return Math.log (node.getText ().length ()) + 1;
 	}
 	
 }

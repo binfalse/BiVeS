@@ -9,6 +9,8 @@ import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TextNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.tools.Tools;
+import de.unirostock.sems.bives.tools.TreeTools;
+import de.unirostock.sems.bives.tools.XmlTools;
 
 
 /**
@@ -36,7 +38,7 @@ public class SBMLXHTML
 		for (TreeNode node : nodes)
 		{
 			if (node.getType () == TreeNode.DOC_NODE)
-				ret += Tools.printPrettySubDoc ((DocumentNode) node);
+				ret += TreeTools.printPrettySubDoc ((DocumentNode) node);
 			else if (node.getType () == TreeNode.TEXT_NODE)
 				ret += ((TextNode) node).getText ();
 		}

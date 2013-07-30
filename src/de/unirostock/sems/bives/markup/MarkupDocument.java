@@ -59,6 +59,11 @@ public class MarkupDocument
 		return "{{rightArrow}}";
 	}
 	
+	public String multiply ()
+	{
+		return "{{multiplication}}";
+	}
+	
 	public Vector<String> getHeader ()
 	{
 		return header;
@@ -92,6 +97,14 @@ public class MarkupDocument
 	public static final String replaceAttributes (String s, String pre, String post)
 	{
 		return replace (s, "{{attribute}}", "}}attribute{{", pre, post);
+	}
+	
+	public static final String replaceMultiplication (String s, String replacement)
+	{
+		if (replacement == null)
+			replacement = "";
+		String ret = s.replaceAll (Pattern.quote ("{{multiplication}}"), replacement);
+		return ret;
 	}
 	
 	public static final String replaceRightArrow (String s, String replacement)

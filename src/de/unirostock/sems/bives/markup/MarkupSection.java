@@ -36,4 +36,9 @@ public class MarkupSection
 	{
 		return values;
 	}
+	
+	public void setHeader (String header)
+	{
+		this.header = header;
+	}
 }

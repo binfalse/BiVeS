@@ -4,6 +4,7 @@
 package de.unirostock.sems.bives.ds.sbml;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
 import de.unirostock.sems.bives.markup.MarkupDocument;
@@ -17,7 +18,7 @@ import de.unirostock.sems.bives.tools.Tools;
  */
 public class SBMLSpeciesType
 	extends SBMLGenericIdNameObject
-	implements SBMLDiffReporter
+	implements DiffReporter
 {
 	
 	/**
@@ -29,16 +30,10 @@ public class SBMLSpeciesType
 		throws BivesSBMLParseException
 	{
 		super (documentNode, sbmlModel);
-		
-		id = documentNode.getAttribute ("id");
-		if (id == null || id.length () < 1)
-			throw new BivesSBMLParseException ("SpeciesType "+id+" doesn't provide a valid id.");
-		
-		name = documentNode.getAttribute ("name");
 	}
 
 	@Override
-	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, DiffReporter docA, DiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLSpeciesType a = (SBMLSpeciesType) docA;
 		SBMLSpeciesType b = (SBMLSpeciesType) docB;

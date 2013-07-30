@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.ds.MathML;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -21,7 +22,7 @@ import de.unirostock.sems.bives.tools.Tools;
  */
 public class SBMLInitialAssignment
 	extends SBMLSBase
-	implements SBMLDiffReporter
+	implements DiffReporter
 {
 	private SBMLSBase symbol;
 	private MathML math;
@@ -65,7 +66,7 @@ public class SBMLInitialAssignment
 	}
 	
 	@Override
-	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, DiffReporter docA, DiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLInitialAssignment a = (SBMLInitialAssignment) docA;
 		SBMLInitialAssignment b = (SBMLInitialAssignment) docB;
@@ -80,7 +81,7 @@ public class SBMLInitialAssignment
 			me = new MarkupElement (markupDocument.delete (idA) + " "+markupDocument.rightArrow ()+" " + markupDocument.insert (idB));
 		
 		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
-		Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
+		Tools.genMathHtmlStats (a.math.getDocumentNode (), b.math.getDocumentNode (), me, markupDocument);
 		
 		return me;
 	}

@@ -9,6 +9,7 @@ import java.util.Vector;
 import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
+import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
 
 
@@ -51,9 +52,10 @@ public class SBMLModel
 	 * @param documentNode
 	 * @param sbmlDocument
 	 * @throws BivesSBMLParseException
+	 * @throws BivesConsistencyException 
 	 */
 	public SBMLModel (DocumentNode documentNode, SBMLDocument sbmlDocument)
-		throws BivesSBMLParseException
+		throws BivesSBMLParseException, BivesConsistencyException
 	{
 		super (documentNode, null);
 		sbmlModel = this;
@@ -79,7 +81,7 @@ public class SBMLModel
 		
 	}
 	
-	private void parseTree () throws BivesSBMLParseException
+	private void parseTree () throws BivesSBMLParseException, BivesConsistencyException
 	{
 		DocumentNode modelRoot = documentNode;
 		
@@ -339,7 +341,7 @@ public class SBMLModel
 		}
 	}
 
-	private void parseUnits (DocumentNode root) throws BivesSBMLParseException
+	private void parseUnits (DocumentNode root) throws BivesSBMLParseException, BivesConsistencyException
 	{
 		String [] baseUnits = new String [] {"substance", "volume", "area", "length", "ampere", "farad", "joule", "lux", "radian", "volt", "avogadro", "gram", "katal", "metre", "second", "watt", "becquerel", "gray", "kelvin", "mole", "siemens", "weber", "candela", "henry", "kilogram", "newton", "sievert", "coulomb", "hertz", "litre", "ohm", "steradian", "dimensionless", "item", "lumen", "pascal", "tesla"};
 		for (int i = 0; i < baseUnits.length; i++)
@@ -354,19 +356,40 @@ public class SBMLModel
 			DocumentNode lounit = (DocumentNode) lounits.elementAt (i);
 			
 			Vector<TreeNode> units = lounit.getChildrenWithTag ("unitDefinition");
-			for (int j = 0; j < units.size (); j++)
+			Vector<String> problems = new Vector<String> ();
+			boolean nextRound = true;
+			while (nextRound && units.size () > 0)
 			{
-				SBMLUnitDefinition ud = new SBMLUnitDefinition ((DocumentNode) units.elementAt (j), this);
-				String id = ud.getID ();
-				if (listOfUnitDefinitions.get (id) != null)
+				nextRound = false;
+				problems.clear ();
+				for (int j = units.size () - 1; j >= 0; j--)
 				{
-					if (id.equals ("substance") || id.equals ("volume") || id.equals ("area") || id.equals ("length"))
-						LOGGER.warn ("std unit " + id + " redefined");
-					else
-						throw new BivesSBMLParseException ("Multiple definitions of unit " + ud.getID ());
+					SBMLUnitDefinition ud = null;
+					try
+					{
+						ud = new SBMLUnitDefinition ((DocumentNode) units.elementAt (j), this);
+						String id = ud.getID ();
+						if (listOfUnitDefinitions.get (id) != null)
+						{
+							if (id.equals ("substance") || id.equals ("volume") || id.equals ("area") || id.equals ("length"))
+								LOGGER.warn ("std unit " + id + " redefined");
+							else
+								throw new BivesSBMLParseException ("Multiple definitions of unit " + ud.getID ());
+						}
+						//System.out.println ("adde unit " + id);
+						listOfUnitDefinitions.put (id, ud);
+						units.remove (j);
+						nextRound = true;
+					}
+					catch (BivesConsistencyException ex)
+					{
+						problems.add (ex.getMessage ());
+						continue;
+					}
 				}
-				listOfUnitDefinitions.put (id, ud);
 			}
+			if (units.size () != 0)
+				throw new BivesConsistencyException ("inconsistencies for "+units.size ()+" units, problems: " + problems);
 		}
 	}
 

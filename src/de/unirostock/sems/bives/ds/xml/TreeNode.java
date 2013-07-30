@@ -20,6 +20,8 @@ import de.unirostock.sems.bives.algorithm.ConnectionManager;
  */
 public abstract class TreeNode
 {
+	protected static final String TEXT_TAG = "text()";
+	
 	public static final int UNCHANGED = 0;
 	public static final int UNMAPPED = 1;
 	public static final int MOVED = 2;
@@ -94,11 +96,22 @@ public abstract class TreeNode
 	/** The parent. */
 	protected DocumentNode parent;
 	
-	public TreeNode (int type, DocumentNode parent)
+	protected TreeDocument doc;
+	
+	protected int level;
+	
+	public TreeNode (int type, DocumentNode parent, TreeDocument doc, int level)
 	{
+		this.doc = doc;
 		this.type = type;
 		this.parent = parent;
 		this.modified = UNCHANGED;
+		this.level = level;
+	}
+	
+	public int getLevel ()
+	{
+		return level;
 	}
 	
 	public int getModification ()
@@ -182,7 +195,8 @@ public abstract class TreeNode
 		if (p == null || tnp == null)
 			return true;
 		
-		//System.out.println ("netw diff p : " + p.getXPath () + " -> " + tnp.getXPath ());
+		//System.out.println ("netw diff : " + getXPath () + " -> " + tn.getXPath ());
+		//System.out.println ("netw diff parents : " + p.getXPath () + " -> " + tnp.getXPath ());
 
 		
 		// parents connected and same child no.?
@@ -192,8 +206,8 @@ public abstract class TreeNode
 			/*System.out.println ("nodes: " + ((DocumentNode) this).getAttribute ("species") + "->" + getXPath () + " --- " + ((DocumentNode) tn).getAttribute ("species") + "->" + tn.getXPath ());
 			System.out.println ("parents: " + p.getXPath () + " --- " + tnp.getXPath ());
 		System.out.println ("p1: " + conMgmr.getConnectionOfNodes (p, tnp));
-		System.out.println ("p2: " + conMgmr.parentsConnected (c));
-			System.out.println ("parents not connected: ");*/
+		System.out.println ("p2: " + conMgmr.parentsConnected (c));*/
+			//System.out.println ("parents not connected: ");
 			if (p != null)
 				p.addModification (SUB_MODIFIED);
 			if (tnp != null)
@@ -217,7 +231,16 @@ public abstract class TreeNode
 		return false;
 	}
 	
+	public TreeDocument getDocument ()
+	{
+		return doc;
+	}
+	
 	public abstract String dump (String prefix);
 	
 	public abstract void getSubDoc (Document doc, Element parent);
+	
+	protected abstract void reSetupStructureDown (TreeDocument doc, int numChild);
+	
+	protected abstract void reSetupStructureUp ();
 }

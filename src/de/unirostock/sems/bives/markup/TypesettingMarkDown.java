@@ -41,6 +41,7 @@ public class TypesettingMarkDown
 		s = MarkupDocument.replaceDeletes (s, "<span class='delete'>", "</span>");
 		s = MarkupDocument.replaceAttributes (s, "<span class='attr'>", "</span>");
 		s = MarkupDocument.replaceRightArrow (s, "->");
+		s = MarkupDocument.replaceMultiplication (s, "*");
 		
 		return s;
 	}

@@ -6,6 +6,7 @@ package de.unirostock.sems.bives.ds.sbml;
 import java.util.Vector;
 
 import de.unirostock.sems.bives.ds.MathML;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -18,7 +19,7 @@ import de.unirostock.sems.bives.tools.Tools;
  */
 public abstract class SBMLRule
 	extends SBMLSBase
-	implements SBMLDiffReporter
+	implements DiffReporter
 {
 	public static final int ASSIGNMENT_RULE = 1;
 	public static final int ALGEBRAIC_RULE = 2;

@@ -30,27 +30,30 @@ public abstract class SBMLSBase
 		if (sbmlModel != null)
 			sbmlModel.mapNode (documentNode, this);
 
-		metaid = documentNode.getAttribute ("metaid");
-		if (documentNode.getAttribute ("SBOTerm") != null)
-			sboTerm = new SBOTerm (documentNode.getAttribute ("sboTerm"));
-		
-		Vector<TreeNode> nodeList = documentNode.getChildrenWithTag ("notes");
-		if (nodeList.size () > 1)
-			throw new BivesSBMLParseException ("SBase with "+nodeList.size ()+" notes. (expected max one notes)");
-		if (nodeList.size () == 1)
+		if (documentNode != null)
 		{
-			notes = new SBMLXHTML ();
-			DocumentNode root = (DocumentNode) nodeList.elementAt (0);
-			Vector<TreeNode> kids = root.getChildren ();
-			for (TreeNode n : kids)
-				notes.addXHTML (n);
+			metaid = documentNode.getAttribute ("metaid");
+			if (documentNode.getAttribute ("sboTerm") != null)
+				sboTerm = new SBOTerm (documentNode.getAttribute ("sboTerm"));
+			
+			Vector<TreeNode> nodeList = documentNode.getChildrenWithTag ("notes");
+			if (nodeList.size () > 1)
+				throw new BivesSBMLParseException ("SBase with "+nodeList.size ()+" notes. (expected max one notes)");
+			if (nodeList.size () == 1)
+			{
+				notes = new SBMLXHTML ();
+				DocumentNode root = (DocumentNode) nodeList.elementAt (0);
+				Vector<TreeNode> kids = root.getChildren ();
+				for (TreeNode n : kids)
+					notes.addXHTML (n);
+			}
+			
+			nodeList = documentNode.getChildrenWithTag ("annotation");
+			if (nodeList.size () > 1)
+				throw new BivesSBMLParseException ("SBase with "+nodeList.size ()+" annotations. (expected max one annotation)");
+			if (nodeList.size () == 1)
+				annotation = (DocumentNode) nodeList.elementAt (0);
 		}
-		
-		nodeList = documentNode.getChildrenWithTag ("annotation");
-		if (nodeList.size () > 1)
-			throw new BivesSBMLParseException ("SBase with "+nodeList.size ()+" annotations. (expected max one annotation)");
-		if (nodeList.size () == 1)
-			annotation = (DocumentNode) nodeList.elementAt (0);
 	}
 	
 	public SBOTerm getSBOTerm ()

@@ -16,6 +16,7 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
 import de.unirostock.sems.bives.markup.MarkupDocument;
 import de.unirostock.sems.bives.markup.MarkupElement;
 import de.unirostock.sems.bives.tools.Tools;
+import de.unirostock.sems.bives.tools.TreeTools;
 
 
 /**
@@ -82,24 +83,24 @@ public class SBMLEventAssignment
 		else
 			me.addValue ("was for: " + markupDocument.delete (varA) + " but now for: " + markupDocument.insert (varB));
 
-		Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
+		Tools.genMathHtmlStats (a.math.getDocumentNode (), b.math.getDocumentNode (), me, markupDocument);
 	}
 
 	public void reportInsert (MarkupElement me, MarkupDocument markupDocument)
 	{
-		me.addValue (markupDocument.insert (SBMLModel.getSidName (variable) + " = " + flattenMath (math.getMath ())));
+		me.addValue (markupDocument.insert (SBMLModel.getSidName (variable) + " = " + flattenMath (math.getDocumentNode ())));
 	}
 
 	public void reportDelete (MarkupElement me, MarkupDocument markupDocument)
 	{
-		me.addValue (markupDocument.delete (SBMLModel.getSidName (variable) + " = " + flattenMath (math.getMath ())));
+		me.addValue (markupDocument.delete (SBMLModel.getSidName (variable) + " = " + flattenMath (math.getDocumentNode ())));
 	}
 	
 	private String flattenMath (DocumentNode math)
 	{
 		try
 		{
-			return Tools.transformMathML (math);
+			return TreeTools.transformMathML (math);
 		}
 		catch (TransformerException e)
 		{

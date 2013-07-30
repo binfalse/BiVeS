@@ -42,14 +42,15 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
  */
 public class Patch
 {
-	
+	private int id;
 	private Document xmlDoc;
-	private Element insert, delete, update, move, copy, glue;
+	private Element insert, delete, update, move;//, copy, glue;
 	private boolean fullDiff;
 	
 	public Patch () throws ParserConfigurationException
 	{
 		fullDiff = true;
+		id = 0;
 		init ();
 	}
 	
@@ -97,12 +98,12 @@ public class Patch
 		rootElement.appendChild (move);
 		
 		
-		copy = xmlDoc.createElement("copy");
+		/*copy = xmlDoc.createElement("copy");
 		rootElement.appendChild (copy);
 		
 		
 		glue = xmlDoc.createElement("glue");
-		rootElement.appendChild (glue);
+		rootElement.appendChild (glue);*/
 		LOGGER.info ("initialized patch");
 	}
 	
@@ -113,6 +114,10 @@ public class Patch
 
 		Attr attr = xmlDoc.createAttribute("name");
 		attr.setValue (name);
+		attribute.setAttributeNode(attr);
+		
+		attr = xmlDoc.createAttribute("id");
+		attr.setValue (++id + "");
 		attribute.setAttributeNode(attr);
 		
 		if (oldValue != null)
@@ -162,7 +167,9 @@ public class Patch
 		LOGGER.info ("create node element for " + oldPath + " -> " + newPath);
 		Element node = xmlDoc.createElement("node");
 		
-		Attr attr;
+		Attr attr = xmlDoc.createAttribute("id");
+		attr.setValue (++id + "");
+		node.setAttributeNode(attr);
 
 		if (oldParent != null)
 		{
@@ -227,7 +234,10 @@ public class Patch
 	{
 		LOGGER.info ("create text element for " + oldPath + " -> " + newPath);
 		Element node = xmlDoc.createElement("text");
-		Attr attr;
+		
+		Attr attr = xmlDoc.createAttribute("id");
+		attr.setValue (++id + "");
+		node.setAttributeNode(attr);
 
 		if (oldParent != null)
 		{

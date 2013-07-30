@@ -84,22 +84,22 @@ public class SBMLEventTrigger
 		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
 
 		if (a.math != null && b.math != null)
-			Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
+			Tools.genMathHtmlStats (a.math.getDocumentNode (), b.math.getDocumentNode (), me, markupDocument);
 		else if (a.math != null)
-			Tools.genMathHtmlStats (a.math.getMath (), null, me, markupDocument);
+			Tools.genMathHtmlStats (a.math.getDocumentNode (), null, me, markupDocument);
 		else if (b.math != null)
-			Tools.genMathHtmlStats (null, b.math.getMath (), me, markupDocument);
+			Tools.genMathHtmlStats (null, b.math.getDocumentNode (), me, markupDocument);
 		
 	}
 
 	public void reportInsert (MarkupElement me, MarkupDocument markupDocument)
 	{
-		Tools.genMathHtmlStats (null, math.getMath (), me, markupDocument);
+		Tools.genMathHtmlStats (null, math.getDocumentNode (), me, markupDocument);
 	}
 
 	public void reportDelete (MarkupElement me, MarkupDocument markupDocument)
 	{
-		Tools.genMathHtmlStats (math.getMath (), null, me, markupDocument);
+		Tools.genMathHtmlStats (math.getDocumentNode (), null, me, markupDocument);
 	}
 	
 }

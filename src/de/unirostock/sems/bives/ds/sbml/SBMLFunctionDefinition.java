@@ -7,6 +7,7 @@ import java.util.Vector;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.ds.MathML;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
@@ -21,19 +22,13 @@ import de.unirostock.sems.bives.tools.Tools;
  */
 public class SBMLFunctionDefinition
 extends SBMLGenericIdNameObject
-implements SBMLDiffReporter
+implements DiffReporter
 {
 	private MathML math;
 	
 	public SBMLFunctionDefinition (DocumentNode functionDefinition, SBMLModel sbmlModel) throws BivesSBMLParseException
 	{
 		super (functionDefinition, sbmlModel);
-		
-		id = functionDefinition.getAttribute ("id");
-		if (id == null || id.length () < 1)
-			throw new BivesSBMLParseException ("FunctionDefinition "+id+" doesn't provide a valid id.");
-		
-		name = functionDefinition.getAttribute ("name");
 		
 		Vector<TreeNode> maths = functionDefinition.getChildrenWithTag ("math");
 		if (maths.size () != 1)
@@ -47,7 +42,7 @@ implements SBMLDiffReporter
 	}
 
 	@Override
-	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, DiffReporter docA, DiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLFunctionDefinition a = (SBMLFunctionDefinition) docA;
 		SBMLFunctionDefinition b = (SBMLFunctionDefinition) docB;
@@ -62,7 +57,7 @@ implements SBMLDiffReporter
 			me = new MarkupElement (markupDocument.delete (idA) + " "+markupDocument.rightArrow ()+" " + markupDocument.insert (idB));
 
 		Tools.genAttributeHtmlStats (a.documentNode, b.documentNode, me, markupDocument);
-		Tools.genMathHtmlStats (a.math.getMath (), b.math.getMath (), me, markupDocument);
+		Tools.genMathHtmlStats (a.math.getDocumentNode (), b.math.getDocumentNode (), me, markupDocument);
 		
 		return me;
 	}

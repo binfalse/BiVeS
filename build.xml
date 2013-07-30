@@ -27,7 +27,7 @@
 	</target>
 	
 	<target name="compile" depends="init" description="compile the source ">
-		<javac srcdir="${src}" destdir="${build}" excludes="de/unirostock/sems/bives/algorithm/sbmldeprecated/*.java,de/unirostock/sems/bives/frameworks/*.java">
+		<javac srcdir="${src}" destdir="${build}"><!-- excludes="de/unirostock/sems/bives/algorithm/sbmldeprecated/*.java,de/unirostock/sems/bives/frameworks/*.java"-->
 			<classpath refid="compile.classpath" />
 		</javac>
 	</target>

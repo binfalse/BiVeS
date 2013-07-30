@@ -26,6 +26,9 @@ public class CellMLEntity
 		this.model = model;
 		this.node = node;
 		rdfDescription = new Vector<RDF> ();
+
+		if (model != null)
+			model.mapNode (node, this);
 		
 		if (node != null)
 		{
@@ -39,7 +42,7 @@ public class CellMLEntity
 		}
 	}
 	
-	public DocumentNode getNode ()
+	public DocumentNode getDocumentNode ()
 	{
 		return node;
 	}

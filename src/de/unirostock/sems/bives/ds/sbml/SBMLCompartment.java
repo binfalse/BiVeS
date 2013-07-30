@@ -4,6 +4,7 @@
 package de.unirostock.sems.bives.ds.sbml;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.ds.DiffReporter;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
 import de.unirostock.sems.bives.markup.MarkupDocument;
@@ -17,7 +18,7 @@ import de.unirostock.sems.bives.tools.Tools;
  */
 public class SBMLCompartment
 	extends SBMLGenericIdNameObject
-	implements SBMLDiffReporter
+	implements DiffReporter
 {
 	private double spatialDimensions; //optional
 	private double size; //optional
@@ -28,12 +29,6 @@ public class SBMLCompartment
 	public SBMLCompartment (DocumentNode documentNode, SBMLModel sbmlModel) throws BivesSBMLParseException
 	{
 		super (documentNode, sbmlModel);
-		
-		id = documentNode.getAttribute ("id");
-		if (id == null || id.length () < 1)
-			throw new BivesSBMLParseException ("Compartment "+id+" doesn't provide a valid id.");
-		
-		name = documentNode.getAttribute ("name");
 
 		String tmp = documentNode.getAttribute ("compartmentType");
 		if (tmp != null)
@@ -92,7 +87,7 @@ public class SBMLCompartment
 	}
 
 	@Override
-	public MarkupElement reportMofification (ClearConnectionManager conMgmt, SBMLDiffReporter docA, SBMLDiffReporter docB, MarkupDocument markupDocument)
+	public MarkupElement reportMofification (ClearConnectionManager conMgmt, DiffReporter docA, DiffReporter docB, MarkupDocument markupDocument)
 	{
 		SBMLCompartment a = (SBMLCompartment) docA;
 		SBMLCompartment b = (SBMLCompartment) docB;
