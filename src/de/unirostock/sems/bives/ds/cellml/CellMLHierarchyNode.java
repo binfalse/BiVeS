@@ -15,19 +15,12 @@ public class CellMLHierarchyNode
 	private CellMLComponent component;
 
 	private CellMLHierarchyNode parent;
-	private Vector<CellMLHierarchyRelationship> children;
+	private Vector<CellMLHierarchyNode> children;
 	
 	public CellMLHierarchyNode (CellMLComponent component)
 	{
 		this.component = component;
-		children = new Vector<CellMLHierarchyRelationship> ();
-	}
-	
-	public CellMLHierarchyNode (CellMLComponent component, CellMLHierarchyNode parent)
-	{
-		this.component = component;
-		this.parent = parent;
-		children = new Vector<CellMLHierarchyRelationship> ();
+		children = new Vector<CellMLHierarchyNode> ();
 	}
 	
 	public CellMLComponent getComponent ()
@@ -45,9 +38,18 @@ public class CellMLHierarchyNode
 		return parent;
 	}
 	
-	public void addChild (CellMLHierarchyRelationship child)
+	public void addChild (CellMLHierarchyNode child)
 	{
 		this.children.add (child);
 	}
 	
+	public String toString ()
+	{
+		String r = "[hirarchy of " + component.getName ();
+		if (parent != null)
+			r += " p:" + parent.component.getName ();
+		for (CellMLHierarchyNode c : children)
+			r += " c:" + c.component.getName ();
+		return r + "]";
+	}
 }

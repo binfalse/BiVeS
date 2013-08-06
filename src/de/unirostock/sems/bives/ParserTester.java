@@ -265,7 +265,7 @@ public class ParserTester
 		
 		long time = System.currentTimeMillis ();
 		
-		//pt.testBiomodelsDB (new File (System.getProperty( "user.home" ) + "/education/stuff/biomodels/clone-bmdb/models/models"));
+		pt.testBiomodelsDB (new File (System.getProperty( "user.home" ) + "/education/stuff/biomodels/clone-bmdb/models/models"));
 		
 		time = System.currentTimeMillis () - time;
 		int seconds = (int)  (( time / 1000) % 60);
@@ -285,6 +285,7 @@ public class ParserTester
 
 		/*
 		 * CellML ModelServer
+		 * TODO: also try to flatten the model and reread it!
 		 */
 		
 

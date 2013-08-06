@@ -25,6 +25,7 @@ import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesFlattenException;
+import de.unirostock.sems.bives.exception.BivesImportException;
 import de.unirostock.sems.bives.exception.BivesLogicalException;
 import de.unirostock.sems.bives.exception.BivesCellMLParseException;
 
@@ -63,7 +64,7 @@ extends CellMLEntity
 	
 	private boolean containsImports;
 	
-	public CellMLModel (CellMLDocument doc, DocumentNode rootNode) throws BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, IOException, URISyntaxException, ParserConfigurationException, SAXException
+	public CellMLModel (CellMLDocument doc, DocumentNode rootNode) throws BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, IOException, URISyntaxException, ParserConfigurationException, SAXException, BivesImportException
 	{
 		super (rootNode, null);
 		this.model = this;
@@ -99,7 +100,7 @@ extends CellMLEntity
 		return containsImports;
 	}
 	
-	private void readDocument (DocumentNode root) throws BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, IOException, URISyntaxException, ParserConfigurationException, SAXException
+	private void readDocument (DocumentNode root) throws BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, IOException, URISyntaxException, ParserConfigurationException, SAXException, BivesImportException
 	{
 		//Element root = doc.getDocumentElement ();
 		
@@ -168,7 +169,7 @@ extends CellMLEntity
 		}*/
 	}
 	
-	private void readImports (DocumentNode root) throws BivesCellMLParseException, IOException, URISyntaxException, ParserConfigurationException, SAXException, BivesConsistencyException, BivesLogicalException
+	private void readImports (DocumentNode root) throws BivesCellMLParseException, IOException, URISyntaxException, ParserConfigurationException, SAXException, BivesConsistencyException, BivesLogicalException, BivesImportException
 	{
 		Vector<TreeNode> kids = root.getChildrenWithTag ("import");
 		for (TreeNode kid : kids)
@@ -274,11 +275,14 @@ extends CellMLEntity
 		if (components.get (component.getName ()) != null)
 			throw new BivesConsistencyException ("two components using the same name! ("+component.getName ()+")");
 		components.put (component.getName (), component);
-		hierarchy.addUnencapsulatedComponent (component);
+		//hierarchy.addUnencapsulatedComponent (component);
 	}
 	
 	public void importComponent (CellMLComponent component) throws BivesConsistencyException, BivesLogicalException
 	{
+		/*DocumentNode toAdd = component.getDocumentNode ().extract ();
+		getDocumentNode ().addChild (toAdd);*/
+		
 		addComponent (component);
 		importedComponents.add (component);
 	}

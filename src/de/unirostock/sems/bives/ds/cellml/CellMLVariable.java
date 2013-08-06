@@ -85,7 +85,14 @@ implements DiffReporter
 				// TODO: may be a variable name
 				// If present, the value of the initial_value attribute may be a real number or the value of the name attribute of a <variable> element declared in the current component.
 				// throw new CellMLReadException ("Unsupported number format: " + attr + " in variable " + name + " of component " + component.getName ());
-				v_initial_value = component.getVariable (attr);
+				try
+				{
+					v_initial_value = component.getVariable (attr);
+				}
+				catch (BivesConsistencyException e)
+				{
+					throw new BivesCellMLParseException ("cannot understand an initial concentration of '" + attr + "' in variable " + name + " (component: "+component.getName ()+")");
+				}
 			}
 		}
 		

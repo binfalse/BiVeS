@@ -42,6 +42,7 @@ import de.unirostock.sems.bives.exception.BivesConnectionException;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
 import de.unirostock.sems.bives.exception.BivesFlattenException;
+import de.unirostock.sems.bives.exception.BivesImportException;
 import de.unirostock.sems.bives.exception.BivesLogicalException;
 import de.unirostock.sems.bives.exception.BivesCellMLParseException;
 import de.unirostock.sems.bives.markup.MarkupDocument;
@@ -124,7 +125,7 @@ public class Tests
 		System.out.println (patch);
 	}
 	
-	private static void testCellMLApi () throws BivesConnectionException, BivesDocumentParseException, FileNotFoundException, ParserConfigurationException, SAXException, IOException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, URISyntaxException 
+	private static void testCellMLApi () throws BivesConnectionException, BivesDocumentParseException, FileNotFoundException, ParserConfigurationException, SAXException, IOException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, URISyntaxException, BivesImportException 
 	{
 		File file1 = new File ("test/bhalla_iyengar_1999_j_v1.cellml");
 		File file2 = new File ("test/bhalla_iyengar_1999_j_v3.cellml");
@@ -247,7 +248,7 @@ public class Tests
 	}
 
 
-	private static void testCellML () throws BivesDocumentParseException, FileNotFoundException, SAXException, IOException, ParserConfigurationException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, URISyntaxException, TransformerException, BivesFlattenException, BivesConnectionException
+	private static void testCellML () throws BivesDocumentParseException, FileNotFoundException, SAXException, IOException, ParserConfigurationException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, URISyntaxException, TransformerException, BivesFlattenException, BivesConnectionException, BivesImportException
 	{
 		// has reactions:
 		// /home/martin/education/phd/stuff/cellml/repository-server/workspace_bhalla_iyengar_1999/bhalla_iyengar_1999_j.cellml
@@ -329,7 +330,7 @@ public class Tests
 		System.out.println (doc.getLevel ());*/
 	}
 	
-	private static CellMLDocument flatten (CellMLDocument cdoc) throws IOException, BivesFlattenException, BivesConsistencyException, TransformerException, SAXException, ParserConfigurationException, BivesCellMLParseException, BivesLogicalException, URISyntaxException
+	private static CellMLDocument flatten (CellMLDocument cdoc) throws IOException, BivesFlattenException, BivesConsistencyException, TransformerException, SAXException, ParserConfigurationException, BivesCellMLParseException, BivesLogicalException, URISyntaxException, BivesImportException
 	{
 
 		File tmpfile = File.createTempFile ("bives", "flattened");

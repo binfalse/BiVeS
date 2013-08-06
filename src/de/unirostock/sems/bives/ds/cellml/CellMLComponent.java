@@ -40,6 +40,14 @@ extends CellMLEntity
 	// A component may contain a set of mathematical relationships between the variables declared in this component.
 	private Vector<MathML> math;
 	
+	/*public CellMLComponent copy (CellMLModel model, String newName) throws BivesConsistencyException, BivesCellMLParseException, BivesLogicalException
+	{
+		DocumentNode node = getDocumentNode ().extract ();
+		node.setAttribute ("name", newName);
+		CellMLComponent cpy = new CellMLComponent (model, node);
+		return cpy;
+	}*/
+	
 	public CellMLComponent (CellMLModel model, DocumentNode node) throws BivesConsistencyException, BivesCellMLParseException, BivesLogicalException
 	{
 		super (node, model);

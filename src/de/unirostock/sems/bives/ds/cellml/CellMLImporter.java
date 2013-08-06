@@ -25,6 +25,7 @@ import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
+import de.unirostock.sems.bives.exception.BivesImportException;
 import de.unirostock.sems.bives.exception.BivesLogicalException;
 import de.unirostock.sems.bives.exception.BivesCellMLParseException;
 import de.unirostock.sems.bives.tools.FileRetriever;
@@ -37,6 +38,7 @@ import de.unirostock.sems.bives.tools.FileRetriever;
 public class CellMLImporter
 extends CellMLEntity
 {
+	private static HashMap<URI, CellMLDocument> importMapper;
 	
 	private String href;
 	private DocumentNode node;
@@ -50,23 +52,45 @@ extends CellMLEntity
 		if (href == null)
 			throw new BivesCellMLParseException ("href attribute in import is empty");
 		
+		if (importMapper == null)
+			importMapper = new HashMap<URI, CellMLDocument> ();
+		
+	}
+	
+	public void parse () throws BivesImportException
+	{
+		try
+		{
+			pparse ();
+		}
+		catch (Exception e)
+		{
+			throw new BivesImportException (href, e);
+		}
 	}
 
 
 
-	public void parse () throws IOException, URISyntaxException, ParserConfigurationException, SAXException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException
+	public void pparse () throws IOException, URISyntaxException, ParserConfigurationException, SAXException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, BivesImportException
 	{
 		URI baseUri = model.getDocument ().getBaseUri ();
 		LOGGER.info ("parsing import from " + href + " (base uri is: "+baseUri+")");
 		File tmp = File.createTempFile ("cellmlimporter", "cellml");
 		tmp.deleteOnExit ();
 		
-		URI fileUri = FileRetriever.getFile (href, baseUri, tmp);
-	  
-	  TreeDocument tdoc = new TreeDocument (DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(tmp), null, fileUri);
-		
-		CellMLDocument toImport = new CellMLDocument (tdoc);
+		URI fileUri = FileRetriever.getUri (href, baseUri);
+		CellMLDocument toImport = importMapper.get (fileUri);
+		if (toImport == null)
+		{
+			FileRetriever.getFile (fileUri, tmp);
+		  TreeDocument tdoc = new TreeDocument (DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(tmp), null, fileUri);
+			toImport = new CellMLDocument (tdoc);
+			importMapper.put (fileUri, toImport);
+		}
 		CellMLModel modelToImport = toImport.getModel ();
+		
+		Vector<Object> doubles = new Vector<Object> ();
+		
 		
 		CellMLUnitDictionary units = modelToImport.getUnits ();
 		Vector<TreeNode> kids = node.getChildrenWithTag ("units");
@@ -87,6 +111,9 @@ extends CellMLEntity
 			if (u instanceof CellMLUserUnit)
 			{
 				CellMLUserUnit uu = (CellMLUserUnit) u;
+				if (doubles.contains (uu))
+					throw new BivesCellMLParseException ("double import of same unit. not supported yet.");
+				doubles.add (uu);
 				uu.setName (name);
 				Vector<CellMLUserUnit> unitsToImport = uu.getDependencies (new Vector<CellMLUserUnit> ());
 				for (CellMLUserUnit unit : unitsToImport)
@@ -96,7 +123,7 @@ extends CellMLEntity
 			}
 			else
 			{
-				throw new BivesConsistencyException ("unit import of base unit detected...");
+				throw new BivesConsistencyException ("unit import of base unit detected... ("+u.getName ()+")");
 			}
 		}
 		
@@ -115,9 +142,15 @@ extends CellMLEntity
 			CellMLComponent c = modelToImport.getComponent (ref);
 			if (c == null)
 				throw new BivesConsistencyException ("cannot import component " + ref + " from " + href + " (base uri is: "+baseUri+")");
+
+			if (doubles.contains (c))
+				throw new BivesCellMLParseException ("double import of same component. not supported yet.");
+			doubles.add (c);
+			
+			//c = c.copy (model, name);
 			tmpConMapper.put (c.getName (), c);
-			// kill all connections
-			c.unconnect ();
+			// TODO: kill all connections??
+			//c.unconnect ();
 			c.setName (name);
 			Vector<CellMLUserUnit> unitsToImport = c.getDependencies (new Vector<CellMLUserUnit> ());
 			for (CellMLUserUnit unit : unitsToImport)
@@ -127,9 +160,11 @@ extends CellMLEntity
 		}
 
 		// reconnect a subset
+		// TODO: looks like blödsinn
 		kids = node.getChildrenWithTag ("connection");
 		for (TreeNode kid : kids)
 		{
+			System.out.println ("hit");
 			if (kid.getType () != TreeNode.DOC_NODE)
 				continue;
 

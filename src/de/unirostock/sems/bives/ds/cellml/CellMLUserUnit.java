@@ -72,9 +72,18 @@ public class CellMLUserUnit
 			{
 				multiplier = Double.parseDouble (node.getAttribute ("multiplier"));
 			}
-			if (node.getAttribute ("prefix") != null)
+
+			String sc =  node.getAttribute ("prefix");
+			if (sc != null)
 			{
-				prefix = scale (node.getAttribute ("prefix"));
+				try
+				{
+					prefix = Integer.parseInt (sc);
+				}
+				catch (NumberFormatException e)
+				{
+					prefix = scale (node.getAttribute ("prefix"));
+				}
 			}
 			if (node.getAttribute ("offset") != null)
 			{

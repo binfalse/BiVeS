@@ -28,6 +28,30 @@ public class FileRetriever
 	public static boolean FIND_LOCAL = true;
 	public static boolean FIND_REMOTE = true;
 	
+	public static URI getUri (String href, URI base) throws URISyntaxException, IOException
+	{
+		URI theUri = new URI (href);
+		
+		// is full
+		if (theUri.isAbsolute ())
+			return theUri;
+		
+		
+		// href is absolut in fs
+		if (href.startsWith ("/"))
+		{
+			return new URI ("file://" + href);
+		}
+
+		// is realtive
+		if (base == null || !base.isAbsolute ())
+			throw new IOException ("don't know where this relative path points to: "+href+" (no base provided, or base also relative).");
+		
+		
+		return base.resolve (theUri);
+	}
+	
+	
 	private static boolean isLocal (String uri)
 	{
 		if (uri.startsWith ("file:"))
@@ -79,19 +103,26 @@ public class FileRetriever
 	 * @throws IOException Signals that an I/O exception has occurred.
 	 * @throws URISyntaxException thrown if file or base have a strange format 
 	 */
-	public static URI getFile (String file, URI base, File dest) throws IOException, URISyntaxException
+	public static void getFile (URI file, File dest) throws IOException, URISyntaxException
 	{
 		if (!dest.canWrite ())
 			throw new IOException ("cannot write to file: " + dest.getAbsolutePath ());
 		
 		LOGGER.info ("trying to retrieve file from: " + file + " to: " + dest);
 		
-		URI theFile = new URI (file);
+			// file: -> copy
+		if (file.getScheme ().toLowerCase ().startsWith ("file:"))
+			copy (file, dest);
+		// otherwise download
+		else
+			download (file, dest); 
+		
+		
+		/*URI theFile = new URI (file);
 		
 		// is full
 		if (theFile.isAbsolute ())
 		{
-			// file: -> copy
 			if (file.startsWith ("file:"))
 				copy (theFile, dest);
 			// otherwise download
@@ -130,6 +161,6 @@ public class FileRetriever
 			download (theFile, dest);
 		}
 		
-		return theFile;
+		return theFile;*/
 	}
 }

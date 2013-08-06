@@ -18,6 +18,7 @@ import org.xml.sax.SAXException;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesFlattenException;
+import de.unirostock.sems.bives.exception.BivesImportException;
 import de.unirostock.sems.bives.exception.BivesLogicalException;
 import de.unirostock.sems.bives.exception.BivesCellMLParseException;
 import de.unirostock.sems.bives.tools.Tools;
@@ -35,7 +36,7 @@ public class CellMLDocument
 	private CellMLModel model;
 	private TreeDocument doc;
 	
-	public CellMLDocument (TreeDocument doc) throws BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, IOException, URISyntaxException, ParserConfigurationException, SAXException
+	public CellMLDocument (TreeDocument doc) throws BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, IOException, URISyntaxException, ParserConfigurationException, SAXException, BivesImportException
 	{
 	  this.doc = doc;
 	  if (!doc.getRoot ().getTagName ().equals ("model"))

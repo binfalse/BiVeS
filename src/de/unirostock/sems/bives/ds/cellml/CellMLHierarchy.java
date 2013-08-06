@@ -25,21 +25,20 @@ public class CellMLHierarchy
 	public static final int RELATION_PARENT = 2;
 	public static final int RELATION_ENCAPSULATED = 3;
 	
+	private HashMap <String, CellMLHierarchyNetwork> networks;
 	
-	private Vector<CellMLHierarchyNode> unencapsulated;
 	private CellMLModel model;
-	private HashMap<CellMLComponent, CellMLHierarchyNode> componentMapper;
 	
 	public CellMLHierarchy (CellMLModel model)
 	{
 		this.model = model;
-		unencapsulated = new Vector<CellMLHierarchyNode> ();
-		componentMapper = new HashMap<CellMLComponent, CellMLHierarchyNode> ();
+		networks = new HashMap <String, CellMLHierarchyNetwork> ();
 	}
 	
 	public void parseGroup (DocumentNode node) throws BivesCellMLParseException, BivesLogicalException
 	{
-		CellMLHierarchyRelationship relationship = new CellMLHierarchyRelationship ();
+		//CellMLHierarchyRelationship relationship = new CellMLHierarchyRelationship ();
+		Vector<CellMLHierarchyNetwork> curNetworks = new Vector<CellMLHierarchyNetwork> ();
 		
 		Vector<TreeNode> kids = node.getChildrenWithTag ("relationship_ref");
 		for (TreeNode kid : kids)
@@ -54,21 +53,37 @@ public class CellMLHierarchy
 				LOGGER.warn ("skipping relationship_ref definition: no valid relation ship defined.");
 				continue;
 			}
-			relationship.addRelationship (rs);
+			
+			String name = dkid.getAttribute ("name");
+			if (name == null)
+				name = "";
+			
+			if (rs.equals ("encapsulation") && name.length () > 0)
+				throw new BivesLogicalException ("A name attribute must not be defined on a <relationship_ref> element with a relationship attribute value of \"encapsulation\"!");
+			
+			//relationship.addRelationship (rs);
+
+			CellMLHierarchyNetwork cur = networks.get (rs + ":" + name);
+			if (cur == null)
+			{
+				cur = new CellMLHierarchyNetwork (rs, name);
+				networks.put (rs + ":" + name, cur);
+			}
+			curNetworks.add (cur);
 		}
 		
 		
-		if (relationship.getRelationship ().size () < 0)
+		if (curNetworks.size () < 0)
 		{
-			LOGGER.warn ("skipping group definition: no recognizable relation ship defined.");
+			LOGGER.warn ("skipping group definition: no recognizable relationships defined.");
 			return;
 		}
 		
-		Stack<CellMLHierarchyNode> parents = new Stack<CellMLHierarchyNode> ();
-		recursiveParseGroup (node, parents, relationship);
+		Stack<CellMLComponent> parents = new Stack<CellMLComponent> ();
+		recursiveParseGroup (node, parents, curNetworks);
 	}
 	
-	private void recursiveParseGroup (DocumentNode cur, Stack<CellMLHierarchyNode> parents, CellMLHierarchyRelationship relationship) throws BivesCellMLParseException, BivesLogicalException
+	private void recursiveParseGroup (DocumentNode cur, Stack<CellMLComponent> parents, Vector<CellMLHierarchyNetwork> curNetworks) throws BivesCellMLParseException, BivesLogicalException
 	{
 		Vector<TreeNode> kids = cur.getChildrenWithTag ("component_ref");
 		
@@ -86,60 +101,57 @@ public class CellMLHierarchy
 			if (componentName == null)
 				throw new BivesCellMLParseException ("no component defined in component_ref of grouping.");
 			
-			CellMLComponent component = model.getComponent (componentName);
-			if (component == null)
+			CellMLComponent child = model.getComponent (componentName);
+			if (child == null)
 			{
 				throw new BivesLogicalException ("cannot find component with name: " + componentName + ")");
 			}
 			
-			CellMLHierarchyNode child = componentMapper.get (component);
-			if (child == null)
-			{
-				throw new BivesLogicalException ("cannot find node for component. (component: " + component.getName () + ")");
-			}
-			
 			if (parents.size () > 0)
 			{
-				if (child.getParent () != null)
-				{
-					throw new BivesLogicalException ("encapsulation failed: child wants to have two parents? (component: " + component.getName () + ")");
-				}
-				CellMLHierarchyNode parent = parents.peek ();
-				child.setParent (parent);
-				CellMLHierarchyRelationship rs = relationship.copy ();
-				rs.setNodes (parent, child);
-				parent.addChild (rs);
-				unencapsulated.remove (child);
+				// when we are encapsulated -> extend the network
+				CellMLComponent parent = parents.peek ();
+				
+				for (CellMLHierarchyNetwork network : curNetworks)
+					network.connectHierarchically (parent, child);
 			}
 			
 			parents.add (child);
-			recursiveParseGroup (next, parents, relationship);
+			recursiveParseGroup (next, parents, curNetworks);
 		}
 		
 		if (parents.size () > 0)
 			parents.pop ();
 	}
-	
-	public void addUnencapsulatedComponent (CellMLComponent component) throws BivesLogicalException
-	{
-		CellMLHierarchyNode node = new CellMLHierarchyNode (component);
-		
-		if (componentMapper.get (component) != null)
-			throw new BivesLogicalException ("component already in hierarchy. (component: " + component.getName () + ")");
-		componentMapper.put (component, node);
-		unencapsulated.add (node);
-	}
 
-	public int getRelationship (CellMLComponent component_1,
+	public int getEncapsulationRelationship (CellMLComponent component_1,
 		CellMLComponent component_2) throws BivesLogicalException
 	{
-		CellMLHierarchyNode node_1 = componentMapper.get (component_1);
-		CellMLHierarchyNode node_2 = componentMapper.get (component_2);
+		CellMLHierarchyNetwork network = networks.get ("encapsulation:");
+		if (network == null)
+			return RELATION_SIBLING;
+		
+		CellMLHierarchyNode node_1 = network.get (component_1);
+		CellMLHierarchyNode node_2 = network.get (component_2);
 
-		if (node_1 == null || node_2 == null)
+		if (node_1 == null)
+		{
+			if (node_2 == null || node_2.getParent () == null)
+				return RELATION_SIBLING;
+			return RELATION_HIDDEN;
+		}
+		if (node_2 == null)
+		{
+			if (node_1.getParent () == null)
+				return RELATION_SIBLING;
+			return RELATION_HIDDEN;
+		}
+		
+		// TODO: or following better?
+		/*if (node_1 == null || node_2 == null)
 		{
 			throw new BivesLogicalException ("cannot find nodes for components. (component: " + component_1.getName () + "," + component_2.getName () + ")");
-		}
+		}*/
 		
 		if (node_1.getParent () == node_2.getParent ())
 			return RELATION_SIBLING;
@@ -150,32 +162,4 @@ public class CellMLHierarchy
 		
 		return RELATION_HIDDEN;
 	}
-	
-	/*public void encapsulate (CellMLComponent parent, CellMLComponent child) throws CellMLLogicalException
-	{
-		if (parent == null || child == null)
-		{
-			throw new CellMLLogicalException ("cannot encapsulate nullpointers.");
-		}
-		
-		if (parent == child)
-			throw new CellMLLogicalException ("component cannot be parent and child at the same time. (component: " + parent.getName () + ")");
-		
-		CellMLHierarchyNode parentNode = componentMapper.get (parent);
-		CellMLHierarchyNode childNode = componentMapper.get (child);
-		
-		if (parentNode == null || childNode == null)
-		{
-			throw new CellMLLogicalException ("cannot find nodes for components. (component: " + parent.getName () + "," + child.getName () + ")");
-		}
-		
-		if (childNode.getParent () != null)
-		{
-			throw new CellMLLogicalException ("encapsulation failed: child wants to have to parents? (component: " + child.getName () + ")");
-		}
-		
-		parentNode.addChild (childNode);
-		childNode.setParent (parentNode);
-		unencapsulated.remove (childNode);
-	}*/
 }

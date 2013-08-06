@@ -21,6 +21,7 @@ import de.unirostock.sems.bives.ds.graph.GraphTranslatorGraphML;
 import de.unirostock.sems.bives.exception.BivesConnectionException;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
+import de.unirostock.sems.bives.exception.BivesImportException;
 import de.unirostock.sems.bives.exception.BivesLogicalException;
 import de.unirostock.sems.bives.exception.BivesCellMLParseException;
 import de.unirostock.sems.bives.markup.MarkupDocument;
@@ -39,7 +40,7 @@ public class CellMLDiff extends Diff
 
 	public CellMLDiff(File a, File b) throws ParserConfigurationException,
 			BivesDocumentParseException, FileNotFoundException, SAXException,
-			IOException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, URISyntaxException {
+			IOException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, URISyntaxException, BivesImportException {
 		super(a, b);
 		doc1 = new CellMLDocument (treeA);
 		doc2 = new CellMLDocument (treeB);
@@ -47,7 +48,7 @@ public class CellMLDiff extends Diff
 
 	public CellMLDiff(String a, String b) throws ParserConfigurationException,
 			BivesDocumentParseException, FileNotFoundException, SAXException,
-			IOException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, URISyntaxException {
+			IOException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, URISyntaxException, BivesImportException {
 		super(a, b);
 		doc1 = new CellMLDocument (treeA);
 		doc2 = new CellMLDocument (treeB);
