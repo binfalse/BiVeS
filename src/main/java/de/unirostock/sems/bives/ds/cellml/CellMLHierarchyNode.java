@@ -43,6 +43,11 @@ public class CellMLHierarchyNode
 		this.children.add (child);
 	}
 	
+	public Vector<CellMLHierarchyNode> getChildren ()
+	{
+		return children;
+	}
+	
 	public String toString ()
 	{
 		String r = "[hirarchy of " + component.getName ();

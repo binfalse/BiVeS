@@ -6,6 +6,7 @@ package de.unirostock.sems.bives.ds.graph;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.HashMap;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,13 +35,16 @@ public class GraphTranslatorGraphML
 {
 	
 	private Element graphRoot;
+	private HashMap<CRNCompartment, Element> compartments;
 	private Document graphDocument;
+	private int graphid;
 	
 	public GraphTranslatorGraphML () throws ParserConfigurationException
 	{
 		graphDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		graphRoot = addGraphMLPreamble (graphDocument);
-		
+		compartments = new HashMap<CRNCompartment, Element> ();
+		graphid = 1;
 	}
 	
 	/* (non-Javadoc)
@@ -49,14 +53,30 @@ public class GraphTranslatorGraphML
 	@Override
 	public String translate (CRN crn)
 	{
+		for (CRNCompartment c : crn.getCompartments ())
+		{
+			Element node = createGraphMLNode (graphRoot, c.getId (), null, c.getLabel (), c.getModification () + "");
+			Element compartment = createGraphRoot (true);
+			node.appendChild (compartment);
+			compartments.put (c, compartment);
+		}
+		
 		for (CRNSubstance s : crn.getSubstances ())
 		{
-			createGraphMLNode (graphRoot, s.getId (), "species", s.getLabel (), s.getModification () + "");
+			CRNCompartment compartment = s.getCompartment ();
+			if (compartment != null)
+				createGraphMLNode (compartments.get (compartment), s.getId (), "species", s.getLabel (), s.getModification () + "");
+			else
+				createGraphMLNode (graphRoot, s.getId (), "species", s.getLabel (), s.getModification () + "");
 		}
 		
 		for (CRNReaction r : crn.getReactions ())
 		{
-			createGraphMLNode (graphRoot, r.getId (), "reaction", r.getLabel (), r.getModification () + "");
+			CRNCompartment compartment = r.getCompartment ();
+			if (compartment != null)
+				createGraphMLNode (compartments.get (compartment), r.getId (), "reaction", r.getLabel (), r.getModification () + "");
+			else
+				createGraphMLNode (graphRoot, r.getId (), "reaction", r.getLabel (), r.getModification () + "");
 			
 			for (CRNReaction.SubstanceRef s : r.getInputs ())
 				createEdge (graphRoot, s.subst.getId (), r.getId (), s.getModification () + "", SBOTerm.MOD_NONE);
@@ -183,6 +203,17 @@ public class GraphTranslatorGraphML
 		return keyEl;
 	}
 	
+	public Element createGraphRoot (boolean directed)
+	{
+		Element keyEl = graphDocument.createElement("graph");
+		keyEl.setAttribute ("id", "G" + graphid++);
+		if (directed)
+			keyEl.setAttribute ("edgedefault", "directed");
+		else
+			keyEl.setAttribute ("edgedefault", "undirected");
+		return keyEl;
+	}
+	
 	/**
 	 * Inserts a new node to the graph. This node will automatically appended to the {@code parent}s children. The arguments {@code reversible} and {@code fast} are intended for reaction-nodes. Non-reation nodes might leave them null.
 	 * 
@@ -203,7 +234,7 @@ public class GraphTranslatorGraphML
 	 * @param fast
 	 *          reaction only: the fast attribute (should be null for non-reactions)
 	 */
-	private void createGraphMLNode (Element parent, String id,
+	private Element createGraphMLNode (Element parent, String id,
 		String ns, String name, String modification)//, Boolean reversible)//, Boolean fast)
 	{
 		LOGGER.debug ("create gml node: " + id + " mod: " + modification);
@@ -211,10 +242,13 @@ public class GraphTranslatorGraphML
 		
 		element.setAttribute ("id", id);
 		
-		Element nsElement = graphDocument.createElement ("data");
-		nsElement.setAttribute ("key", "ns");
-		nsElement.appendChild (graphDocument.createTextNode (ns));
-		element.appendChild (nsElement);
+		if (ns != null)
+		{
+			Element nsElement = graphDocument.createElement ("data");
+			nsElement.setAttribute ("key", "ns");
+			nsElement.appendChild (graphDocument.createTextNode (ns));
+			element.appendChild (nsElement);
+		}
 		
 		if (modification != null)
 		{
@@ -249,6 +283,7 @@ public class GraphTranslatorGraphML
 		
 		
 		parent.appendChild (element);
+		return element;
 	}
 	
 	

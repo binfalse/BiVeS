@@ -35,6 +35,11 @@ public class CellMLHierarchy
 		networks = new HashMap <String, CellMLHierarchyNetwork> ();
 	}
 	
+	public CellMLHierarchyNetwork getHierarchyNetwork (String relationship, String name)
+	{
+		return networks.get (relationship + ":" + name);
+	}
+	
 	public void parseGroup (DocumentNode node) throws BivesCellMLParseException, BivesLogicalException
 	{
 		//CellMLHierarchyRelationship relationship = new CellMLHierarchyRelationship ();

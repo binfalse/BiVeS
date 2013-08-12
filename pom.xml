@@ -1,10 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>de.unirostock.sems.bives</groupId>
+    <groupId>de.unirostock.sems</groupId>
     <artifactId>BiVeS</artifactId>
     <packaging>jar</packaging>
-    <version>1.0</version>
+    <version>1.0-SNAPSHOT</version>
     <name>BiVeS</name>
     <description>Simple but efficient logging facility</description>
     <url>http://sems.uni-rostock.de/projects/bives/</url>
@@ -20,17 +20,38 @@
     </developers>
     <dependencies>
         <dependency>
-            <groupId>com.googlecode.json-simple</groupId>
-            <artifactId>json-simple</artifactId>
-            <version>1.1.1</version>
-        </dependency>
-        <dependency>
-            <groupId>de.binfalse.bflog</groupId>
+            <groupId>de.binfalse</groupId>
             <artifactId>BFLog</artifactId>
             <version>1.0</version>
         </dependency>
     </dependencies>
+    <distributionManagement>
+        <downloadUrl>http://mvn.sems.uni-rostock.de</downloadUrl>   
+        <snapshotRepository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>sems-maven-repository</id>
+            <name>SEMS Maven Release Repository</name>
+            <url>scp://sems.uni-rostock.de:/home/stuff/web/mvn/snapshots/</url>
+            <layout>default</layout>
+        </snapshotRepository>
+
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>sems-maven-repository</id>
+            <name>Enterprise Systems Maven Repository</name>
+            <url>scp://sems.uni-rostock.de:/home/stuff/web/mvn/releases/</url>
+            <layout>default</layout>
+        </repository>
+    </distributionManagement>
     <build>
+        <extensions>
+            <!-- enables ssh/scp support for maven deployment -->
+            <extension>
+                <groupId>org.apache.maven.wagon</groupId>
+                <artifactId>wagon-ssh</artifactId>
+                <version>1.0-beta-7</version>
+            </extension>
+        </extensions>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

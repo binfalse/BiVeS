@@ -180,6 +180,11 @@ public class SBMLSpecies
 		return initialConcentration;
 	}
 	
+	public SBMLCompartment getCompartment ()
+	{
+		return compartment;
+	}
+	
 	public boolean canHaveAssignmentRule ()
 	{
 		return !constant;

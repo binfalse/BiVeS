@@ -24,6 +24,7 @@ public class CRNReaction
 	private CRN crn;
 	private boolean singleDoc;
 	private boolean reversible;
+	private CRNCompartment compartmentA, compartmentB;
 
 	private HashMap<CRNSubstance, SubstanceRef> in;
 	private HashMap<CRNSubstance, SubstanceRef> out;
@@ -172,6 +173,71 @@ public class CRNReaction
 		mod = new HashMap<CRNSubstance, ModifierRef> ();
 		singleDoc = false;
 		this.reversible = reversible;
+	}
+	
+	public void setCompartmentA (CRNCompartment compartment)
+	{
+		this.compartmentA = compartment;
+	}
+	
+	public void setCompartmentB (CRNCompartment compartment)
+	{
+		this.compartmentB = compartment;
+	}
+	
+	public CRNCompartment getCompartment ()
+	{
+		if (compartmentA != null && compartmentA == compartmentB)
+				return compartmentA;
+		
+		boolean sameCompartment = true;
+		CRNCompartment compartment = null;
+		
+		if (sameCompartment)
+			for (CRNSubstance sub : in.keySet ())
+			{
+				if (compartment == null)
+					compartment = sub.getCompartment ();
+				else
+				{
+					if (compartment != sub.getCompartment ())
+					{
+						sameCompartment = false;
+					}
+				}
+			}
+		
+		if (sameCompartment)
+			for (CRNSubstance sub : out.keySet ())
+			{
+				if (compartment == null)
+					compartment = sub.getCompartment ();
+				else
+				{
+					if (compartment != sub.getCompartment ())
+					{
+						sameCompartment = false;
+					}
+				}
+			}
+		
+		if (sameCompartment)
+			for (CRNSubstance sub : mod.keySet ())
+			{
+				if (compartment == null)
+					compartment = sub.getCompartment ();
+				else
+				{
+					if (compartment != sub.getCompartment ())
+					{
+						sameCompartment = false;
+					}
+				}
+			}
+		
+		if (sameCompartment)
+			return compartment;
+		return null;
 	}
 	
 	public void setDocA (DocumentNode docA)

@@ -3,7 +3,8 @@
  */
 package de.unirostock.sems.bives.ds.graph;
 
-import de.unirostock.sems.bives.ds.SBOTerm;
+import java.util.Vector;
+
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 
@@ -12,46 +13,61 @@ import de.unirostock.sems.bives.ds.xml.TreeNode;
  * @author Martin Scharm
  *
  */
-public class CRNSubstance
+public class HierarchyNetworkComponent
 {
 	private int id;
 	private String labelA, labelB;
 	private DocumentNode docA, docB;
-	private CRN crn;
+	private HierarchyNetwork hn;
 	private boolean singleDoc;
-	private CRNCompartment compartmentA, compartmentB;
+	private HierarchyNetworkComponent parentA, parentB;
+	private Vector<HierarchyNetworkComponent> kidsA, kidsB;
+	private Vector<HierarchyNetworkVariable> varsA, varsB;
 
-	public CRNSubstance (CRN crn, String labelA, String labelB, DocumentNode docA, DocumentNode docB, CRNCompartment compartmentA, CRNCompartment compartmentB)
+	public HierarchyNetworkComponent (HierarchyNetwork hn, String labelA, String labelB, DocumentNode docA, DocumentNode docB)
 	{
-		this.crn = crn;
-		this.id = crn.getNextSubstanceID ();
+		this.hn = hn;
+		this.id = hn.getNextComponentID();
 		this.labelA = labelA;
 		this.labelB = labelB;
 		this.docA = docA;
 		this.docB = docB;
-		this.compartmentA = compartmentA;
-		this.compartmentB = compartmentB;
 		singleDoc = false;
+
+		kidsA = new Vector<HierarchyNetworkComponent> ();
+		kidsB = new Vector<HierarchyNetworkComponent> ();
+		varsA = new Vector<HierarchyNetworkVariable> ();
+		varsB = new Vector<HierarchyNetworkVariable> ();
 	}
 	
-	public void setCompartmentA (CRNCompartment compartment)
+	public void addVaribaleA (HierarchyNetworkVariable var)
 	{
-		this.compartmentA = compartment;
+		this.varsA.add (var);
 	}
 	
-	public void setCompartmentB (CRNCompartment compartment)
+	public void addVaribaleB (HierarchyNetworkVariable var)
 	{
-		this.compartmentB = compartment;
+		this.varsB.add (var);
 	}
 	
-	public CRNCompartment getCompartment ()
+	public void addChildA (HierarchyNetworkComponent component)
 	{
-		if (compartmentA == null)
-			return compartmentB;
-		
-		if (compartmentB == null || compartmentA == compartmentB)
-			return compartmentA;
-		return null;
+		this.kidsA.add (component);
+	}
+	
+	public void addChildB (HierarchyNetworkComponent component)
+	{
+		this.kidsB.add (component);
+	}
+	
+	public void setParentA (HierarchyNetworkComponent component)
+	{
+		this.parentA = component;
+	}
+	
+	public void setParentB (HierarchyNetworkComponent component)
+	{
+		this.parentB = component;
 	}
 	
 	public void setDocA (DocumentNode docA)
@@ -100,15 +116,6 @@ public class CRNSubstance
 		return labelA + " -> " + labelB;
 	}
 	
-	public String getSBO ()
-	{
-		String a = docA.getAttribute ("sboTerm");
-		String b = docA.getAttribute ("sboTerm");
-		if (a == null || b == null || !a.equals (b))
-			return "";
-		return a;
-	}
-	
 	public int getModification ()
 	{
 		if (singleDoc)
@@ -118,7 +125,7 @@ public class CRNSubstance
 			return CRN.INSERT;
 		if (labelB == null)
 			return CRN.DELETE;
-		if (docA.hasModification (TreeNode.MODIFIED|TreeNode.SUB_MODIFIED) || docB.hasModification (TreeNode.MODIFIED|TreeNode.SUB_MODIFIED) || compartmentA != compartmentB)
+		if (docA.hasModification (TreeNode.MODIFIED|TreeNode.SUB_MODIFIED) || docB.hasModification (TreeNode.MODIFIED|TreeNode.SUB_MODIFIED))
 			return CRN.MODIFIED;
 		return CRN.UNMODIFIED;
 	}
@@ -127,4 +134,5 @@ public class CRNSubstance
 	{
 		singleDoc = true;
 	}
+	
 }

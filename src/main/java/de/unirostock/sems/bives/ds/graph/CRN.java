@@ -27,6 +27,8 @@ public class CRN
 	private int compartmentID;
 	private HashMap<TreeNode, CRNReaction> crnR;
 	private HashMap<TreeNode, CRNSubstance> crnS;
+	private HashMap<TreeNode, CRNCompartment> crnC;
+	private HashMap<CRNCompartment, CRNCompartment> ucrnC;
 	private HashMap<CRNReaction, CRNReaction> ucrnR;
 	private HashMap<CRNSubstance, CRNSubstance> ucrnS;
 	
@@ -37,8 +39,10 @@ public class CRN
 		compartmentID = 0;
 		crnR = new HashMap<TreeNode, CRNReaction> ();
 		crnS = new HashMap<TreeNode, CRNSubstance> ();
+		crnC = new HashMap<TreeNode, CRNCompartment> ();
 		ucrnR = new HashMap<CRNReaction, CRNReaction> ();
 		ucrnS = new HashMap<CRNSubstance, CRNSubstance> ();
+		ucrnC = new HashMap<CRNCompartment, CRNCompartment> ();
 	}
 	
 	public static String modToString (int modification)
@@ -63,6 +67,11 @@ public class CRN
 	public Collection<CRNReaction> getReactions ()
 	{
 		return ucrnR.values ();
+	}
+	
+	public Collection<CRNCompartment> getCompartments ()
+	{
+		return ucrnC.values ();
 	}
 	
 	public int getNextSubstanceID ()
@@ -94,6 +103,12 @@ public class CRN
 		ucrnS.put (subst, subst);
 	}
 	
+	public void setCompartment (TreeNode node, CRNCompartment compartment)
+	{
+		crnC.put (node, compartment);
+		ucrnC.put (compartment, compartment);
+	}
+	
 	public CRNSubstance getSubstance (TreeNode node)
 	{
 		//for (TreeNode tn : crnS.keySet ())
@@ -105,6 +120,11 @@ public class CRN
 	{
 		return crnR.get (node);
 	}
+	
+	public CRNCompartment getCompartment (TreeNode node)
+	{
+		return crnC.get (node);
+	}
 
 	public void setSingleDocument ()
 	{
@@ -112,5 +132,7 @@ public class CRN
 			r.setSingleDocument ();
 		for (CRNSubstance s : crnS.values ())
 			s.setSingleDocument ();
+		for (CRNCompartment c : crnC.values ())
+			c.setSingleDocument ();
 	}
 }

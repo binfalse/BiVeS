@@ -3,6 +3,7 @@
  */
 package de.unirostock.sems.bives.ds.cellml;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 import de.unirostock.sems.bives.exception.BivesLogicalException;
@@ -23,6 +24,11 @@ public class CellMLHierarchyNetwork
 		this.realtionship = realtionship;
 		this.name = name;
 		componentMapper = new HashMap<CellMLComponent, CellMLHierarchyNode> ();
+	}
+	
+	public Collection<CellMLHierarchyNode> getNodes ()
+	{
+		return componentMapper.values ();
 	}
 	
 	public void connectHierarchically (CellMLComponent parent, CellMLComponent kid) throws BivesLogicalException

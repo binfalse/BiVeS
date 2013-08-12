@@ -130,6 +130,11 @@ public class SBMLReaction
 			kineticLaw = new SBMLKineticLaw ((DocumentNode) nodes.elementAt (0), sbmlModel);
 	}
 	
+	public SBMLCompartment getCompartment ()
+	{
+		return compartment;
+	}
+	
 	public boolean isReversible ()
 	{
 		return reversible;

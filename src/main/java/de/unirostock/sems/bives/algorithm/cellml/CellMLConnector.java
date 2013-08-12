@@ -68,7 +68,22 @@ public class CellMLConnector
 	protected void connect ()
 	{
 		// post processing
-		
+		Vector<DocumentNode> lists = docA.getNodesByTag ("variable");
+		lists.addAll (docA.getNodesByTag ("reaction"));
+		for (DocumentNode tn : lists)
+		{
+			Connection con = conMgmt.getConnectionForNode (tn);
+			if (con == null)
+				continue;
+			TreeNode partner = con.getTreeB ();
+			if (tn.networkDiffers (partner, conMgmt, con))
+			{
+				System.out.println ("network differs: ");
+				System.out.println ("nwd: " + tn.getXPath ());
+				System.out.println ("nwd: " + partner.getXPath ());
+				conMgmt.dropConnection (tn);
+			}
+		}
 	}
 	
 }

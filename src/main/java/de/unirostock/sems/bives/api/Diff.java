@@ -15,7 +15,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.json.simple.JSONValue;
 import org.xml.sax.SAXException;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;

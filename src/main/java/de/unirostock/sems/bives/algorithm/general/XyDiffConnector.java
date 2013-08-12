@@ -88,7 +88,9 @@ public class XyDiffConnector
 		
 
 		LOGGER.debug ("doing full bottom up");
+		//System.out.println ("before full bottom up:\n" + conMgmt.toString ());
 		FullBottomUp (docB.getRoot ());
+		//System.out.println ("after full bottom up:\n" + conMgmt.toString ());
 
 		if (debug)
 		{
