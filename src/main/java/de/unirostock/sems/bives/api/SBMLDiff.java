@@ -161,4 +161,10 @@ public class SBMLDiff extends Diff
 		return new GraphTranslatorDot ().translate (graphProducer.getCRN ());
 	}
 
+	@Override
+	public String getHierarchyGraphML () throws ParserConfigurationException
+	{
+		return null;
+	}
+
 }

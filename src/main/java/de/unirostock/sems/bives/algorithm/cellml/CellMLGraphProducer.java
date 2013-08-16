@@ -42,18 +42,9 @@ import de.unirostock.sems.bives.ds.graph.CRN;
 import de.unirostock.sems.bives.ds.graph.CRNCompartment;
 import de.unirostock.sems.bives.ds.graph.CRNReaction;
 import de.unirostock.sems.bives.ds.graph.CRNSubstance;
-import de.unirostock.sems.bives.ds.graph.GraphTranslator;
 import de.unirostock.sems.bives.ds.graph.HierarchyNetworkComponent;
 import de.unirostock.sems.bives.ds.graph.HierarchyNetworkVariable;
-import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
-import de.unirostock.sems.bives.ds.sbml.SBMLModel;
-import de.unirostock.sems.bives.ds.sbml.SBMLReaction;
-import de.unirostock.sems.bives.ds.sbml.SBMLSimpleSpeciesReference;
-import de.unirostock.sems.bives.ds.sbml.SBMLSpecies;
-import de.unirostock.sems.bives.ds.sbml.SBMLSpeciesReference;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
-import de.unirostock.sems.bives.ds.xml.TreeDocument;
-import de.unirostock.sems.bives.ds.xml.TreeNode;
 
 
 /**
@@ -73,21 +64,22 @@ extends GraphProducer
 		this.cellmlDocA = cellmlDocA;
 		this.cellmlDocB = cellmlDocB;
 		this.conMgmt = conMgmt;
-		wholeCompartment = new CRNCompartment (crn, "document", "document", null, null);
-		wholeCompartment.setSingleDocument ();
 	}
 	
 	public CellMLGraphProducer (CellMLDocument cellmlDoc)
 	{
 		super (true);
 		this.cellmlDocA = cellmlDoc;
-		wholeCompartment = new CRNCompartment (crn, "document", "document", null, null);
-		wholeCompartment.setSingleDocument ();
 	}
 
 	@Override
 	protected void produceCRN ()
 	{
+		if (wholeCompartment == null)
+		{
+			wholeCompartment = new CRNCompartment (crn, "document", "document", null, null);
+			wholeCompartment.setSingleDocument ();
+		}
 		processCrnA ();
 		if (single)
 			crn.setSingleDocument ();
@@ -107,25 +99,81 @@ extends GraphProducer
 	
 	protected void processHnA ()
 	{
-		CellMLHierarchyNetwork enc = cellmlDocA.getModel ().getHierarchy ().getHierarchyNetwork ("encapsulation", "");
-		if (enc == null)
-			return;
+		LOGGER.info ("processHnA");
+		
 		
 		// looks like wee need two traversals...
-		HashMap<CellMLHierarchyNode, HierarchyNetworkComponent> componentMapper = new HashMap<CellMLHierarchyNode, HierarchyNetworkComponent> ();
+		HashMap<CellMLComponent, HierarchyNetworkComponent> componentMapper = new HashMap<CellMLComponent, HierarchyNetworkComponent> ();
 		HashMap<CellMLVariable, HierarchyNetworkVariable> variableMapper = new HashMap<CellMLVariable, HierarchyNetworkVariable> ();
 		
+		HashMap<String,CellMLComponent> components = cellmlDocA.getModel ().getComponents ();
+		
+		// create nodes in graph
+		for (CellMLComponent component : components.values ())
+		{
+			LOGGER.info ("create node: " + component.getName ());
+			HierarchyNetworkComponent nc = new HierarchyNetworkComponent (hn, component.getName (), null, component.getDocumentNode (), null);
+			
+			HashMap<String, CellMLVariable> vars = component.getVariables ();
+			for (CellMLVariable var : vars.values ())
+			{
+				LOGGER.info ("create var: " + var.getName ());
+				HierarchyNetworkVariable hnVar = new HierarchyNetworkVariable (hn, var.getName (), null, var.getDocumentNode (), null, nc, null);
+				nc.addVaribale (hnVar);
+				hn.setVariable (var.getDocumentNode (), hnVar);
+				variableMapper.put (var, hnVar);
+			}
+			hn.setComponent (component.getDocumentNode (), nc);
+			componentMapper.put (component, nc);
+			
+		}
+		
+		CellMLHierarchyNetwork enc = cellmlDocA.getModel ().getHierarchy ().getHierarchyNetwork ("encapsulation", "");
+		LOGGER.info ("found " + enc.getNodes ().size () + " enc nodes");
+		
+		// connect nodes
+		for (CellMLComponent component : components.values ())
+		{
+			CellMLHierarchyNode compNode = enc.get (component);
+			if (compNode != null)
+			{
+				CellMLHierarchyNode parent = compNode.getParent ();
+				if (parent != null)
+					componentMapper.get (component).setParentA (componentMapper.get (parent.getComponent ()));
+			}
+			
+
+			HashMap<String, CellMLVariable> vars = component.getVariables ();
+			for (CellMLVariable var : vars.values ())
+			{
+				HierarchyNetworkVariable hnv = variableMapper.get (var);
+				Vector<CellMLVariable> cons = var.getPrivateInterfaceConnections ();
+				for (CellMLVariable con : cons)
+					hnv.addConnectionA (variableMapper.get (con));
+			}
+			
+		}
+		
+		
+		
+		
+		
+		
+
+		LOGGER.info ("going through " + enc.getNodes ().size () + " enc nodes");
 		Collection<CellMLHierarchyNode> nodes = enc.getNodes ();
 		for (CellMLHierarchyNode node : nodes)
 		{
 			CellMLComponent comp = node.getComponent ();
+			LOGGER.info ("found node: " + comp.getName ());
 			HierarchyNetworkComponent nc = new HierarchyNetworkComponent (hn, comp.getName (), null, comp.getDocumentNode (), null);
 			
 			HashMap<String, CellMLVariable> vars = comp.getVariables ();
 			for (CellMLVariable var : vars.values ())
 			{
+				LOGGER.info ("found var: " + var.getName ());
 				HierarchyNetworkVariable hnVar = new HierarchyNetworkVariable (hn, var.getName (), null, var.getDocumentNode (), null, nc, null);
-				nc.addVaribaleA (hnVar);
+				nc.addVaribale (hnVar);
 				hn.setVariable (var.getDocumentNode (), hnVar);
 				variableMapper.put (var, hnVar);
 			}
@@ -144,11 +192,12 @@ extends GraphProducer
 				HierarchyNetworkComponent pc = componentMapper.get (parent);
 				nc.setParentA (pc);
 			}
+			/*
 			Vector<CellMLHierarchyNode> kids = node.getChildren ();
 			for (CellMLHierarchyNode kid : kids)
 			{
 				nc.addChildA (componentMapper.get (kid));
-			}
+			}*/
 			HashMap<String, CellMLVariable> vars = comp.getVariables ();
 			for (CellMLVariable var : vars.values ())
 			{
@@ -222,15 +271,12 @@ extends GraphProducer
 					hnVar.setComponentB (nc);
 				}
 				
-				nc.addVaribaleB (hnVar);
+				nc.addVaribale (hnVar);
 				hn.setVariable (varNode, hnVar);
 				variableMapper.put (var, hnVar);
 			}
 		}
 		
-		
-		// TODO: to go
-		cccc
 		
 		for (CellMLHierarchyNode node : nodes)
 		{
@@ -240,23 +286,24 @@ extends GraphProducer
 			if (parent != null)
 			{
 				HierarchyNetworkComponent pc = componentMapper.get (parent);
-				nc.setParentA (pc);
+				nc.setParentB (pc);
 			}
+			/*
 			Vector<CellMLHierarchyNode> kids = node.getChildren ();
 			for (CellMLHierarchyNode kid : kids)
 			{
-				nc.addChildA (componentMapper.get (kid));
-			}
+				nc.addChildB (componentMapper.get (kid));
+			}*/
 			HashMap<String, CellMLVariable> vars = comp.getVariables ();
 			for (CellMLVariable var : vars.values ())
 			{
 				HierarchyNetworkVariable hnv = variableMapper.get (var);
 				Vector<CellMLVariable> cons = var.getPrivateInterfaceConnections ();
 				for (CellMLVariable con : cons)
-					hnv.addConnectionA (variableMapper.get (con));
-				cons = var.getPublicInterfaceConnections ();
+					hnv.addConnectionB (variableMapper.get (con));
+				/*cons = var.getPublicInterfaceConnections ();
 				for (CellMLVariable con : cons)
-					hnv.addConnectionA (variableMapper.get (con));
+					hnv.addConnectionB (variableMapper.get (con));*/
 			}
 		}
 		

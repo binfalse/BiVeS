@@ -96,5 +96,15 @@ public class RegularDiff
 	{
 		return null;
 	}
+
+
+	/* (non-Javadoc)
+	 * @see de.unirostock.sems.bives.api.Diff#getHierarchyGraphML()
+	 */
+	@Override
+	public String getHierarchyGraphML () throws ParserConfigurationException
+	{
+		return null;
+	}
 	
 }

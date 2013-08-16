@@ -10,5 +10,6 @@ package de.unirostock.sems.bives.ds.graph;
  */
 public abstract class GraphTranslator
 {
-	public abstract Object translate (CRN crn);
+	public abstract Object translate (CRN crn) throws Exception;
+	public abstract Object translate (HierarchyNetwork hn) throws Exception;
 }

@@ -3,6 +3,9 @@
  */
 package de.unirostock.sems.bives.ds.graph;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Vector;
 
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
@@ -21,7 +24,21 @@ public class HierarchyNetworkVariable
 	private HierarchyNetwork hn;
 	private boolean singleDoc;
 	private HierarchyNetworkComponent componentA, componentB;
-	private Vector<HierarchyNetworkVariable> connectionsA, connectionsB;
+	private HashMap<HierarchyNetworkVariable, VarConnection> connections;
+	//private Vector<HierarchyNetworkVariable> connectionsA, connectionsB;
+	class VarConnection
+	{
+		public boolean a, b;
+		public VarConnection (boolean a, boolean b)
+		{
+			this.a = a;
+			this.b = b;
+		}
+		public String getModification ()
+		{
+			return "" + (a?b?CRN.UNMODIFIED:CRN.DELETE:b?CRN.INSERT:CRN.UNMODIFIED);
+		}
+	}
 
 	public HierarchyNetworkVariable (HierarchyNetwork hn, String labelA, String labelB, DocumentNode docA, DocumentNode docB, HierarchyNetworkComponent componentA, HierarchyNetworkComponent componentB)
 	{
@@ -34,16 +51,30 @@ public class HierarchyNetworkVariable
 		this.componentA = componentA;
 		this.componentB = componentB;
 		singleDoc = false;
+		connections = new HashMap<HierarchyNetworkVariable, VarConnection> ();
+	}
+	
+	public HashMap<HierarchyNetworkVariable, VarConnection> getConnections ()
+	{
+		return connections;
 	}
 	
 	public void addConnectionA (HierarchyNetworkVariable var)
 	{
-		connectionsA.add (var);
+		VarConnection v = connections.get (var);
+		if (v == null)
+			connections.put (var, new VarConnection (true, false));
+		else
+			v.a = true;
 	}
 	
 	public void addConnectionB (HierarchyNetworkVariable var)
 	{
-		connectionsB.add (var);
+		VarConnection v = connections.get (var);
+		if (v == null)
+			connections.put (var, new VarConnection (false, true));
+		else
+			v.b = true;
 	}
 	
 	public void setComponentA (HierarchyNetworkComponent component)

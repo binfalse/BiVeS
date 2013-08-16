@@ -27,6 +27,9 @@ import de.unirostock.sems.bives.tools.Tools;
 
 /**
  * @author Martin Scharm
+ * 
+ * TODO: compartments
+ * TODO: hierarchy
  *
  */
 public class GraphTranslatorDot
@@ -161,5 +164,12 @@ public class GraphTranslatorDot
 		dotStr += getDotPostamble ();
 		
 		return dotStr;
+	}
+
+	@Override
+	public Object translate (HierarchyNetwork hn) throws Exception
+	{
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

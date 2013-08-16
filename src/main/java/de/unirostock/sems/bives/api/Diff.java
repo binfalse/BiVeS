@@ -84,6 +84,8 @@ public abstract class Diff
 	
 	public abstract String getCRNGraphML () throws ParserConfigurationException;
 	
+	public abstract String getHierarchyGraphML () throws ParserConfigurationException;
+	
 	public abstract String getCRNDotGraph () throws ParserConfigurationException;
 	
 	public abstract String getHTMLReport ();

@@ -26,6 +26,11 @@ public class CellMLHierarchyNetwork
 		componentMapper = new HashMap<CellMLComponent, CellMLHierarchyNode> ();
 	}
 	
+	public CellMLHierarchyNode getNode (CellMLComponent component)
+	{
+		return componentMapper.get (component);
+	}
+	
 	public Collection<CellMLHierarchyNode> getNodes ()
 	{
 		return componentMapper.values ();

@@ -19,18 +19,26 @@ public abstract class GraphProducer
 
 	public GraphProducer (boolean single)
 	{
-		crn = new CRN ();
-		hn = new HierarchyNetwork ();
 		this.single = single;
 	}
 	
 	public CRN getCRN ()
 	{
+		if (crn == null)
+		{
+			crn = new CRN ();
+			produceCRN ();
+		}
 		return crn;
 	}
 	
 	public HierarchyNetwork getHierarchy ()
 	{
+		if (hn == null)
+		{
+			hn = new HierarchyNetwork ();
+			produceHierachyGraph ();
+		}
 		return hn;
 	}
 	

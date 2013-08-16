@@ -33,6 +33,7 @@ public class CellMLHierarchy
 	{
 		this.model = model;
 		networks = new HashMap <String, CellMLHierarchyNetwork> ();
+		networks.put ("encapsulation:", new CellMLHierarchyNetwork ("encapsulation", ""));
 	}
 	
 	public CellMLHierarchyNetwork getHierarchyNetwork (String relationship, String name)

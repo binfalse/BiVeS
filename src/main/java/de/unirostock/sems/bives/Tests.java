@@ -162,15 +162,17 @@ public class Tests
 	
 	private static void testSBMLApi () throws BivesDocumentParseException, FileNotFoundException, ParserConfigurationException, SAXException, IOException, BivesConnectionException, BivesConsistencyException
 	{
-		//File file1 = new File ("test/TestModel_for_IB2013-version-one");
-		//File file2 = new File ("test/TestModel_for_IB2013-version-two");
+		File file1 = new File ("test/TestModel_for_IB2013-version-one");
+		File file2 = new File ("test/TestModel_for_IB2013-version-two");
 		//File file2 = new File ("test/TestModel_for_IB2013-version-three");
 		//File file1 = new File ("test/ulfs-models/lacz-a.xml");
 		//File file2 = new File ("test/ulfs-models/lacz-b.xml");
 		//File file1 = new File ("test/some-test1-sbml.xml");
 		//File file2 = new File ("test/some-test2-sbml.xml");
-		File file1 = new File ("test/Novak1997_CellCycle-R3");
-		File file2 = new File ("test/Novak1997_CellCycle-R37");
+		
+		//File file1 = new File ("test/Novak1997_CellCycle-R3");
+		//File file2 = new File ("test/Novak1997_CellCycle-R37");
+		
 		SBMLDiff differ = new SBMLDiff (file1, file2);
 		differ.mapTrees ();
 		

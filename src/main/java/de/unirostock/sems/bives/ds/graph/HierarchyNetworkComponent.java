@@ -3,6 +3,8 @@
  */
 package de.unirostock.sems.bives.ds.graph;
 
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Vector;
 
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
@@ -22,7 +24,19 @@ public class HierarchyNetworkComponent
 	private boolean singleDoc;
 	private HierarchyNetworkComponent parentA, parentB;
 	private Vector<HierarchyNetworkComponent> kidsA, kidsB;
-	private Vector<HierarchyNetworkVariable> varsA, varsB;
+	private Vector<HierarchyNetworkVariable> vars;
+	//private Vector<HierarchyNetworkVariable> varsA, varsB;
+	/*private HashMap<String, Var> varMapper;
+	
+	class Var
+	{
+		public HierarchyNetworkVariable varA, varB;
+		public Var (HierarchyNetworkVariable varA, HierarchyNetworkVariable varB)
+		{
+			this.varA = varA;
+			this.varB = varB;
+		}
+	}*/
 
 	public HierarchyNetworkComponent (HierarchyNetwork hn, String labelA, String labelB, DocumentNode docA, DocumentNode docB)
 	{
@@ -33,21 +47,42 @@ public class HierarchyNetworkComponent
 		this.docA = docA;
 		this.docB = docB;
 		singleDoc = false;
-
+		
+		//varMapper = new HashMap<String, Var> ();
 		kidsA = new Vector<HierarchyNetworkComponent> ();
 		kidsB = new Vector<HierarchyNetworkComponent> ();
-		varsA = new Vector<HierarchyNetworkVariable> ();
-		varsB = new Vector<HierarchyNetworkVariable> ();
+		vars = new Vector<HierarchyNetworkVariable> ();
+		/*varsB = new Vector<HierarchyNetworkVariable> ();*/
 	}
 	
-	public void addVaribaleA (HierarchyNetworkVariable var)
+	public Vector<HierarchyNetworkVariable> getVariables ()
 	{
-		this.varsA.add (var);
+		return vars;
 	}
 	
-	public void addVaribaleB (HierarchyNetworkVariable var)
+	public HierarchyNetworkComponent getParentA ()
 	{
-		this.varsB.add (var);
+		return parentA;
+	}
+	
+	public HierarchyNetworkComponent getParentB ()
+	{
+		return parentB;
+	}
+	
+	/*public void addVaribaleA (HierarchyNetworkVariable var)
+	{
+		Var v = varMapper.get (var.getId ());
+		if (v == null)
+			varMapper.put (var.getId (), new Var (var, null));
+		else
+			v.varA = var;
+		//this.varsA.add (var);
+	}*/
+	
+	public void addVaribale (HierarchyNetworkVariable var)
+	{
+		vars.add (var);
 	}
 	
 	public void addChildA (HierarchyNetworkComponent component)

@@ -89,6 +89,16 @@ public class CellMLDiff extends Diff
 	}
 
 	/* (non-Javadoc)
+	 * @see de.unirostock.sems.bives.api.Diff#getGraphML()
+	 */
+	@Override
+	public String getHierarchyGraphML() throws ParserConfigurationException {
+		if (graphProducer == null)
+			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+		return new GraphTranslatorGraphML ().translate (graphProducer.getHierarchy ());
+	}
+
+	/* (non-Javadoc)
 	 * @see de.unirostock.sems.bives.api.Diff#getReport()
 	 */
 	@Override

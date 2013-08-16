@@ -6,7 +6,9 @@ package de.unirostock.sems.bives.ds.graph;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Vector;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -39,20 +41,104 @@ public class GraphTranslatorGraphML
 	private Document graphDocument;
 	private int graphid;
 	
-	public GraphTranslatorGraphML () throws ParserConfigurationException
+	/* (non-Javadoc)
+	 * @see de.unirostock.sems.bives.ds.graph.GraphTranslator#translate(de.unirostock.sems.bives.ds.graph.HierarchyNetwork)
+	 */
+	@Override
+	public String translate (HierarchyNetwork hn) throws ParserConfigurationException
 	{
 		graphDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		graphRoot = addGraphMLPreamble (graphDocument);
 		compartments = new HashMap<CRNCompartment, Element> ();
 		graphid = 1;
+		
+		//HashMap<HierarchyNetworkComponent, Element> componentMapper = new HashMap<HierarchyNetworkComponent, Element> ();
+		//HashMap<HierarchyNetworkVariable, Element> varMapper = new HashMap<HierarchyNetworkVariable, Element> ();
+		
+		Collection<HierarchyNetworkComponent> components = hn.getComponents ();
+		for (HierarchyNetworkComponent comp : components)
+		{
+			LOGGER.info ("creating comp: " + comp.getId ());
+			Element node = createGraphMLNode (graphRoot, comp.getId (), null, comp.getLabel (), comp.getModification () + "");
+			Element subtree = createGraphRoot (true);
+			node.appendChild (subtree);
+			//componentMapper.put (comp, node);
+			
+			Vector<HierarchyNetworkVariable> vars = comp.getVariables ();
+			for (HierarchyNetworkVariable var : vars)
+			{
+				LOGGER.info ("creating var: " + var.getId ());
+				Element vNode = createGraphMLNode (graphRoot, var.getId (), null, var.getLabel (), var.getModification () + "");
+				subtree.appendChild (vNode);
+				//varMapper.put (var, vNode);
+			}
+		}
+		
+
+		for (HierarchyNetworkComponent comp : components)
+		{
+			//Element node = componentMapper.get (comp);
+			
+			HierarchyNetworkComponent parA = comp.getParentA (), parB = comp.getParentB ();
+			if (parA != null || parB != null)
+			{
+				if (parA == parB)
+				{
+					// connect w/o mod
+					createEdge (graphRoot, parA.getId (), comp.getId (), null, null);
+				}
+				else
+				{
+					if (parA != null)
+					{
+						// connect delete
+						createEdge (graphRoot, parA.getId (), comp.getId (), CRN.DELETE + "", null);
+					}
+					if (parB != null)
+					{
+						// connect insert
+						createEdge (graphRoot, parB.getId (), comp.getId (), CRN.INSERT + "", null);
+					}
+				}
+			}
+			
+			Vector<HierarchyNetworkVariable> vars = comp.getVariables ();
+			for (HierarchyNetworkVariable var : vars)
+			{
+				//Element vNode = varMapper.get (var);
+				HashMap<HierarchyNetworkVariable, HierarchyNetworkVariable.VarConnection> cons = var.getConnections ();
+				
+				for (HierarchyNetworkVariable con : cons.keySet ())
+				{
+					LOGGER.info ("connecting var: " + var.getId () + " -> " + con.getId ());
+					createEdge (graphRoot, var.getId (), con.getId (), cons.get (con).getModification (), null);
+				}
+			}
+		}
+		
+
+		try
+		{
+			return XmlTools.prettyPrintDocument (graphDocument);
+		}
+		catch (IOException | TransformerException e)
+		{
+			LOGGER.error ("error printing graphml", e);
+		}
+		return null;
 	}
 	
 	/* (non-Javadoc)
 	 * @see de.unirostock.sems.bives.ds.graph.GraphTranslator#translate(de.unirostock.sems.bives.ds.graph.CRN)
 	 */
 	@Override
-	public String translate (CRN crn)
+	public String translate (CRN crn) throws ParserConfigurationException
 	{
+		graphDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+		graphRoot = addGraphMLPreamble (graphDocument);
+		compartments = new HashMap<CRNCompartment, Element> ();
+		graphid = 1;
+		
 		for (CRNCompartment c : crn.getCompartments ())
 		{
 			Element node = createGraphMLNode (graphRoot, c.getId (), null, c.getLabel (), c.getModification () + "");
