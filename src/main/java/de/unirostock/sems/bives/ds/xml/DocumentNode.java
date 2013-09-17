@@ -662,4 +662,17 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 		}
 		return unmatch / (double)(attributes.size () + cmp.attributes.size ());
 	}
+
+	@Override
+	public void getNodeStats (HashMap<String, Integer> map)
+	{
+		Integer i = map.get (tagName);
+		if (i == null)
+			map.put (tagName, 1);
+		else
+			map.put (tagName, i + 1);
+		
+		for (TreeNode child : children)
+			child.getNodeStats (map);
+	}
 }

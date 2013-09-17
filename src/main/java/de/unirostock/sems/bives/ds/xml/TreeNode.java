@@ -4,6 +4,7 @@
 package de.unirostock.sems.bives.ds.xml;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Vector;
 
 import org.w3c.dom.Document;
@@ -243,4 +244,6 @@ public abstract class TreeNode
 	protected abstract void reSetupStructureDown (TreeDocument doc, int numChild);
 	
 	protected abstract void reSetupStructureUp ();
+	
+	public abstract void getNodeStats (HashMap<String, Integer> map);
 }

@@ -34,6 +34,10 @@ public class HierarchyNetworkVariable
 			this.a = a;
 			this.b = b;
 		}
+		public int getModificationInt ()
+		{
+			return (a?b?CRN.UNMODIFIED:CRN.DELETE:b?CRN.INSERT:CRN.UNMODIFIED);
+		}
 		public String getModification ()
 		{
 			return "" + (a?b?CRN.UNMODIFIED:CRN.DELETE:b?CRN.INSERT:CRN.UNMODIFIED);
@@ -129,7 +133,7 @@ public class HierarchyNetworkVariable
 	
 	public String getId ()
 	{
-		return "s" + id;
+		return "v" + id;
 	}
 	
 	public String getLabel ()

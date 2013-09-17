@@ -5,6 +5,7 @@ package de.unirostock.sems.bives.ds.xml;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Vector;
@@ -204,6 +205,13 @@ public class TreeDocument
 	public String dump ()
 	{
 		return root.dump ("");
+	}
+	
+	public HashMap<String, Integer> getNodeStats ()
+	{
+		HashMap<String, Integer> tags = new HashMap<String, Integer> ();
+		root.getNodeStats (tags);
+		return tags;
 	}
 	
 	public String toString ()

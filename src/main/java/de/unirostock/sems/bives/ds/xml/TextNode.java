@@ -3,6 +3,7 @@
  */
 package de.unirostock.sems.bives.ds.xml;
 
+import java.util.HashMap;
 import java.util.Vector;
 
 import org.w3c.dom.Document;
@@ -213,5 +214,15 @@ public class TextNode
 		if (parent != null)
 			parent.reSetupStructureUp ();
 		
+	}
+
+	@Override
+	public void getNodeStats (HashMap<String, Integer> map)
+	{
+		Integer i = map.get (TEXT_TAG);
+		if (i == null)
+			map.put (TEXT_TAG, 1);
+		else
+			map.put (TEXT_TAG, i + 1);
 	}
 }

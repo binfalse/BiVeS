@@ -37,16 +37,23 @@ public class SBMLDiff extends Diff
 	
 	public SBMLDiff (File a, File b) throws BivesDocumentParseException, FileNotFoundException, ParserConfigurationException, SAXException, IOException, BivesConsistencyException
 	{
-		super (a,b);
+		super (a, b);
 		doc1 = new SBMLDocument (treeA);
 		doc2 = new SBMLDocument (treeB);
 	}
 	
 	public SBMLDiff (String a, String b) throws BivesDocumentParseException, FileNotFoundException, ParserConfigurationException, SAXException, IOException, BivesConsistencyException
 	{
-		super (a,b);
+		super (a, b);
 		doc1 = new SBMLDocument (treeA);
 		doc2 = new SBMLDocument (treeB);
+	}
+	
+	public SBMLDiff (SBMLDocument a, SBMLDocument b) throws BivesDocumentParseException, FileNotFoundException, ParserConfigurationException, SAXException, IOException, BivesConsistencyException
+	{
+		super (a.getTreeDocument (), b.getTreeDocument ());
+		doc1 = a;
+		doc2 = b;
 	}
 	
 	
@@ -163,6 +170,13 @@ public class SBMLDiff extends Diff
 
 	@Override
 	public String getHierarchyGraphML () throws ParserConfigurationException
+	{
+		return null;
+	}
+
+	@Override
+	public String getHierarchyDotGraph ()
+		throws ParserConfigurationException
 	{
 		return null;
 	}

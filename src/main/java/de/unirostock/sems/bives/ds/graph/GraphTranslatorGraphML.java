@@ -111,7 +111,7 @@ public class GraphTranslatorGraphML
 				for (HierarchyNetworkVariable con : cons.keySet ())
 				{
 					LOGGER.info ("connecting var: " + var.getId () + " -> " + con.getId ());
-					createEdge (graphRoot, var.getId (), con.getId (), cons.get (con).getModification (), null);
+					createEdge (graphRoot, con.getId (), var.getId (), cons.get (con).getModification (), null);
 				}
 			}
 		}

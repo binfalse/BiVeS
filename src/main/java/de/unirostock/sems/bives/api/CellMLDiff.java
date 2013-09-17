@@ -54,6 +54,14 @@ public class CellMLDiff extends Diff
 		doc2 = new CellMLDocument (treeB);
 	}
 
+	public CellMLDiff(CellMLDocument a, CellMLDocument b) throws ParserConfigurationException,
+			BivesDocumentParseException, FileNotFoundException, SAXException,
+			IOException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, URISyntaxException, BivesImportException {
+		super(a.getTreeDocument (), b.getTreeDocument ());
+		doc1 = a;
+		doc2 = b;
+	}
+
 	/* (non-Javadoc)
 	 * @see de.unirostock.sems.bives.api.Diff#mapTrees()
 	 */
@@ -137,6 +145,16 @@ public class CellMLDiff extends Diff
 		if (graphProducer == null)
 			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
 		return new GraphTranslatorDot ().translate (graphProducer.getCRN ());
+	}
+
+	/* (non-Javadoc)
+	 * @see de.unirostock.sems.bives.api.Diff#getGraphML()
+	 */
+	@Override
+	public String getHierarchyDotGraph() throws ParserConfigurationException {
+		if (graphProducer == null)
+			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+		return new GraphTranslatorDot ().translate (graphProducer.getHierarchy ());
 	}
 
 }

@@ -137,7 +137,7 @@ public class HierarchyNetworkComponent
 	
 	public String getId ()
 	{
-		return "s" + id;
+		return "c" + id;
 	}
 	
 	public String getLabel ()

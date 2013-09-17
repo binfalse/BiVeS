@@ -61,6 +61,16 @@ public abstract class Diff
 		treeA = new TreeDocument (builder.parse (new ByteArrayInputStream(a.getBytes ())), new XyWeighter (), null);
 		treeB = new TreeDocument (builder.parse (new ByteArrayInputStream (b.getBytes ())), new XyWeighter (), null);
 	}
+
+	public Diff (TreeDocument a, TreeDocument b) throws ParserConfigurationException
+	{
+
+		DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
+			.newDocumentBuilder ();
+		
+		treeA = a;
+		treeB = b;
+	}
 	
 	public abstract boolean mapTrees () throws Exception;
 	
@@ -87,6 +97,8 @@ public abstract class Diff
 	public abstract String getHierarchyGraphML () throws ParserConfigurationException;
 	
 	public abstract String getCRNDotGraph () throws ParserConfigurationException;
+
+	public abstract String getHierarchyDotGraph () throws ParserConfigurationException;
 	
 	public abstract String getHTMLReport ();
 	

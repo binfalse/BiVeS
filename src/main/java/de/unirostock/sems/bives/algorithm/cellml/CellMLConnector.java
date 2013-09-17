@@ -78,9 +78,9 @@ public class CellMLConnector
 			TreeNode partner = con.getTreeB ();
 			if (tn.networkDiffers (partner, conMgmt, con))
 			{
-				System.out.println ("network differs: ");
+				/*System.out.println ("network differs: ");
 				System.out.println ("nwd: " + tn.getXPath ());
-				System.out.println ("nwd: " + partner.getXPath ());
+				System.out.println ("nwd: " + partner.getXPath ());*/
 				conMgmt.dropConnection (tn);
 			}
 		}

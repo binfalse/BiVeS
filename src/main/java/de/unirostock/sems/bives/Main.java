@@ -3,6 +3,7 @@
  */
 package de.unirostock.sems.bives;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -32,6 +33,10 @@ import de.unirostock.sems.bives.algorithm.sbml.SBMLConnector;
 import de.unirostock.sems.bives.algorithm.sbml.SBMLDiffInterpreter;
 //import de.unirostock.sems.bives.algorithm.sbmldeprecated.SBMLDiffInterpreter;
 import de.unirostock.sems.bives.algorithm.sbml.SBMLGraphProducer;
+import de.unirostock.sems.bives.api.CellMLDiff;
+import de.unirostock.sems.bives.api.Diff;
+import de.unirostock.sems.bives.api.RegularDiff;
+import de.unirostock.sems.bives.api.SBMLDiff;
 import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
@@ -53,15 +58,14 @@ public class Main
 		System.out.println ();
 
 		System.out.println ("ARGUMENTS:");
-		System.out.println ("\t[option] fileA.xml fileB.xml");
+		System.out.println ("\t[option] FILE1 FILE2");
 		System.out.println ();
 		System.out.println ("OPTIONS:");
-		System.out.println ("\t[none]\t\texpect XML file and print patch");
-		System.out.println ("\t--sbml-patch\texpect SBML encoded model and print patch");
-		System.out.println ("\t--sbml-graph\texpect SBML encoded model and print diff graph");
-		System.out.println ("\t--cellml-patch\texpect CellML encoded model and print patch");
+		System.out.println ("\t[none]\t\texpect XML files and print patch");
+		System.out.println ("\t--sbml-patch\texpect SBML encoded models and print patch");
+		System.out.println ("\t--cellml-patch\texpect CellML encoded models and print patch");
 		System.out.println ();
-		System.out.println ("[FILE1] and [FILE2] define XML files to compare");
+		System.out.println ("FILE1 and FILE2 define XML files to compare");
 		System.out.println ();
 		
 		System.exit (2);
@@ -69,22 +73,18 @@ public class Main
 	
 	/**
 	 * @param args
-	 * @throws ParserConfigurationException 
-	 * @throws IOException 
-	 * @throws SAXException 
-	 * @throws FileNotFoundException 
-	 * @throws BivesConnectionException 
+	 * @throws Exception 
 	 */
-	public static void main (String[] args) throws ParserConfigurationException, FileNotFoundException, SAXException, IOException, BivesConnectionException
+	public static void main (String[] args) throws Exception
 	{
 		//LOGGER.setLogToStdErr (false);
 
-		/*args = new String [] {"--sbml-graph", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
-		args = new String [] {"--sbml-graph", "test/TestModel_for_IB2013-version-one", "test/TestModel_for_IB2013-version-two"};
+		//args = new String [] {"--sbml-graph", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
+		//args = new String [] {"--sbml-graph", "test/TestModel_for_IB2013-version-one", "test/TestModel_for_IB2013-version-two"};
+		args = new String [] {"--sbml-patch", "test/TestModel_for_IB2013-version-one", "test/TestModel_for_IB2013-version-two"};
     
-    String file1 = null, file2 = null;
-    Connector con = new XyDiffConnector ();
-    Producer producer = new PatchProducer ();
+    File file1 = null, file2 = null;
+    int type = 0;
     
     if (args.length < 2)
     {
@@ -95,29 +95,45 @@ public class Main
     {
     	if (args[i].equals ("--sbml-patch"))
     	{
-    		//con = new SBMLConnector ();
-    		producer = new PatchProducer ();
-    	}
-    	else if (args[i].equals ("--sbml-graph"))
-    	{
-    		//con = new SBMLConnector ();
-    		//producer = new SBMLGraphProducer ();
+    		type = 1;
     	}
     	else if (args[i].equals ("--cellml-patch"))
     	{
-    		con = new CellMLConnector ();
-    		producer = new PatchProducer ();
+    		type = 2;
     	}
     	else if (file1 == null)
-    		file1 = args[i];
+    		file1 = new File (args[i]);
     	else if (file2 == null)
-    		file2 = args[i];
+    		file2 = new File (args[i]);
     	else
     	{
     		usage ("do not understand");
     	}
     }
+    
+    if (file1 == null || file2 == null)
+    	usage ("you need to prvide 2 files!");
+    
+    Diff differ = null;
 
+    switch (type)
+    {
+    	case 1:
+    		differ = new SBMLDiff (file1, file2);
+    		break;
+    	case 2:
+    		differ = new CellMLDiff (file1, file2);
+    		break;
+    	default:
+    		differ = new RegularDiff (file1, file2);
+    }
+    
+    differ.mapTrees ();
+    
+    System.out.println (differ.getDiff ());
+    
+    
+    /*
 		DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
 			.newDocumentBuilder ();
 		

@@ -12,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
+import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.exception.BivesConnectionException;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
 
@@ -25,6 +26,16 @@ public class RegularDiff
 {
 	
 	public RegularDiff (File a, File b)
+		throws ParserConfigurationException,
+			BivesDocumentParseException,
+			FileNotFoundException,
+			SAXException,
+			IOException
+	{
+		super (a, b);
+	}
+	
+	public RegularDiff (TreeDocument a, TreeDocument b)
 		throws ParserConfigurationException,
 			BivesDocumentParseException,
 			FileNotFoundException,
@@ -103,6 +114,14 @@ public class RegularDiff
 	 */
 	@Override
 	public String getHierarchyGraphML () throws ParserConfigurationException
+	{
+		return null;
+	}
+
+
+	@Override
+	public String getHierarchyDotGraph ()
+		throws ParserConfigurationException
 	{
 		return null;
 	}

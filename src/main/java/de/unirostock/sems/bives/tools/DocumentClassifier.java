@@ -42,6 +42,9 @@ public class DocumentClassifier
 	private Vector<Exception> exceptions;
 	private int type;
 	
+	private SBMLDocument sbml;
+	private CellMLDocument cellml;
+	private TreeDocument xml;
 	
 	public DocumentClassifier () throws ParserConfigurationException
 	{
@@ -71,6 +74,28 @@ public class DocumentClassifier
 		});
 	}
 	
+	private void clear ()
+	{
+		sbml = null;
+		cellml = null;
+		xml = null;
+	}
+	
+	public TreeDocument getXmlDocument ()
+	{
+		return xml;
+	}
+	
+	public CellMLDocument getCellMlDocument ()
+	{
+		return cellml;
+	}
+	
+	public SBMLDocument getSbmlDocument ()
+	{
+		return sbml;
+	}
+	
 	public  Vector<Exception> getExceptions ()
 	{
 		return exceptions;
@@ -80,17 +105,17 @@ public class DocumentClassifier
 	{
 		exceptions = new Vector<Exception> ();
 		type = UNKNOWN;
-		
+		clear ();
 		try
 		{
-			TreeDocument doc = new TreeDocument (builder.parse (model), new XyWeighter (), baseUri);
+			xml = new TreeDocument (builder.parse (model), new XyWeighter (), baseUri);
 			type |= XML;
 			
 			// is sbml?
-			isSBML (doc);
+			isSBML (xml);
 			
 			// is cellml?
-			isCellML (doc);
+			isCellML (xml);
 		}
 		catch (SAXException | IOException e)
 		{
@@ -124,7 +149,7 @@ public class DocumentClassifier
 	{
 		try
 		{
-			new SBMLDocument (doc);
+			sbml = new SBMLDocument (doc);
 			type |= SBML;
 		}
 		catch (Exception e)
@@ -137,7 +162,7 @@ public class DocumentClassifier
 	{
 		try
 		{
-			new CellMLDocument (doc);
+			cellml = new CellMLDocument (doc);
 			type |= CELLML;
 		}
 		catch (Exception e)
