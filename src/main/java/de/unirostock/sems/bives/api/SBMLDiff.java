@@ -17,6 +17,7 @@ import de.unirostock.sems.bives.algorithm.sbml.SBMLDiffInterpreter;
 import de.unirostock.sems.bives.algorithm.sbml.SBMLGraphProducer;
 import de.unirostock.sems.bives.ds.graph.GraphTranslatorDot;
 import de.unirostock.sems.bives.ds.graph.GraphTranslatorGraphML;
+import de.unirostock.sems.bives.ds.graph.GraphTranslatorJson;
 import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
 import de.unirostock.sems.bives.exception.BivesConnectionException;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
@@ -173,11 +174,19 @@ public class SBMLDiff extends Diff
 
 
 	@Override
-	public String getCRNDotGraph () throws ParserConfigurationException
+	public String getCRNDotGraph ()
 	{
 		if (graphProducer == null)
 			graphProducer = new SBMLGraphProducer (connections, doc1, doc2);
 		return new GraphTranslatorDot ().translate (graphProducer.getCRN ());
+	}
+
+	@Override
+	public String getCRNJsonGraph ()
+	{
+		if (graphProducer == null)
+			graphProducer = new SBMLGraphProducer (connections, doc1, doc2);
+		return new GraphTranslatorJson ().translate (graphProducer.getCRN ());
 	}
 
 	@Override
@@ -188,7 +197,12 @@ public class SBMLDiff extends Diff
 
 	@Override
 	public String getHierarchyDotGraph ()
-		throws ParserConfigurationException
+	{
+		return null;
+	}
+
+	@Override
+	public String getHierarchyJsonGraph ()
 	{
 		return null;
 	}

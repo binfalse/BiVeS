@@ -98,6 +98,11 @@ implements DiffReporter
 		
 	}
 	
+	public CellMLComponent getComponent ()
+	{
+		return component;
+	}
+	
 	public int getPublicInterface ()
 	{
 		return public_interface;

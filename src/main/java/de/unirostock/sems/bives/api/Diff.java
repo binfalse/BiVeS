@@ -96,9 +96,13 @@ public abstract class Diff
 	
 	public abstract String getHierarchyGraphML () throws ParserConfigurationException;
 	
-	public abstract String getCRNDotGraph () throws ParserConfigurationException;
+	public abstract String getCRNDotGraph ();
 
-	public abstract String getHierarchyDotGraph () throws ParserConfigurationException;
+	public abstract String getHierarchyDotGraph ();
+
+	public abstract String getCRNJsonGraph ();
+
+	public abstract String getHierarchyJsonGraph ();
 	
 	public abstract String getHTMLReport ();
 	

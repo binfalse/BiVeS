@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Vector;
 
+import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 
@@ -66,6 +67,7 @@ public class HierarchyNetworkVariable
 	public void addConnectionA (HierarchyNetworkVariable var)
 	{
 		VarConnection v = connections.get (var);
+		//LOGGER.info ("addConnectionA: " + id + " + " + var.id + " = " + v + " -> " + componentA + " / " + componentB);
 		if (v == null)
 			connections.put (var, new VarConnection (true, false));
 		else
@@ -75,6 +77,7 @@ public class HierarchyNetworkVariable
 	public void addConnectionB (HierarchyNetworkVariable var)
 	{
 		VarConnection v = connections.get (var);
+		//LOGGER.info ("addConnectionB: " + id + " + " + var.id + " = " + v + " -> " + componentA + " / " + componentB);
 		if (v == null)
 			connections.put (var, new VarConnection (false, true));
 		else

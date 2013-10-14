@@ -18,6 +18,7 @@ import de.unirostock.sems.bives.algorithm.cellml.CellMLGraphProducer;
 import de.unirostock.sems.bives.ds.cellml.CellMLDocument;
 import de.unirostock.sems.bives.ds.graph.GraphTranslatorDot;
 import de.unirostock.sems.bives.ds.graph.GraphTranslatorGraphML;
+import de.unirostock.sems.bives.ds.graph.GraphTranslatorJson;
 import de.unirostock.sems.bives.exception.BivesConnectionException;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
@@ -152,21 +153,38 @@ public class CellMLDiff extends Diff
 	}
 
 	@Override
-	public String getCRNDotGraph () throws ParserConfigurationException
+	public String getCRNDotGraph ()
 	{
 		if (graphProducer == null)
 			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
 		return new GraphTranslatorDot ().translate (graphProducer.getCRN ());
 	}
 
+	@Override
+	public String getCRNJsonGraph ()
+	{
+		if (graphProducer == null)
+			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+		return new GraphTranslatorJson ().translate (graphProducer.getCRN ());
+	}
+
 	/* (non-Javadoc)
 	 * @see de.unirostock.sems.bives.api.Diff#getGraphML()
 	 */
 	@Override
-	public String getHierarchyDotGraph() throws ParserConfigurationException {
+	public String getHierarchyDotGraph()
+	{
 		if (graphProducer == null)
 			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
 		return new GraphTranslatorDot ().translate (graphProducer.getHierarchy ());
+	}
+
+	@Override
+	public String getHierarchyJsonGraph ()
+	{
+		if (graphProducer == null)
+			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+		return new GraphTranslatorJson ().translate (graphProducer.getHierarchy ());
 	}
 
 }

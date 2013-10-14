@@ -83,7 +83,7 @@ public class RegularDiff
 	 * @see de.unirostock.sems.bives.api.Diff#getDotGraph()
 	 */
 	@Override
-	public String getCRNDotGraph () throws ParserConfigurationException
+	public String getCRNDotGraph ()
 	{
 		return null;
 	}
@@ -127,7 +127,18 @@ public class RegularDiff
 
 	@Override
 	public String getHierarchyDotGraph ()
-		throws ParserConfigurationException
+	{
+		return null;
+	}
+
+	@Override
+	public String getCRNJsonGraph ()
+	{
+		return null;
+	}
+
+	@Override
+	public String getHierarchyJsonGraph ()
 	{
 		return null;
 	}

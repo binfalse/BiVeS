@@ -4,7 +4,7 @@
     <groupId>de.unirostock.sems</groupId>
     <artifactId>BiVeS</artifactId>
     <packaging>jar</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1-SNAPSHOT</version>
     <name>BiVeS</name>
     <description>Simple but efficient logging facility</description>
     <url>http://sems.uni-rostock.de/projects/bives/</url>
@@ -23,6 +23,11 @@
             <groupId>de.binfalse</groupId>
             <artifactId>BFLog</artifactId>
             <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1.1</version>
         </dependency>
     </dependencies>
     <distributionManagement>

@@ -82,6 +82,8 @@ public class HierarchyNetworkComponent
 	
 	public void addVaribale (HierarchyNetworkVariable var)
 	{
+		if (vars.contains (var))
+			return;
 		vars.add (var);
 	}
 	

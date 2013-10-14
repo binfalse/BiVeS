@@ -41,7 +41,7 @@ public class GraphTranslatorDot
 {
 	private String dotStr;
 	
-	public GraphTranslatorDot () throws ParserConfigurationException
+	public GraphTranslatorDot ()
 	{
 		dotStr = "";
 	}

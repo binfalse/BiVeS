@@ -90,13 +90,13 @@ extends GraphProducer
 		// create nodes in graph
 		for (CellMLComponent component : components.values ())
 		{
-			LOGGER.info ("create node A: " + component.getName ());
+			//LOGGER.info ("create node A: " + component.getName ());
 			HierarchyNetworkComponent nc = new HierarchyNetworkComponent (hn, component.getName (), null, component.getDocumentNode (), null);
 			
 			HashMap<String, CellMLVariable> vars = component.getVariables ();
 			for (CellMLVariable var : vars.values ())
 			{
-				LOGGER.info ("create var A: " + var.getName ());
+				//LOGGER.info ("create var A: " + var.getName ());
 				HierarchyNetworkVariable hnVar = new HierarchyNetworkVariable (hn, var.getName (), null, var.getDocumentNode (), null, nc, null);
 				nc.addVaribale (hnVar);
 				hn.setVariable (var.getDocumentNode (), hnVar);
@@ -108,27 +108,27 @@ extends GraphProducer
 		}
 		
 		CellMLHierarchyNetwork enc = cellmlDocA.getModel ().getHierarchy ().getHierarchyNetwork ("encapsulation", "");
-		LOGGER.info ("found " + enc.getNodes ().size () + " enc nodes");
+		//LOGGER.info ("found " + enc.getNodes ().size () + " enc nodes");
 		
 		// connect nodes
 		for (CellMLComponent component : components.values ())
 		{
-			LOGGER.info ("check " + component.getName ());
+			//LOGGER.info ("check " + component.getName ());
 			CellMLHierarchyNode compNode = enc.get (component);
-			LOGGER.info ("hierarchy node: " + compNode);
+			//LOGGER.info ("hierarchy node: " + compNode);
 			if (compNode != null)
 			{
 				CellMLHierarchyNode parent = compNode.getParent ();
 				if (parent != null)
 				{
-					LOGGER.info ("create comp connection A: " + component.getName () + " -> " + parent.getComponent ().getName ());
+					//LOGGER.info ("create comp connection A: " + component.getName () + " -> " + parent.getComponent ().getName ());
 					componentMapper.get (component).setParentA (componentMapper.get (parent.getComponent ()));
 				}
 			}
 			
 
 			HashMap<String, CellMLVariable> vars = component.getVariables ();
-			LOGGER.info ("has " + vars.size () + " vars");
+			//LOGGER.info ("has " + vars.size () + " vars");
 			for (CellMLVariable var : vars.values ())
 			{
 				HierarchyNetworkVariable hnv = variableMapper.get (var);
@@ -138,7 +138,7 @@ extends GraphProducer
 					Vector<CellMLVariable> cons = var.getPublicInterfaceConnections ();
 					for (CellMLVariable con : cons)
 					{
-						LOGGER.info ("create var connection A: " + var.getName () + " -> " + con.getName ());
+						//LOGGER.info ("create var connection A (pub): " + var.getName () + " -> " + con.getName () + " --- " + var.getComponent ().getName () + " -> " + con.getComponent ().getName ());
 						hnv.addConnectionA (variableMapper.get (con));
 					}
 				}
@@ -147,7 +147,7 @@ extends GraphProducer
 					Vector<CellMLVariable> cons = var.getPrivateInterfaceConnections ();
 					for (CellMLVariable con : cons)
 					{
-						LOGGER.info ("create var connection A: " + var.getName () + " -> " + con.getName ());
+						//LOGGER.info ("create var connection A (priv): " + var.getName () + " -> " + con.getName () + " --- " + var.getComponent ().getName () + " -> " + con.getComponent ().getName ());
 						hnv.addConnectionA (variableMapper.get (con));
 					}
 				}
@@ -176,12 +176,12 @@ extends GraphProducer
 			if (con == null)
 			{
 				// no equivalent in doc a
-				LOGGER.info ("create node: " + component.getName ());
+				//LOGGER.info ("create node: " + component.getName ());
 				nc = new HierarchyNetworkComponent (hn, null, component.getName (), null, component.getDocumentNode ());
 			}
 			else
 			{
-				LOGGER.info ("add b to node: " + component.getName ());
+				//LOGGER.info ("add b to node: " + component.getName ());
 				nc = hn.getComponent (con.getPartnerOf (component.getDocumentNode ()));
 				nc.setDocB (component.getDocumentNode ());
 				nc.setLabelB (component.getName ());
@@ -202,12 +202,12 @@ extends GraphProducer
 				if (c == null || hn.getVariable (c.getPartnerOf (varNode)) == null)
 				{
 					// no equivalent in doc a
-					LOGGER.info ("create var: " + var.getName ());
+					//LOGGER.info ("create var: " + var.getName ());
 					hnVar = new HierarchyNetworkVariable (hn, null, var.getName (), null, varNode, null, nc);
 				}
 				else
 				{
-					LOGGER.info ("add b to var: " + var.getName ());
+					//LOGGER.info ("add b to var: " + var.getName ());
 					hnVar = hn.getVariable (c.getPartnerOf (varNode));
 					hnVar.setDocB (varNode);
 					hnVar.setLabelB (var.getName ());
@@ -224,7 +224,7 @@ extends GraphProducer
 		}
 		
 		CellMLHierarchyNetwork enc = cellmlDocB.getModel ().getHierarchy ().getHierarchyNetwork ("encapsulation", "");
-		LOGGER.info ("found " + enc.getNodes ().size () + " enc nodes");
+		//LOGGER.info ("found " + enc.getNodes ().size () + " enc nodes");
 		
 		// connect nodes
 		for (CellMLComponent component : components.values ())
@@ -235,7 +235,7 @@ extends GraphProducer
 				CellMLHierarchyNode parent = compNode.getParent ();
 				if (parent != null)
 				{
-					LOGGER.info ("create comp connection B: " + component.getName () + " -> " + parent.getComponent ().getName ());
+					//LOGGER.info ("create comp connection B: " + component.getName () + " -> " + parent.getComponent ().getName ());
 					componentMapper.get (component).setParentB (componentMapper.get (parent.getComponent ()));
 				}
 			}
@@ -256,7 +256,7 @@ extends GraphProducer
 					Vector<CellMLVariable> cons = var.getPublicInterfaceConnections ();
 					for (CellMLVariable con : cons)
 					{
-						LOGGER.info ("create var connection A: " + var.getName () + " -> " + con.getName ());
+						//LOGGER.info ("create var connection B (pub): " + var.getName () + " -> " + con.getName () + " --- " + var.getComponent ().getName () + " -> " + con.getComponent ().getName ());
 						hnv.addConnectionB (variableMapper.get (con));
 					}
 				}
@@ -265,7 +265,7 @@ extends GraphProducer
 					Vector<CellMLVariable> cons = var.getPrivateInterfaceConnections ();
 					for (CellMLVariable con : cons)
 					{
-						LOGGER.info ("create var connection A: " + var.getName () + " -> " + con.getName ());
+						//LOGGER.info ("create var connection B (prib): " + var.getName () + " -> " + con.getName () + " --- " + var.getComponent ().getName () + " -> " + con.getComponent ().getName ());
 						hnv.addConnectionB (variableMapper.get (con));
 					}
 				}
