@@ -66,7 +66,8 @@ implements DiffReporter
 	public MarkupElement reportInsert (MarkupDocument markupDocument)
 	{
 		MarkupElement me = new MarkupElement (markupDocument.insert (getNameAndId ()));
-		me.addValue (markupDocument.insert ("inserted"));
+		Tools.genMathHtmlStats (null, math.getDocumentNode (), me, markupDocument);
+		//me.addValue (markupDocument.insert ("inserted"));
 		return me;
 	}
 	
@@ -74,7 +75,8 @@ implements DiffReporter
 	public MarkupElement reportDelete (MarkupDocument markupDocument)
 	{
 		MarkupElement me = new MarkupElement (markupDocument.delete (getNameAndId ()));
-		me.addValue (markupDocument.delete ("deleted"));
+		Tools.genMathHtmlStats (math.getDocumentNode (), null, me, markupDocument);
+		//me.addValue (markupDocument.delete ("deleted"));
 		return me;
 	}
 }

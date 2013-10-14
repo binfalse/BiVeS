@@ -68,7 +68,8 @@ public class SBMLRateRule
 	public MarkupElement reportInsert (MarkupDocument markupDocument)
 	{
 		MarkupElement me = new MarkupElement (markupDocument.insert ("RateRule for "+SBMLModel.getSidName (variable)));
-		me.addValue (markupDocument.insert ("inserted"));
+		Tools.genMathHtmlStats (null, math.getDocumentNode (), me, markupDocument);
+		//me.addValue (markupDocument.insert ("inserted"));
 		return me;
 	}
 	
@@ -76,7 +77,8 @@ public class SBMLRateRule
 	public MarkupElement reportDelete (MarkupDocument markupDocument)
 	{
 		MarkupElement me = new MarkupElement (markupDocument.delete ("RateRule for "+SBMLModel.getSidName (variable)));
-		me.addValue (markupDocument.delete ("deleted"));
+		Tools.genMathHtmlStats (math.getDocumentNode (), null, me, markupDocument);
+		//me.addValue (markupDocument.delete ("deleted"));
 		return me;
 	}
 	

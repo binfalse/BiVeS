@@ -70,4 +70,10 @@ extends SBMLSBase
 		SBOTerm sbo = getSBOTerm ();
 		return markupDocument.delete (species.getID () + (sbo == null? "("+SBOTerm.resolvModifier (SBOTerm.MOD_UNKNOWN)+")" : "("+sbo.resolvModifier ()+")"));
 	}
+	
+	public String report ()
+	{
+		SBOTerm sbo = getSBOTerm ();		
+		return species.getID () + (sbo == null? "("+SBOTerm.resolvModifier (SBOTerm.MOD_UNKNOWN)+")" : "("+sbo.resolvModifier ()+")");
+	}
 }

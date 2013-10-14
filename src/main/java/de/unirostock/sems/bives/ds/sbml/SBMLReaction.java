@@ -318,8 +318,11 @@ public class SBMLReaction
 	@Override
 	public MarkupElement reportInsert (MarkupDocument markupDocument)
 	{
+
+		
+		
 		MarkupElement me = new MarkupElement (markupDocument.insert (getNameAndId ()));
-		me.addValue (markupDocument.insert ("inserted"));
+		report (markupDocument, me, true);
 		return me;
 	}
 
@@ -327,7 +330,61 @@ public class SBMLReaction
 	public MarkupElement reportDelete (MarkupDocument markupDocument)
 	{
 		MarkupElement me = new MarkupElement (markupDocument.delete (getNameAndId ()));
-		me.addValue (markupDocument.delete ("deleted"));
+		report (markupDocument, me, false);
 		return me;
+	}
+	
+	public void report (MarkupDocument markupDocument, MarkupElement me, boolean insert)
+	{
+		
+		StringBuilder ret = new StringBuilder ();
+		StringBuilder sub = new StringBuilder ();
+		for (SBMLSpeciesReference sr : listOfReactants)
+		{
+			if (sub.length () > 0)
+				sub.append (" + ");
+			sub.append (sr.report ());
+		}
+
+		if (sub.length () > 0)
+			ret.append (sub).append (" ");
+		else
+			ret.append ("&Oslash; ");
+		ret.append (markupDocument.rightArrow ()).append (" ");
+		
+
+		sub = new StringBuilder ();
+		for (SBMLSpeciesReference sr : listOfProducts)
+		{
+			if (sub.length () > 0)
+				sub.append (" + ");
+			sub.append (sr.report ());
+		}
+
+		if (sub.length () > 0)
+			ret.append (sub);
+		else
+			ret.append ("&Oslash;");
+		
+		if (insert)
+			me.addValue (markupDocument.insert (ret.toString ()));
+		else
+			me.addValue (markupDocument.delete (ret.toString ()));
+		
+		sub = new StringBuilder ();
+		for (SBMLSimpleSpeciesReference sr : listOfModifiers)
+		{
+			if (sub.length () > 0)
+				sub.append ("; ");
+			sub.append (sr.report ());
+		}
+		
+		if (sub.length () > 0)
+		{
+			if (insert)
+				me.addValue (markupDocument.insert ("Modifiers: " + sub.toString ()));
+			else
+				me.addValue (markupDocument.delete ("Modifiers: " + sub.toString ()));
+		}
 	}
 }

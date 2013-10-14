@@ -68,7 +68,8 @@ public class SBMLAssignmentRule
 	public MarkupElement reportInsert (MarkupDocument markupDocument)
 	{
 		MarkupElement me = new MarkupElement (markupDocument.insert ("AssignmentRule for "+SBMLModel.getSidName (variable)));
-		me.addValue (markupDocument.insert ("inserted"));
+		Tools.genMathHtmlStats (null, math.getDocumentNode (), me, markupDocument);
+		//me.addValue (markupDocument.insert ("inserted"));
 		return me;
 	}
 	
@@ -76,7 +77,8 @@ public class SBMLAssignmentRule
 	public MarkupElement reportDelete (MarkupDocument markupDocument)
 	{
 		MarkupElement me = new MarkupElement (markupDocument.delete ("AssignmentRule for "+SBMLModel.getSidName (variable)));
-		me.addValue (markupDocument.delete ("deleted"));
+		Tools.genMathHtmlStats (math.getDocumentNode (), null, me, markupDocument);
+		//me.addValue (markupDocument.delete ("deleted"));
 		return me;
 	}
 }

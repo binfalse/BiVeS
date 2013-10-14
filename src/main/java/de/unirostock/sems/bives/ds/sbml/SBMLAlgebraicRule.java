@@ -52,7 +52,8 @@ public class SBMLAlgebraicRule
 	public MarkupElement reportInsert (MarkupDocument markupDocument)
 	{
 		MarkupElement me = new MarkupElement (markupDocument.insert ("AlgebraicRule"));
-		me.addValue (markupDocument.insert ("inserted"));
+		Tools.genAttributeHtmlStats (null, documentNode, me, markupDocument);
+		//me.addValue (markupDocument.insert ("inserted"));
 		return me;
 	}
 	
@@ -60,7 +61,8 @@ public class SBMLAlgebraicRule
 	public MarkupElement reportDelete (MarkupDocument markupDocument)
 	{
 		MarkupElement me = new MarkupElement (markupDocument.delete ("AlgebraicRule"));
-		me.addValue (markupDocument.delete ("deleted"));
+		Tools.genAttributeHtmlStats (documentNode, null, me, markupDocument);
+		//me.addValue (markupDocument.delete ("deleted"));
 		return me;
 	}
 	

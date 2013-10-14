@@ -107,6 +107,13 @@ public class SBMLSpeciesReference
 	{
 		return markupDocument.delete (Tools.prettyDouble (stoichiometry, 1) + species.getID ());
 	}
+
+	public String report ()
+	{
+		return Tools.prettyDouble (stoichiometry, 1) + species.getID ();
+	}
+	
+	
 	
 	/*private String getStoichiometry ()
 	{
