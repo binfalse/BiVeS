@@ -32,6 +32,7 @@ public abstract class TreeNode
 	public static final int GLUED = 32;
 	public static final int KIDSSWAPPED = 64;
 	public static final int SWAPPEDKID = 128;
+	public static final int SUBTREEUNMAPPED = 256;
 	
 	public static final int DOC_NODE = 1;
 	public static final int TEXT_NODE = 2;

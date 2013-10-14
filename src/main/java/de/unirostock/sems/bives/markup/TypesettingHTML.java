@@ -38,9 +38,9 @@ public class TypesettingHTML
 			s += markupSection (sec);
 		
 		s = MarkupDocument.replaceHighlights (s, "<strong>", "</strong>");
-		s = MarkupDocument.replaceInserts (s, "<span class='insert'>", "</span>");
-		s = MarkupDocument.replaceDeletes (s, "<span class='delete'>", "</span>");
-		s = MarkupDocument.replaceAttributes (s, "<span class='attr'>", "</span>");
+		s = MarkupDocument.replaceInserts (s, "<span class='bives-insert'>", "</span>");
+		s = MarkupDocument.replaceDeletes (s, "<span class='bives-delete'>", "</span>");
+		s = MarkupDocument.replaceAttributes (s, "<span class='bives-attr'>", "</span>");
 		s = MarkupDocument.replaceRightArrow (s, "&rarr;");
 		s = MarkupDocument.replaceMultiplication (s, "&middot;");
 		

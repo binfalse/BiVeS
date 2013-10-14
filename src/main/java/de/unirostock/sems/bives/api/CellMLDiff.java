@@ -27,6 +27,7 @@ import de.unirostock.sems.bives.exception.BivesCellMLParseException;
 import de.unirostock.sems.bives.markup.MarkupDocument;
 import de.unirostock.sems.bives.markup.TypesettingHTML;
 import de.unirostock.sems.bives.markup.TypesettingMarkDown;
+import de.unirostock.sems.bives.markup.TypesettingReStructuredText;
 
 /**
  * TODO: not implemented yet
@@ -117,6 +118,17 @@ public class CellMLDiff extends Diff
 			interpreter.interprete ();
 		}
 		return  new TypesettingMarkDown ().markup (interpreter.getReport ());
+	}
+
+	@Override
+	public String getReStructuredTextReport ()
+	{
+		if (interpreter == null)
+		{
+			interpreter = new CellMLDiffInterpreter (connections, doc1, doc2);
+			interpreter.interprete ();
+		}
+		return  new TypesettingReStructuredText ().markup (interpreter.getReport ());
 	}
 
 	/* (non-Javadoc)

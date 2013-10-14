@@ -108,6 +108,12 @@ public class RegularDiff
 		return null;
 	}
 
+	@Override
+	public String getReStructuredTextReport ()
+	{
+		return null;
+	}
+
 
 	/* (non-Javadoc)
 	 * @see de.unirostock.sems.bives.api.Diff#getHierarchyGraphML()

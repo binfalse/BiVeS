@@ -12,7 +12,7 @@ import de.binfalse.bflog.LOGGER;
  * @author Martin Scharm
  *
  */
-public class TypesettingMarkDown
+public class TypesettingReStructuredText
 	extends Typesetting
 {
 	
@@ -37,9 +37,9 @@ public class TypesettingMarkDown
 			s += markupSection (sec);
 		
 		s = MarkupDocument.replaceHighlights (s, "*", "*");
-		s = MarkupDocument.replaceInserts (s, "<span class='bives-insert'>", "</span>");
-		s = MarkupDocument.replaceDeletes (s, "<span class='bives-delete'>", "</span>");
-		s = MarkupDocument.replaceAttributes (s, "<span class='bives-attr'>", "</span>");
+		s = MarkupDocument.replaceInserts (s, ":bives-insert:`", "`");
+		s = MarkupDocument.replaceDeletes (s, ":bives-delete:`", "`");
+		s = MarkupDocument.replaceAttributes (s, ":bives-attr:`", "`");
 		s = MarkupDocument.replaceRightArrow (s, "->");
 		s = MarkupDocument.replaceMultiplication (s, "*");
 		
@@ -60,15 +60,15 @@ public class TypesettingMarkDown
 	
 	private String markupElement (MarkupElement element)
 	{
-		String s = "* **" + element.getHeader () + "**" + NL_TXT;
+		String s = "- **" + element.getHeader () + "**" + NL_TXT;
 		
 		Vector<String> values = element.getValues ();
 		for (String v : values)
-			s += "    * " + v + NL_TXT;
+			s += "    - " + v + NL_TXT;
 		
 		Vector<MarkupElement> subElements = element.getSubElements ();
 		for (MarkupElement e : subElements)
-			s += "    * " + markupSubElement (e) + NL_TXT;
+			s += "    - " + markupSubElement (e) + NL_TXT;
 		
 		return s;
 	}
@@ -79,7 +79,7 @@ public class TypesettingMarkDown
 		
 		Vector<String> values = element.getValues ();
 		for (String v : values)
-			s += "        * " + v + "";
+			s += "        - " + v + "";
 		
 		return s;
 	}

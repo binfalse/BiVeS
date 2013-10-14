@@ -25,6 +25,7 @@ import de.unirostock.sems.bives.exception.BivesSBMLParseException;
 import de.unirostock.sems.bives.markup.MarkupDocument;
 import de.unirostock.sems.bives.markup.TypesettingHTML;
 import de.unirostock.sems.bives.markup.TypesettingMarkDown;
+import de.unirostock.sems.bives.markup.TypesettingReStructuredText;
 
 /**
  * @author Martin Scharm
@@ -142,6 +143,17 @@ public class SBMLDiff extends Diff
 			interpreter.interprete ();
 		}
 		return new TypesettingMarkDown ().markup (interpreter.getReport ());
+	}
+
+	@Override
+	public String getReStructuredTextReport ()
+	{
+		if (interpreter == null)
+		{
+			interpreter = new SBMLDiffInterpreter (connections, doc1, doc2);
+			interpreter.interprete ();
+		}
+		return new TypesettingReStructuredText ().markup (interpreter.getReport ());
 	}
 
 

@@ -107,7 +107,7 @@ public class Patch
 		LOGGER.info ("initialized patch");
 	}
 	
-	private Element createAttributeElement (String oldPath, String newPath, String name, String oldValue, String newValue)
+	private Element createAttributeElement (int nodeId, String oldPath, String newPath, String name, String oldValue, String newValue, int chainId)
 	{
 		LOGGER.info ("create attribute element for " + oldPath + " -> " + newPath);
 		Element attribute = xmlDoc.createElement("attribute");
@@ -117,8 +117,15 @@ public class Patch
 		attribute.setAttributeNode(attr);
 		
 		attr = xmlDoc.createAttribute("id");
-		attr.setValue (++id + "");
+		attr.setValue (nodeId + "");
 		attribute.setAttributeNode(attr);
+		
+		if (chainId > 0)
+		{
+			attr = xmlDoc.createAttribute("triggeredBy");
+			attr.setValue (chainId + "");
+			attribute.setAttributeNode(attr);
+		}
 		
 		if (oldValue != null)
 		{
@@ -162,14 +169,21 @@ public class Patch
 	 * @param newChildNo the new child no, set < 1 to omit
 	 * @return the element
 	 */
-	private Element createNodeElement (String oldParent, String newParent, String oldPath, String newPath, int oldChildNo, int newChildNo, String oldTag, String newTag)
+	private Element createNodeElement (int nodeId, String oldParent, String newParent, String oldPath, String newPath, int oldChildNo, int newChildNo, String oldTag, String newTag, int chainId)
 	{
 		LOGGER.info ("create node element for " + oldPath + " -> " + newPath);
 		Element node = xmlDoc.createElement("node");
 		
 		Attr attr = xmlDoc.createAttribute("id");
-		attr.setValue (++id + "");
+		attr.setValue (nodeId + "");
 		node.setAttributeNode(attr);
+		
+		if (chainId > 0)
+		{
+			attr = xmlDoc.createAttribute("triggeredBy");
+			attr.setValue (chainId + "");
+			node.setAttributeNode(attr);
+		}
 
 		if (oldParent != null)
 		{
@@ -230,14 +244,21 @@ public class Patch
 		return node;
 	}
 	
-	private Element createTextElement (String oldParent, String newParent, String oldPath, String newPath, int oldChildNo, int newChildNo, String oldText, String newText)
+	private Element createTextElement (int nodeId, String oldParent, String newParent, String oldPath, String newPath, int oldChildNo, int newChildNo, String oldText, String newText, int chainId)
 	{
 		LOGGER.info ("create text element for " + oldPath + " -> " + newPath);
 		Element node = xmlDoc.createElement("text");
 		
 		Attr attr = xmlDoc.createAttribute("id");
-		attr.setValue (++id + "");
+		attr.setValue (nodeId + "");
 		node.setAttributeNode(attr);
+		
+		if (chainId > 0)
+		{
+			attr = xmlDoc.createAttribute("triggeredBy");
+			attr.setValue (chainId + "");
+			node.setAttributeNode(attr);
+		}
 
 		if (oldParent != null)
 		{
@@ -302,15 +323,38 @@ public class Patch
 		
 	}
 
-	public void deleteNode (TreeNode toDelete)
+	public void deleteSubtree (TreeNode toDelete, int chainId)
 	{
 		switch (toDelete.getType ())
 		{
 			case TreeNode.DOC_NODE:
-				deleteNode ((DocumentNode) toDelete);
+			{
+				DocumentNode dnode = (DocumentNode) toDelete;
+				int parentId = deleteNode (dnode, chainId);
+				for (TreeNode tn : dnode.getChildren ())
+					deleteSubtree (tn, parentId);
+				break;
+			}
+			case TreeNode.TEXT_NODE:
+				deleteNode ((TextNode) toDelete, chainId);
+				break;
+			default:
+			{
+				LOGGER.error ("unsupported tree node type for deletion...");
+				throw new UnsupportedOperationException ("unsupported tree node type...");
+			}
+		}
+	}
+
+	public void deleteNode (TreeNode toDelete, int chainId)
+	{
+		switch (toDelete.getType ())
+		{
+			case TreeNode.DOC_NODE:
+				deleteNode ((DocumentNode) toDelete, chainId);
 				break;
 			case TreeNode.TEXT_NODE:
-				deleteNode ((TextNode) toDelete);
+				deleteNode ((TextNode) toDelete, chainId);
 				break;
 			default:
 			{
@@ -320,40 +364,45 @@ public class Patch
 		}
 	}
 	
-	private void deleteNode (DocumentNode toDelete)
+	private int deleteNode (DocumentNode toDelete, int chainId)
 	{
 		LOGGER.info ("deleting node " + toDelete.getXPath ());
-		delete.appendChild (createNodeElement (getParentXpath (toDelete), null, toDelete.getXPath (), null, getChildNo (toDelete), -1, toDelete.getTagName (), null));
+		int nodeId = ++id;
+		delete.appendChild (createNodeElement (nodeId, getParentXpath (toDelete), null, toDelete.getXPath (), null, getChildNo (toDelete), -1, toDelete.getTagName (), null, chainId));
 		
 		if (!fullDiff)
-			return;
+			return nodeId;
 		LOGGER.info ("checking attributes for full diff");
 		Set<String> attr = toDelete.getAttributes ();
 		for (String a: attr)
-			deleteAttribute (toDelete, a);
+			deleteAttribute (toDelete, a, nodeId);
+		return nodeId;
 	}
-	
-	private void deleteAttribute (DocumentNode node, String attribute)
+
+	private void deleteAttribute (DocumentNode node, String attribute, int chainId)
 	{
 		LOGGER.info ("deleting attribute " + attribute + " of " + node.getXPath ());
-		delete.appendChild (createAttributeElement (node.getXPath (), null, attribute, node.getAttribute (attribute), null));
+		delete.appendChild (createAttributeElement (++id, node.getXPath (), null, attribute, node.getAttribute (attribute), null, chainId));
 	}
 	
-	private void deleteNode (TextNode node)
+	private void deleteNode (TextNode node, int chainId)
 	{
 		LOGGER.info ("deleting text of " + node.getXPath ());
-		delete.appendChild (createTextElement (getParentXpath (node), null, node.getXPath (), null, getChildNo (node), -1, node.getText (), null));
+		delete.appendChild (createTextElement (++id, getParentXpath (node), null, node.getXPath (), null, getChildNo (node), -1, node.getText (), null, chainId));
 	}
 	
-	public void insertNode (TreeNode toInsert)
+	public void insertSubtree (TreeNode toInsert, int chainId)
 	{
 		switch (toInsert.getType ())
 		{
 			case TreeNode.DOC_NODE:
-				insertNode ((DocumentNode) toInsert);
+				DocumentNode dnode = (DocumentNode) toInsert;
+				int parentId = insertNode (dnode, chainId);
+				for (TreeNode tn : dnode.getChildren ())
+					insertSubtree (tn, parentId);
 				break;
 			case TreeNode.TEXT_NODE:
-				insertNode ((TextNode) toInsert);
+				insertNode ((TextNode) toInsert, chainId);
 				break;
 			default:
 			{
@@ -363,29 +412,49 @@ public class Patch
 		}
 	}
 	
-	public void insertNode (DocumentNode toInsert)
+	public void insertNode (TreeNode toInsert, int chainId)
+	{
+		switch (toInsert.getType ())
+		{
+			case TreeNode.DOC_NODE:
+				insertNode ((DocumentNode) toInsert, chainId);
+				break;
+			case TreeNode.TEXT_NODE:
+				insertNode ((TextNode) toInsert, chainId);
+				break;
+			default:
+			{
+				LOGGER.error ("unsupported tree node type for insertion...");
+				throw new UnsupportedOperationException ("unsupported tree node type...");
+			}
+		}
+	}
+	
+	public int insertNode (DocumentNode toInsert, int chainId)
 	{
 		LOGGER.info ("inserting node " + toInsert.getXPath ());
-		insert.appendChild (createNodeElement (null, getParentXpath (toInsert), null, toInsert.getXPath (), -1, getChildNo (toInsert), null, toInsert.getTagName ()));
+		int nodeId = ++id;
+		insert.appendChild (createNodeElement (nodeId, null, getParentXpath (toInsert), null, toInsert.getXPath (), -1, getChildNo (toInsert), null, toInsert.getTagName (), chainId));
 		
 		if (!fullDiff)
-			return;
+			return nodeId;
 		LOGGER.info ("checking attributes for full diff");
 		Set<String> attr = toInsert.getAttributes ();
 		for (String a: attr)
-			insertAttribute (toInsert, a);
+			insertAttribute (toInsert, a, nodeId);
+		return nodeId;
 	}
 	
-	private void insertAttribute (DocumentNode node, String attribute)
+	private void insertAttribute (DocumentNode node, String attribute, int chainId)
 	{
 		LOGGER.info ("inserting attribute " + attribute + " of " + node.getXPath ());
-		insert.appendChild (createAttributeElement (null, node.getXPath (), attribute, null, node.getAttribute (attribute)));
+		insert.appendChild (createAttributeElement (++id, null, node.getXPath (), attribute, null, node.getAttribute (attribute), chainId));
 	}
 	
-	private void insertNode (TextNode node)
+	private void insertNode (TextNode node, int chainId)
 	{
 		LOGGER.info ("inserting text of " + node.getXPath ());
-		insert.appendChild (createTextElement (null, getParentXpath (node), null, node.getXPath (), -1, getChildNo (node), null, node.getText ()));
+		insert.appendChild (createTextElement (++id, null, getParentXpath (node), null, node.getXPath (), -1, getChildNo (node), null, node.getText (), chainId));
 	}
 	
 	public void updateNode (Connection c, ClearConnectionManager conMgmt)
@@ -413,7 +482,7 @@ public class Patch
 			if ((a.getModification () & TreeNode.MODIFIED) != 0)
 			{
 				LOGGER.info ("text differs");
-				Element e = createTextElement (getParentXpath (a), getParentXpath (b), a.getXPath (), b.getXPath (), getChildNo (a), getChildNo (b), ((TextNode) a).getText (), ((TextNode) b).getText ());
+				Element e = createTextElement (++id, getParentXpath (a), getParentXpath (b), a.getXPath (), b.getXPath (), getChildNo (a), getChildNo (b), ((TextNode) a).getText (), ((TextNode) b).getText (), -1);
 				
 				if (moveThem)
 					move.appendChild (e);
@@ -423,7 +492,7 @@ public class Patch
 			else if (moveThem)
 			{
 				LOGGER.info ("equal text");
-				move.appendChild (createTextElement (getParentXpath (a), getParentXpath (b), a.getXPath (), b.getXPath (), getChildNo (a), getChildNo (b), null, null));
+				move.appendChild (createTextElement (++id, getParentXpath (a), getParentXpath (b), a.getXPath (), b.getXPath (), getChildNo (a), getChildNo (b), null, null, -1));
 			}
 			return;
 		}
@@ -439,7 +508,7 @@ public class Patch
 			if (moveThem)
 			{
 				LOGGER.info ("nodes unmodified");
-				move.appendChild (createNodeElement (getParentXpath (a), getParentXpath (b), a.getXPath (), b.getXPath (), getChildNo (a), getChildNo (b), null, null));
+				move.appendChild (createNodeElement (++id, getParentXpath (a), getParentXpath (b), a.getXPath (), b.getXPath (), getChildNo (a), getChildNo (b), null, null, -1));
 			}
 		}
 		else
@@ -448,12 +517,12 @@ public class Patch
 			if (!dA.getTagName ().equals (dB.getTagName ()))
 			{
 				LOGGER.info ("label of nodes differ -> updating");
-				update.appendChild (createNodeElement (getParentXpath (a), getParentXpath (b), a.getXPath (), b.getXPath (), getChildNo (a), getChildNo (b), dA.getTagName (), dB.getTagName ()));
+				update.appendChild (createNodeElement (++id, getParentXpath (a), getParentXpath (b), a.getXPath (), b.getXPath (), getChildNo (a), getChildNo (b), dA.getTagName (), dB.getTagName (), -1));
 			}
 			else if (moveThem)
 			{
 				LOGGER.info ("label of nodes do not differ -> moving");
-				move.appendChild (createNodeElement (getParentXpath (a), getParentXpath (b), a.getXPath (), b.getXPath (), getChildNo (a), getChildNo (b), null, null));
+				move.appendChild (createNodeElement (++id, getParentXpath (a), getParentXpath (b), a.getXPath (), b.getXPath (), getChildNo (a), getChildNo (b), null, null, -1));
 			}
 			
 			if (fullDiff)
@@ -468,11 +537,11 @@ public class Patch
 				{
 					String aA = dA.getAttribute (attr), bA = dB.getAttribute (attr);
 					if (aA == null)
-						insertAttribute (dB, attr);
+						insertAttribute (dB, attr, -1);
 					else if (bA == null)
-						deleteAttribute (dA, attr);
+						deleteAttribute (dA, attr, -1);
 					else if (!aA.equals (bA))
-						update.appendChild (createAttributeElement (a.getXPath (), b.getXPath (), attr, aA, bA));
+						update.appendChild (createAttributeElement (++id, a.getXPath (), b.getXPath (), attr, aA, bA, -1));
 				}
 			}
 		}

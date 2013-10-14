@@ -516,9 +516,12 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 		
 		//setModification (UNCHANGED);
 		boolean kidChanged = false;
+		boolean kidsUnmapped = true;
 		for (TreeNode child: children)
 		{
 			kidChanged |= child.evaluate (conMgmr);
+			if (!child.hasModification (SUBTREEUNMAPPED))
+				kidsUnmapped = false;
 		}
 		if (kidChanged)
 			addModification (SUB_MODIFIED);
@@ -529,6 +532,8 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 		{
 			LOGGER.debug ("evaluate " + xPath + " is unmapped");
 			addModification (UNMAPPED);
+			if (kidsUnmapped)
+				addModification (SUBTREEUNMAPPED);
 			return true;
 		}
 

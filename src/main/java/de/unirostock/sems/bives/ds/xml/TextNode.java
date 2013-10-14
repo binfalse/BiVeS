@@ -106,7 +106,7 @@ public class TextNode
 		Connection con = conMgmr.getConnectionForNode (this);
 		if (con == null)
 		{
-			addModification (UNMAPPED);
+			addModification (UNMAPPED | SUBTREEUNMAPPED);
 			return true;
 		}
 		

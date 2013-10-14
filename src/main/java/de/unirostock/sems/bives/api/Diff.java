@@ -104,6 +104,8 @@ public abstract class Diff
 	
 	public abstract String getMarkDownReport ();
 	
+	public abstract String getReStructuredTextReport ();
+	
 	protected static class ArgsParser
 	{
 		private File fileA = null, fileB = null;
