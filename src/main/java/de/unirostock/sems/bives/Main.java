@@ -77,11 +77,16 @@ public class Main
 	 */
 	public static void main (String[] args) throws Exception
 	{
-		//LOGGER.setLogToStdErr (false);
-
+		/*LOGGER.setLogToStdErr (true);
+		LOGGER.addLevel (LOGGER.DEBUG);
+		LOGGER.addLevel (LOGGER.INFO);
+		LOGGER.addLevel (LOGGER.WARN);
+		LOGGER.addLevel (LOGGER.ERROR);*/
+		
 		//args = new String [] {"--sbml-graph", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
 		//args = new String [] {"--sbml-graph", "test/TestModel_for_IB2013-version-one", "test/TestModel_for_IB2013-version-two"};
 		//args = new String [] {"--sbml-patch", "test/TestModel_for_IB2013-version-one", "test/TestModel_for_IB2013-version-two"};
+		//args = new String [] {"/home/martin/unisonSyncPrivate/education/docs/papers/2013-paper-bives/models/modeldiff/extract_reaction_R3_2007-06-05.xml", "/home/martin/unisonSyncPrivate/education/docs/papers/2013-paper-bives/models/modeldiff/extract_reaction_R3_2013-11-03.xml"};
     
     File file1 = null, file2 = null;
     int type = 0;

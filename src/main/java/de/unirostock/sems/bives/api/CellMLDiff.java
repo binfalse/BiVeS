@@ -26,6 +26,7 @@ import de.unirostock.sems.bives.exception.BivesImportException;
 import de.unirostock.sems.bives.exception.BivesLogicalException;
 import de.unirostock.sems.bives.exception.BivesCellMLParseException;
 import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.Typesetting;
 import de.unirostock.sems.bives.markup.TypesettingHTML;
 import de.unirostock.sems.bives.markup.TypesettingMarkDown;
 import de.unirostock.sems.bives.markup.TypesettingReStructuredText;
@@ -185,6 +186,17 @@ public class CellMLDiff extends Diff
 		if (graphProducer == null)
 			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
 		return new GraphTranslatorJson ().translate (graphProducer.getHierarchy ());
+	}
+
+	@Override
+	public String getReport (Typesetting ts)
+	{
+		if (interpreter == null)
+		{
+			interpreter = new CellMLDiffInterpreter (connections, doc1, doc2);
+			interpreter.interprete ();
+		}
+		return ts.markup (interpreter.getReport ());
 	}
 
 }

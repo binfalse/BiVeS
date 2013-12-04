@@ -22,6 +22,7 @@ import de.unirostock.sems.bives.algorithm.general.PatchProducer;
 import de.unirostock.sems.bives.algorithm.general.XyWeighter;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
+import de.unirostock.sems.bives.markup.Typesetting;
 
 /**
  * @author Martin Scharm
@@ -181,5 +182,7 @@ public abstract class Diff
 				error ("not allowed to read " + f.getAbsolutePath());
 		}
 	}
+
+	public abstract String getReport (Typesetting ts);
 	
 }

@@ -15,6 +15,7 @@ import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.exception.BivesConnectionException;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
+import de.unirostock.sems.bives.markup.Typesetting;
 
 
 /**
@@ -139,6 +140,12 @@ public class RegularDiff
 
 	@Override
 	public String getHierarchyJsonGraph ()
+	{
+		return null;
+	}
+
+	@Override
+	public String getReport (Typesetting ts)
 	{
 		return null;
 	}

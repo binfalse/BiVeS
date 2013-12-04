@@ -24,6 +24,7 @@ import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
 import de.unirostock.sems.bives.exception.BivesSBMLParseException;
 import de.unirostock.sems.bives.markup.MarkupDocument;
+import de.unirostock.sems.bives.markup.Typesetting;
 import de.unirostock.sems.bives.markup.TypesettingHTML;
 import de.unirostock.sems.bives.markup.TypesettingMarkDown;
 import de.unirostock.sems.bives.markup.TypesettingReStructuredText;
@@ -131,6 +132,19 @@ public class SBMLDiff extends Diff
 		if (graphProducer == null)
 			graphProducer = new SBMLGraphProducer (connections, doc1, doc2);
 		return new GraphTranslatorGraphML ().translate (graphProducer.getCRN ());
+	}
+
+
+
+
+	@Override
+	public String getReport(Typesetting ts) {
+		if (interpreter == null)
+		{
+			interpreter = new SBMLDiffInterpreter (connections, doc1, doc2);
+			interpreter.interprete ();
+		}
+		return ts.markup (interpreter.getReport ());
 	}
 
 
