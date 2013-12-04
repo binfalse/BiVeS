@@ -20,6 +20,7 @@ import org.xml.sax.SAXException;
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.general.PatchProducer;
 import de.unirostock.sems.bives.algorithm.general.XyWeighter;
+import de.unirostock.sems.bives.ds.graph.GraphTranslator;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
 import de.unirostock.sems.bives.markup.Typesetting;
@@ -93,6 +94,10 @@ public abstract class Diff
 		return producer.produce ();
 	}
 	
+	public abstract Object getCRNGraph (GraphTranslator gt) throws Exception;
+	
+	public abstract Object getHierarchyGraph (GraphTranslator gt) throws Exception;
+	
 	public abstract String getCRNGraphML () throws ParserConfigurationException;
 	
 	public abstract String getHierarchyGraphML () throws ParserConfigurationException;
@@ -104,6 +109,8 @@ public abstract class Diff
 	public abstract String getCRNJsonGraph ();
 
 	public abstract String getHierarchyJsonGraph ();
+	
+	public abstract String getReport (Typesetting ts);
 	
 	public abstract String getHTMLReport ();
 	
@@ -182,7 +189,5 @@ public abstract class Diff
 				error ("not allowed to read " + f.getAbsolutePath());
 		}
 	}
-
-	public abstract String getReport (Typesetting ts);
 	
 }

@@ -16,6 +16,7 @@ import de.unirostock.sems.bives.algorithm.cellml.CellMLConnector;
 import de.unirostock.sems.bives.algorithm.cellml.CellMLDiffInterpreter;
 import de.unirostock.sems.bives.algorithm.cellml.CellMLGraphProducer;
 import de.unirostock.sems.bives.ds.cellml.CellMLDocument;
+import de.unirostock.sems.bives.ds.graph.GraphTranslator;
 import de.unirostock.sems.bives.ds.graph.GraphTranslatorDot;
 import de.unirostock.sems.bives.ds.graph.GraphTranslatorGraphML;
 import de.unirostock.sems.bives.ds.graph.GraphTranslatorJson;
@@ -100,6 +101,15 @@ public class CellMLDiff extends Diff
 	}
 
 	/* (non-Javadoc)
+	 */
+	@Override
+	public Object getHierarchyGraph(GraphTranslator gt) throws Exception {
+		if (graphProducer == null)
+			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+		return gt.translate (graphProducer.getHierarchy ());
+	}
+
+	/* (non-Javadoc)
 	 * @see de.unirostock.sems.bives.api.Diff#getGraphML()
 	 */
 	@Override
@@ -151,6 +161,14 @@ public class CellMLDiff extends Diff
 	 */
 	public static void main(String[] args) {
 
+	}
+	
+	@Override
+	public Object getCRNGraph (GraphTranslator gt) throws Exception
+	{
+		if (graphProducer == null)
+			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+		return gt.translate (graphProducer.getCRN ());
 	}
 
 	@Override

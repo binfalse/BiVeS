@@ -4,7 +4,7 @@
     <groupId>de.unirostock.sems</groupId>
     <artifactId>BiVeS</artifactId>
     <packaging>jar</packaging>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1.1-SNAPSHOT</version>
     <name>BiVeS</name>
     <description>Simple but efficient logging facility</description>
     <url>http://sems.uni-rostock.de/projects/bives/</url>

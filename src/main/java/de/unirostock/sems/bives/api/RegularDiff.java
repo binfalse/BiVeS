@@ -12,6 +12,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
+import de.unirostock.sems.bives.ds.graph.GraphTranslator;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.exception.BivesConnectionException;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
@@ -69,6 +70,12 @@ public class RegularDiff
 		return true;
 	}
 	
+	@Override
+	public Object getCRNGraph (GraphTranslator gt) throws Exception
+	{
+		return null;
+	}
+	
 	
 	/* (non-Javadoc)
 	 * @see de.unirostock.sems.bives.api.Diff#getGraphML()
@@ -114,13 +121,19 @@ public class RegularDiff
 	{
 		return null;
 	}
+	
+	@Override
+	public String getHierarchyGraph (GraphTranslator gt)
+	{
+		return null;
+	}
 
 
 	/* (non-Javadoc)
 	 * @see de.unirostock.sems.bives.api.Diff#getHierarchyGraphML()
 	 */
 	@Override
-	public String getHierarchyGraphML () throws ParserConfigurationException
+	public String getHierarchyGraphML ()
 	{
 		return null;
 	}
