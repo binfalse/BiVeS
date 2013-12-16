@@ -94,28 +94,99 @@ public abstract class Diff
 		return producer.produce ();
 	}
 	
+	/**
+	 * Returns the graph of the chemical reaction network providing an own graph translator.
+	 *
+	 * @param gt the graph translator
+	 * @return the chemical reaction network or null if not available
+	 * @throws Exception the exception
+	 */
 	public abstract Object getCRNGraph (GraphTranslator gt) throws Exception;
 	
+	/**
+	 * Returns the component's hierarchy graph providing an own graph translator.
+	 *
+	 * @param gt the graph translator
+	 * @return the hierarchy graph or null if not available
+	 * @throws Exception the exception
+	 */
 	public abstract Object getHierarchyGraph (GraphTranslator gt) throws Exception;
-	
+
+	/**
+	 * Returns the graph of the chemical reaction network encoded in GraphML.
+	 *
+	 * @return the chemical reaction network or null if not available
+	 * @throws Exception the exception
+	 */
 	public abstract String getCRNGraphML () throws ParserConfigurationException;
-	
+
+	/**
+	 * Returns the component's hierarchy graph encoded in GraphML.
+	 *
+	 * @return the hierarchy graph or null if not available
+	 * @throws Exception the exception
+	 */
 	public abstract String getHierarchyGraphML () throws ParserConfigurationException;
-	
+
+	/**
+	 * Returns the graph of the chemical reaction network encoded in DOT language.
+	 *
+	 * @return the chemical reaction network or null if not available
+	 * @throws Exception the exception
+	 */
 	public abstract String getCRNDotGraph ();
 
+	/**
+	 * Returns the component's hierarchy graph encoded in DOT language.
+	 *
+	 * @return the hierarchy graph or null if not available
+	 * @throws Exception the exception
+	 */
 	public abstract String getHierarchyDotGraph ();
 
+	/**
+	 * Returns the graph of the chemical reaction network encoded in JSON.
+	 *
+	 * @return the chemical reaction network or null if not available
+	 * @throws Exception the exception
+	 */
 	public abstract String getCRNJsonGraph ();
 
+	/**
+	 * Returns the component's hierarchy graph encoded in JSON.
+	 *
+	 * @return the hierarchy graph or null if not available
+	 * @throws Exception the exception
+	 */
 	public abstract String getHierarchyJsonGraph ();
 	
+	/**
+	 * Returns the report providing an on markup processor.
+	 *
+	 * @param ts the ts
+	 * @return the report or null if not available
+	 */
 	public abstract String getReport (Typesetting ts);
 	
+	/**
+	 * Returns the report encoded in HTML.
+	 *
+	 * @return the hTML report or null if not available
+	 */
 	public abstract String getHTMLReport ();
 	
+	/**
+	 * Returns the report encoded MarkDown.
+	 *
+	 * @return the mark down report or null if not available
+	 */
 	public abstract String getMarkDownReport ();
 	
+	/**
+	 * Returns the report encoded in ReStructured text.
+	 *
+	 * @return the ReStructured text report or null if not available
+	 */
 	public abstract String getReStructuredTextReport ();
 	
 	protected static class ArgsParser

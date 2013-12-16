@@ -47,6 +47,17 @@ import de.unirostock.sems.bives.markup.MarkupElement;
 public class Tools
 {
 	
+	public static String repeat (String s, int times)
+	{
+		if (times < 0)
+			return "";
+		StringBuilder str = new StringBuilder ();
+		for (int i = 0; i < times; i++)
+			str.append (s);
+		return str.toString ();
+	}
+	
+	
 	/**
 	 * Beautify the display of a double <code>d</code>. If the double is an int
 	 * we'll omit the <code>.0</code>. Additionally you may define an int to
