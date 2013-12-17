@@ -170,5 +170,19 @@ public class DocumentClassifier
 			exceptions.add (e);
 		}
 	}
+
+	public static String humanReadable (int type)
+	{
+		String ret = "";
+		if ((type & XML) != 0)
+			ret += ("XML,");
+		if ((type & CELLML) != 0)
+			ret += ("CellML,");
+		if ((type & SBML) != 0)
+			ret += ("SBML,");
+		if (ret.length () > 0)
+		return ret.substring (0, ret.length () - 1);
+		return "unknown type";
+	}
 	
 }

@@ -106,7 +106,7 @@ public class Main
 	
 	public void usage (String msg)
 	{
-		System.out.println (msg);
+		System.err.println (msg);
 		System.out.println ();
 
 		System.out.println ("ARGUMENTS:");
@@ -274,7 +274,7 @@ public class Main
     		// doc type
     		classifier = new DocumentClassifier ();
     		int type = classifier.classify (file1);
-
+/*
   			String ret = "";
     		
     		if ((type & DocumentClassifier.XML) != 0)
@@ -282,9 +282,9 @@ public class Main
 				if ((type & DocumentClassifier.CELLML) != 0)
 					ret += ("CellML,");
 				if ((type & DocumentClassifier.SBML) != 0)
-					ret += ("SBML,");
+					ret += ("SBML,");*/
 				
-				toReturn.put (REQ_WANT_DOCUMENTTYPE, ret);
+				toReturn.put (REQ_WANT_DOCUMENTTYPE, DocumentClassifier.humanReadable (type));
     	}
     }
     else
@@ -313,8 +313,9 @@ public class Main
 	    else
 	    {
 	    	classifier = new DocumentClassifier ();
-	    	int type = classifier.classify (file1);
-	    	type = type & classifier.classify (file2);
+	    	int type1 = classifier.classify (file1);
+	    	int type2 = classifier.classify (file2);
+	    	int type = type1 & type2;
 	    	if ((type & DocumentClassifier.SBML) != 0)
 	    	{
 	    		diff = new SBMLDiff (file1, file2);
@@ -328,7 +329,7 @@ public class Main
 	    		diff = new SBMLDiff (file1, file2);
 	    	}
 	    	else
-	    		usage ("cannot compare these files");
+	    		usage ("cannot compare these files (["+DocumentClassifier.humanReadable (type1) + "] ["+DocumentClassifier.humanReadable (type2)+"])");
 	    }
 	    
 	    if (diff == null)
