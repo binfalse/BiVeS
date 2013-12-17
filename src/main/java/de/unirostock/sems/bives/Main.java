@@ -87,16 +87,16 @@ public class Main
 		options = new HashMap<String, Option> ();
 		//options.put ("--meta", new Option (WANT_META, "get meta information about documents"));
 		//options.put ("--documentType", new Option (WANT_DOCUMENTTYPE, ""));
-		options.put ("--xmlDiff", new Option (WANT_DIFF, ""));
-		options.put ("--reportMd", new Option (WANT_REPORT_MD, ""));
-		options.put ("--reportRST", new Option (WANT_REPORT_RST, ""));
-		options.put ("--reportHtml", new Option (WANT_REPORT_HTML, ""));
-		options.put ("--crnGraphml", new Option (WANT_CRN_GRAPHML, ""));
-		options.put ("--crnDot", new Option (WANT_CRN_DOT, ""));
-		options.put ("--crnJson", new Option (WANT_CRN_JSON, ""));
-		options.put ("--compHierarchyGraphml", new Option (WANT_COMP_HIERARCHY_GRAPHML, ""));
-		options.put ("--compHierarchyDot", new Option (WANT_COMP_HIERARCHY_DOT, ""));
-		options.put ("--compHierarchyJson", new Option (WANT_COMP_HIERARCHY_JSON, ""));
+		options.put ("--xmlDiff", new Option (WANT_DIFF, "get the diff encoded in XML format"));
+		options.put ("--reportMd", new Option (WANT_REPORT_MD, "get the report of changes encoded in MarkDown"));
+		options.put ("--reportRST", new Option (WANT_REPORT_RST, "get the report of changes encoded in ReStructuredText"));
+		options.put ("--reportHtml", new Option (WANT_REPORT_HTML, "get the report of changes encoded in HTML"));
+		options.put ("--crnGraphml", new Option (WANT_CRN_GRAPHML, "get the highlighted chemical reaction network encoded in GraphML"));
+		options.put ("--crnDot", new Option (WANT_CRN_DOT, "get the highlighted chemical reaction network encoded in DOT language"));
+		options.put ("--crnJson", new Option (WANT_CRN_JSON, "get the highlighted chemical reaction network encoded in JSON"));
+		options.put ("--compHierarchyGraphml", new Option (WANT_COMP_HIERARCHY_GRAPHML, "get the hierarchy of components in a CellML document encoded in GraphML"));
+		options.put ("--compHierarchyDot", new Option (WANT_COMP_HIERARCHY_DOT, "get the hierarchy of components in a CellML document encoded in DOT language"));
+		options.put ("--compHierarchyJson", new Option (WANT_COMP_HIERARCHY_JSON, "get the hierarchy of components in a CellML document encoded in JSON"));
 		options.put ("--SBML", new Option (WANT_SBML, "force SBML comparison"));
 		options.put ("--CellML", new Option (WANT_CELLML, "force CellML comparison"));
 		options.put ("--regular", new Option (WANT_REGULAR, "force regular XML comparison"));
@@ -106,9 +106,12 @@ public class Main
 	
 	public void usage (String msg)
 	{
-		System.err.println (msg);
-		System.out.println ();
-
+		if (msg != null && msg.length () > 0)
+		{
+			System.err.println (msg);
+			System.out.println ();
+		}
+		
 		System.out.println ("ARGUMENTS:");
 		System.out.println ("\t[option] FILE1 FILE2  compute the differences between 2 XML files");
 		System.out.println ("\t--documentType FILE1  get the documentType of an XML file");
@@ -128,6 +131,7 @@ public class Main
 		longest += 2;
 		System.out.println ("\tCOMMON OPTIONS");
 		System.out.println ("\t[none]"+Tools.repeat (" ", longest - "[none]".length ()) +"expect XML files and print patch");
+		System.out.println ("\t--help"+Tools.repeat (" ", longest - "--help".length ()) +"print this help");
 		System.out.println ("\t--debug"+Tools.repeat (" ", longest - "--debug".length ()) +"enable verbose mode");
 		System.out.println ("\t--debugg"+Tools.repeat (" ", longest - "--debugg".length ()) +"enable even more verbose mode");
 
@@ -232,6 +236,10 @@ public class Main
     	{
     		want = -2;
     		continue;
+    	}
+    	if (args[i].equals ("--help"))
+    	{
+    		usage ("");
     	}
     	if (file1 == null)
     		file1 = new File (args[i]);
@@ -343,34 +351,34 @@ public class Main
 	    
 	    // compute results
 			if ((want & WANT_DIFF) > 0)
-				toReturn.put (REQ_WANT_DIFF, diff.getDiff ());
+				toReturn.put (REQ_WANT_DIFF, result (diff.getDiff ()));
 			
 			if ((want & WANT_CRN_GRAPHML) > 0)
-				toReturn.put (REQ_WANT_CRN_GRAPHML, diff.getCRNGraphML ());
+				toReturn.put (REQ_WANT_CRN_GRAPHML, result (diff.getCRNGraphML ()));
 			
 			if ((want & WANT_CRN_DOT) > 0)
-				toReturn.put (REQ_WANT_CRN_DOT, diff.getCRNDotGraph ());
+				toReturn.put (REQ_WANT_CRN_DOT, result (diff.getCRNDotGraph ()));
 			
 			if ((want & WANT_CRN_JSON) > 0)
-				toReturn.put (REQ_WANT_CRN_JSON, diff.getCRNJsonGraph ());
+				toReturn.put (REQ_WANT_CRN_JSON, result (diff.getCRNJsonGraph ()));
 			
 			if ((want & WANT_COMP_HIERARCHY_DOT) > 0)
-				toReturn.put (REQ_WANT_COMP_HIERARCHY_DOT, diff.getHierarchyDotGraph ());
+				toReturn.put (REQ_WANT_COMP_HIERARCHY_DOT, result (diff.getHierarchyDotGraph ()));
 			
 			if ((want & WANT_COMP_HIERARCHY_JSON) > 0)
-				toReturn.put (REQ_WANT_COMP_HIERARCHY_JSON, diff.getHierarchyJsonGraph ());
+				toReturn.put (REQ_WANT_COMP_HIERARCHY_JSON, result (diff.getHierarchyJsonGraph ()));
 			
 			if ((want & WANT_COMP_HIERARCHY_GRAPHML) > 0)
-				toReturn.put (REQ_WANT_COMP_HIERARCHY_GRAPHML, diff.getHierarchyGraphML ());
+				toReturn.put (REQ_WANT_COMP_HIERARCHY_GRAPHML, result (diff.getHierarchyGraphML ()));
 			
 			if ((want & WANT_REPORT_HTML) > 0)
-				toReturn.put (REQ_WANT_REPORT_HTML, diff.getHTMLReport ());
+				toReturn.put (REQ_WANT_REPORT_HTML, result (diff.getHTMLReport ()));
 			
 			if ((want & WANT_REPORT_MD) > 0)
-				toReturn.put (REQ_WANT_REPORT_MD, diff.getMarkDownReport ());
+				toReturn.put (REQ_WANT_REPORT_MD, result (diff.getMarkDownReport ()));
 			
 			if ((want & WANT_REPORT_RST) > 0)
-				toReturn.put (REQ_WANT_REPORT_RST, diff.getReStructuredTextReport ());
+				toReturn.put (REQ_WANT_REPORT_RST, result (diff.getReStructuredTextReport ()));
     }
 
     
@@ -406,6 +414,13 @@ public class Main
     		json.put (ret, toReturn.get (ret));
     	System.out.println (json);
     }
+	}
+	
+	public static String result (String s)
+	{
+		if (s == null)
+			return "";
+		return s;
 	}
 	
 }
