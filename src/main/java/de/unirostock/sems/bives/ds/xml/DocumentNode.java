@@ -525,7 +525,7 @@ public class DocumentNode extends TreeNode// implements Comparable<DocumentNode>
 		}
 		if (kidChanged)
 			addModification (SUB_MODIFIED);
-		LOGGER.debug ("evaluate kids changed: " + kidChanged);
+		LOGGER.debug ("evaluate kids changed: " + kidChanged + " -- for " + xPath);
 		
 		Connection con = conMgmr.getConnectionForNode (this);
 		if (con == null)

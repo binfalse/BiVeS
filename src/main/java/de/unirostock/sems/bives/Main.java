@@ -4,59 +4,29 @@
 package de.unirostock.sems.bives;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.management.ManagementFactory;
-import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.Vector;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.json.simple.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 import de.binfalse.bflog.LOGGER;
-import de.unirostock.sems.bives.algorithm.Connection;
-import de.unirostock.sems.bives.algorithm.ConnectionManager;
-import de.unirostock.sems.bives.algorithm.Connector;
-import de.unirostock.sems.bives.algorithm.Producer;
-import de.unirostock.sems.bives.algorithm.general.PatchProducer;
-import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
-import de.unirostock.sems.bives.algorithm.general.XyWeighter;
-import de.unirostock.sems.bives.algorithm.sbml.SBMLConnector;
-import de.unirostock.sems.bives.algorithm.sbml.SBMLDiffInterpreter;
-//import de.unirostock.sems.bives.algorithm.sbmldeprecated.SBMLDiffInterpreter;
-import de.unirostock.sems.bives.algorithm.sbml.SBMLGraphProducer;
 import de.unirostock.sems.bives.api.CellMLDiff;
 import de.unirostock.sems.bives.api.Diff;
 import de.unirostock.sems.bives.api.RegularDiff;
 import de.unirostock.sems.bives.api.SBMLDiff;
 import de.unirostock.sems.bives.ds.cellml.CellMLDocument;
 import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
-import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
-import de.unirostock.sems.bives.exception.BivesCellMLParseException;
-import de.unirostock.sems.bives.exception.BivesConnectionException;
-import de.unirostock.sems.bives.exception.BivesConsistencyException;
-import de.unirostock.sems.bives.exception.BivesDocumentParseException;
-import de.unirostock.sems.bives.exception.BivesImportException;
-import de.unirostock.sems.bives.exception.BivesLogicalException;
 import de.unirostock.sems.bives.tools.DocumentClassifier;
 import de.unirostock.sems.bives.tools.Tools;
 import de.unirostock.sems.bives.tools.XmlTools;
+//import de.unirostock.sems.bives.algorithm.sbmldeprecated.SBMLDiffInterpreter;
 
 //TODO: detect document type
 //TODO: graph producer
@@ -194,6 +164,7 @@ public class Main
 		//args = new String [] {"--debugg", "--reportRST", "--crnGraphml", "--json", "--regular", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
 		//args = new String [] {"--meta", "test/BSA-ptinst-2012-11-11"};
 		//args = new String [] {"--documentType", "test/BSA-ptinst-2012-11-11"};
+		//args = new String [] {"--debugg", "--reportHtml", "test/potato (3).xml", "test/potato (3).xml"};
 		
 		new Main ().run (args); 
 	}

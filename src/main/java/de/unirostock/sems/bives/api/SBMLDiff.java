@@ -6,6 +6,7 @@ package de.unirostock.sems.bives.api;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Vector;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -20,6 +21,7 @@ import de.unirostock.sems.bives.ds.graph.GraphTranslatorDot;
 import de.unirostock.sems.bives.ds.graph.GraphTranslatorGraphML;
 import de.unirostock.sems.bives.ds.graph.GraphTranslatorJson;
 import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
+import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesConnectionException;
 import de.unirostock.sems.bives.exception.BivesConsistencyException;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
@@ -118,6 +120,19 @@ public class SBMLDiff extends Diff
 		
 		treeB.getRoot ().resetModifications ();
 		treeB.getRoot ().evaluate (connections);
+		
+		/*Vector<TreeNode> nodes = connections.getUnmatched (treeA.getRoot (), new Vector<TreeNode> ());
+		LOGGER.debug ("unmatched nodes in treeA");
+		for (TreeNode n : nodes)
+		{
+			LOGGER.debug (n.getXPath ());
+		}
+		nodes = connections.getUnmatched (treeB.getRoot (), new Vector<TreeNode> ());
+		LOGGER.debug ("unmatched nodes in treeB");
+		for (TreeNode n : nodes)
+		{
+			LOGGER.debug (n.getXPath ());
+		}*/
 		
 		return true;
 	}

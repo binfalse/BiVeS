@@ -9,7 +9,6 @@ import java.util.PriorityQueue;
 import java.util.Set;
 import java.util.Vector;
 
-
 import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.Connection;
 import de.unirostock.sems.bives.algorithm.ConnectionManager;
@@ -19,6 +18,7 @@ import de.unirostock.sems.bives.ds.xml.NodeComparer;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.ds.xml.TreeNode;
 import de.unirostock.sems.bives.exception.BivesConnectionException;
+import de.unirostock.sems.bives.tools.Tools;
 
 
 /**
@@ -438,7 +438,45 @@ public class XyDiffConnector
 					}
 					LOGGER.debug ("  num candidates: "+theList.size ()+"");
 					if (theList.size () > 50)
-						LOGGER.debug ("warning, it seems that there are too many candidates("+theList.size ()+")");
+						LOGGER.warn ("it seems that there are too many candidates ("+theList.size ()+") for a match of " + v1nodeID.getXPath () + " (" + selfkey + ")");
+					
+					final String xPath = v1nodeID.getXPath ();
+					class CandidateResult implements Comparable<CandidateResult>
+					{
+						TreeNode candidate;
+						int level;
+						int dist;
+						public CandidateResult (TreeNode candidate, int level)
+						{
+							this.candidate = candidate;
+							this.level = level;
+							this.dist = -1;
+						}
+						public int getDist ()
+						{
+							if (dist == -1)
+								dist = Tools.computeLevenshteinDistance (xPath, candidate.getXPath ());
+							return dist;
+						}
+						@Override
+						public int compareTo (CandidateResult cr)
+						{
+							if (level < cr.level)
+								return -1;
+							if (level > cr.level)
+								return 1;
+							
+							if (getDist () < cr.getDist ())
+								return -1;
+							
+							if (getDist () > cr.getDist ())
+								return 1;
+							
+							return 0;
+						}
+					}
+					Vector<CandidateResult> candidates = new Vector<CandidateResult> ();
+					
 					for (int i = 0; i < theList.size (); i++)
 					{
 						TreeNode candidate = theList.elementAt (i);
@@ -457,17 +495,39 @@ public class XyDiffConnector
 							{
 								if (conMgmt.getConnectionOfNodes (candidateRelative, v1nodeRelative) != null)
 								{
-									LOGGER.debug (" taken because some relatives ( level= "+candidateRelativeLevel+" ) are matching");
-									if (candidateRelativeLevel>1)
-									{
-										LOGGER.debug ("    level>1 so forcing parents matching in the hierarchie");
-										forceParentsAssign( candidate, v1nodeID, candidateRelativeLevel );
-									}
-									return candidate;
+									LOGGER.debug (" adding candidate because some relatives ( level= "+candidateRelativeLevel+" ) are matching");
+									//return candidate;
+									candidates.add (new CandidateResult (candidate, candidateRelativeLevel));
 								}
 							}
 						}
 					} //try next candidate
+					
+					if (candidates.size () > 0)
+					{
+						// sort
+						Collections.sort (candidates);
+						// get min
+						CandidateResult candidate = candidates.firstElement ();
+						LOGGER.debug (" took candidate: " + candidate.candidate.getXPath ());
+						/*if (candidates.size () == 2)
+						{
+							LOGGER.debug ("    all candidates");
+							for (CandidateResult c : candidates)
+							{
+								LOGGER.debug ("    candidate: " + c.level + "/" + c.dist + " -> " + c.candidate.getXPath ());
+							}
+						}*/
+			
+						if (candidate.level > 1)
+						{
+							LOGGER.debug ("    level>1 so forcing parents matching in the hierarchie");
+							forceParentsAssign(candidate.candidate, v1nodeID, candidateRelativeLevel );
+						}
+						
+						return candidate.candidate;
+					}
+					
 				}//end MIN(Precomputed)<relativelevel<MAX
 				
 			} //end ancestor is matched

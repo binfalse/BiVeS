@@ -40,13 +40,62 @@ import de.unirostock.sems.bives.markup.MarkupDocument;
 import de.unirostock.sems.bives.markup.MarkupElement;
 
 
+// TODO: Auto-generated Javadoc
 /**
- * @author Martin Scharm
+ * The Class Tools.
  *
+ * @author Martin Scharm
  */
 public class Tools
 {
 	
+	
+	/**
+	 * Get the minimum of 3 values.
+	 *
+	 * @param a the a
+	 * @param b the b
+	 * @param c the c
+	 * @return the min
+	 */
+	public static int minimum(int a, int b, int c)
+	{
+	    return Math.min (Math.min (a, b), c);
+	}
+
+	/**
+	 * Compute levenshtein distance of two strings.
+	 *
+	 * @param str1 the str1
+	 * @param str2 the str2
+	 * @return the distance
+	 */
+	public static int computeLevenshteinDistance (String str1, String str2)
+	{
+	    int [][] distance = new int [str1.length () + 1][str2.length () + 1];
+	
+	    for (int i = 0; i <= str1.length (); i++)
+	            distance[i][0] = i;
+	    for (int j = 1; j <= str2.length (); j++)
+	            distance[0][j] = j;
+	
+	    for (int i = 1; i <= str1.length (); i++)
+	            for (int j = 1; j <= str2.length (); j++)
+	                    distance[i][j] = minimum (
+	                                    distance[i - 1][j] + 1,
+	                                    distance[i][j - 1] + 1,
+	                                    distance[i - 1][j - 1]+ ((str1.charAt (i - 1) == str2.charAt (j - 1)) ? 0 : 1));
+	
+	    return distance[str1.length ()][str2.length ()];    
+	}
+	
+	/**
+	 * Repeat a string.
+	 *
+	 * @param s the string
+	 * @param times the number of times to repeat s
+	 * @return the string
+	 */
 	public static String repeat (String s, int times)
 	{
 		if (times < 0)
@@ -118,30 +167,49 @@ public class Tools
 		}
 	}
 	
+	/**
+	 * The Class SimpleOutputStream.
+	 */
 	public static class SimpleOutputStream extends OutputStream
 	{
 
-	  private StringBuilder string = new StringBuilder();
+	  /** The string. */
+  	private StringBuilder string = new StringBuilder();
 	  
-	  @Override
+	  /* (non-Javadoc)
+  	 * @see java.io.OutputStream#write(int)
+  	 */
+  	@Override
 	  public void write(int b) throws IOException
 	  {
 	      this.string.append((char) b );
 	  }
 
 	  //Netbeans IDE automatically overrides this toString()
-	  public String toString()
+	  /* (non-Javadoc)
+  	 * @see java.lang.Object#toString()
+  	 */
+  	public String toString()
 	  {
 	      return this.string.toString();
 	  }
 	  
-	  public void reset ()
+	  /**
+  	 * Reset.
+  	 */
+  	public void reset ()
 	  {
 	  	this.string = new StringBuilder();
 	  }
 	}
 	
 
+  /**
+   * Byte to hex.
+   *
+   * @param data the data
+   * @return the string
+   */
   public static String byteToHex(byte[] data) {
       StringBuilder buf = new StringBuilder();
       for (int i = 0; i < data.length; i++) {
@@ -158,6 +226,14 @@ public class Tools
       return buf.toString();
   }
 
+  /**
+   * Sha1.
+   *
+   * @param text the text
+   * @return the string
+   * @throws NoSuchAlgorithmException the no such algorithm exception
+   * @throws UnsupportedEncodingException the unsupported encoding exception
+   */
   public static String sha1 (String text) throws NoSuchAlgorithmException,
 UnsupportedEncodingException  {
 	  MessageDigest md = MessageDigest.getInstance("SHA-1");
@@ -167,6 +243,14 @@ UnsupportedEncodingException  {
 	  return byteToHex(sha1hash);
   }
   
+  /**
+   * Gen math html stats.
+   *
+   * @param a the a
+   * @param b the b
+   * @param markupElement the markup element
+   * @param markupDocument the markup document
+   */
   public static void genMathHtmlStats (DocumentNode a, DocumentNode b, MarkupElement markupElement, MarkupDocument markupDocument)
   {
   	if (a == null && b == null)
@@ -206,6 +290,14 @@ UnsupportedEncodingException  {
   	}
   }
   
+  /**
+   * Gen attribute html stats.
+   *
+   * @param a the a
+   * @param b the b
+   * @param markupElement the markup element
+   * @param markupDocument the markup document
+   */
   public static void genAttributeHtmlStats (DocumentNode a, DocumentNode b, MarkupElement markupElement, MarkupDocument markupDocument)
   {
   	if (a == null || b == null)
