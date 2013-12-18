@@ -214,7 +214,7 @@ public class Main
 		//args = new String [] {"--documentType", "test/BSA-ptinst-2012-11-11", "test/BSA-ptinst-2012-11-11"};
 		//args = new String [] {"--debugg", "--reportHtml", "test/potato (3).xml", "test/potato (3).xml"};
 		//args = new String [] {"--help"};
-		args = new String [] {"--singleCompHierarchyJson", "test/bhalla_iyengar_1999_j_v1.cellml"};
+		//args = new String [] {"--singleCompHierarchyJson", "test/bhalla_iyengar_1999_j_v1.cellml"};
 		
 		new Main ().run (args); 
 	}
