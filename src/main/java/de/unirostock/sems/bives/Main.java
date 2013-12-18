@@ -169,6 +169,7 @@ public class Main
 		//args = new String [] {"--meta", "test/BSA-ptinst-2012-11-11"};
 		//args = new String [] {"--documentType", "test/BSA-ptinst-2012-11-11"};
 		//args = new String [] {"--debugg", "--reportHtml", "test/potato (3).xml", "test/potato (3).xml"};
+		//args = new String [] {"--help"};
 		
 		new Main ().run (args); 
 	}
@@ -189,11 +190,6 @@ public class Main
   	DocumentClassifier classifier = null;
     HashMap<String, String> toReturn = new HashMap<String, String> ();
     
-    
-    if (args.length < 2)
-    {
-    	usage ("need at least 2 xml files as arguments.");
-    }
 
     
     for (int i = 0; i < args.length; i++)
@@ -298,7 +294,7 @@ public class Main
     else
     {
 	    if (file1 == null || file2 == null)
-	    	usage ("you need to prvide 2 files!");
+	    	usage ("you need to provide 2 files!");
 	    if (!file1.exists ())
 	    	usage ("cannot find " + file1.getAbsolutePath ());
 	    if (!file1.canRead ())
