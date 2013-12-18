@@ -326,11 +326,11 @@ public class Main
 	    	}
 	    	else if ((type & DocumentClassifier.CELLML) != 0)
 	    	{
-	    		diff = new SBMLDiff (file1, file2);
+	    		diff = new CellMLDiff (file1, file2);
 	    	}
 	    	else if ((type & DocumentClassifier.XML) != 0)
 	    	{
-	    		diff = new SBMLDiff (file1, file2);
+	    		diff = new RegularDiff (file1, file2);
 	    	}
 	    	else
 	    		usage ("cannot compare these files (["+DocumentClassifier.humanReadable (type1) + "] ["+DocumentClassifier.humanReadable (type2)+"])");
