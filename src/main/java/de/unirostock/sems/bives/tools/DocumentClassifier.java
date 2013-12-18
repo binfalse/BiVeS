@@ -117,7 +117,11 @@ public class DocumentClassifier
 			// is cellml?
 			isCellML (xml);
 		}
-		catch (SAXException | IOException e)
+		catch (SAXException e)
+		{
+			exceptions.add (e);
+		}
+		catch (IOException e)
 		{
 			exceptions.add (e);
 		}

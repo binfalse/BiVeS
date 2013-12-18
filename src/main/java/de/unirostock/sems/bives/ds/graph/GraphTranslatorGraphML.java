@@ -121,7 +121,11 @@ public class GraphTranslatorGraphML
 		{
 			return XmlTools.prettyPrintDocument (graphDocument);
 		}
-		catch (IOException | TransformerException e)
+		catch (TransformerException e)
+		{
+			LOGGER.error ("error printing graphml", e);
+		}
+		catch (IOException e)
 		{
 			LOGGER.error ("error printing graphml", e);
 		}
@@ -186,7 +190,11 @@ public class GraphTranslatorGraphML
 		{
 			return XmlTools.prettyPrintDocument (graphDocument);
 		}
-		catch (IOException | TransformerException e)
+		catch (TransformerException e)
+		{
+			LOGGER.error ("error printing graphml", e);
+		}
+		catch (IOException e)
 		{
 			LOGGER.error ("error printing graphml", e);
 		}

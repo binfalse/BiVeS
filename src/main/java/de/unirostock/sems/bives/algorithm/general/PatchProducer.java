@@ -134,7 +134,11 @@ public class PatchProducer
 				  }
   }).toString ();
 			}
-			catch (IOException | TransformerException e)
+			catch (IOException e)
+			{
+				LOGGER.error ("error producing output", e);
+			}
+			catch (TransformerException e)
 			{
 				LOGGER.error ("error producing output", e);
 			}
