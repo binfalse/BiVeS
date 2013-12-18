@@ -38,57 +38,32 @@ import de.unirostock.sems.bives.markup.TypesettingReStructuredText;
  * @author Martin Scharm
  *
  */
-public class CellMLDiff extends Diff
+public class CellMLSingle extends Single
 {
-	private CellMLDocument doc1, doc2;
+	private CellMLDocument doc1;
 
-	public CellMLDiff(File a, File b) throws ParserConfigurationException,
+	public CellMLSingle(File a) throws ParserConfigurationException,
 			BivesDocumentParseException, FileNotFoundException, SAXException,
 			IOException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, URISyntaxException, BivesImportException {
-		super(a, b);
+		super(a);
 		doc1 = new CellMLDocument (treeA);
-		doc2 = new CellMLDocument (treeB);
 	}
 
-	public CellMLDiff(String a, String b) throws ParserConfigurationException,
+	public CellMLSingle(String a) throws ParserConfigurationException,
 			BivesDocumentParseException, FileNotFoundException, SAXException,
 			IOException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, URISyntaxException, BivesImportException {
-		super(a, b);
+		super(a);
 		doc1 = new CellMLDocument (treeA);
-		doc2 = new CellMLDocument (treeB);
 	}
 
-	public CellMLDiff(CellMLDocument a, CellMLDocument b) throws ParserConfigurationException,
+	public CellMLSingle(CellMLDocument a, CellMLDocument b) throws ParserConfigurationException,
 			BivesDocumentParseException, FileNotFoundException, SAXException,
 			IOException, BivesCellMLParseException, BivesConsistencyException, BivesLogicalException, URISyntaxException, BivesImportException {
-		super(a.getTreeDocument (), b.getTreeDocument ());
+		super(a.getTreeDocument ());
 		doc1 = a;
-		doc2 = b;
-	}
-
-	/* (non-Javadoc)
-	 * @see de.unirostock.sems.bives.api.Diff#mapTrees()
-	 */
-	@Override
-	public boolean mapTrees() throws BivesConnectionException {
-		CellMLConnector con = new CellMLConnector (doc1, doc2);
-		
-		con.init (treeA, treeB);
-		con.findConnections ();
-		connections = con.getConnections();
-		
-		
-		treeA.getRoot ().resetModifications ();
-		treeA.getRoot ().evaluate (connections);
-		
-		treeB.getRoot ().resetModifications ();
-		treeB.getRoot ().evaluate (connections);
-		
-		return true;
 	}
 	
 	protected CellMLGraphProducer graphProducer;
-	protected CellMLDiffInterpreter interpreter;
 
 	/* (non-Javadoc)
 	 * @see de.unirostock.sems.bives.api.Diff#getGraphML()
@@ -96,7 +71,7 @@ public class CellMLDiff extends Diff
 	@Override
 	public String getCRNGraphML() throws ParserConfigurationException {
 		if (graphProducer == null)
-			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+			graphProducer = new CellMLGraphProducer (doc1);
 		return new GraphTranslatorGraphML ().translate (graphProducer.getCRN ());
 	}
 
@@ -105,7 +80,7 @@ public class CellMLDiff extends Diff
 	@Override
 	public Object getHierarchyGraph(GraphTranslator gt) throws Exception {
 		if (graphProducer == null)
-			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+			graphProducer = new CellMLGraphProducer (doc1);
 		return gt.translate (graphProducer.getHierarchy ());
 	}
 
@@ -115,52 +90,15 @@ public class CellMLDiff extends Diff
 	@Override
 	public String getHierarchyGraphML() throws ParserConfigurationException {
 		if (graphProducer == null)
-			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+			graphProducer = new CellMLGraphProducer (doc1);
 		return new GraphTranslatorGraphML ().translate (graphProducer.getHierarchy ());
-	}
-
-	/* (non-Javadoc)
-	 * @see de.unirostock.sems.bives.api.Diff#getReport()
-	 */
-	@Override
-	public String getMarkDownReport() {
-		if (interpreter == null)
-		{
-			interpreter = new CellMLDiffInterpreter (connections, doc1, doc2);
-			interpreter.interprete ();
-		}
-		return  new TypesettingMarkDown ().markup (interpreter.getReport ());
-	}
-
-	@Override
-	public String getReStructuredTextReport ()
-	{
-		if (interpreter == null)
-		{
-			interpreter = new CellMLDiffInterpreter (connections, doc1, doc2);
-			interpreter.interprete ();
-		}
-		return  new TypesettingReStructuredText ().markup (interpreter.getReport ());
-	}
-
-	/* (non-Javadoc)
-	 * @see de.unirostock.sems.bives.api.Diff#getReport()
-	 */
-	@Override
-	public String getHTMLReport() {
-		if (interpreter == null)
-		{
-			interpreter = new CellMLDiffInterpreter (connections, doc1, doc2);
-			interpreter.interprete ();
-		}
-		return  new TypesettingHTML ().markup (interpreter.getReport ());
 	}
 	
 	@Override
 	public Object getCRNGraph (GraphTranslator gt) throws Exception
 	{
 		if (graphProducer == null)
-			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+			graphProducer = new CellMLGraphProducer (doc1);
 		return gt.translate (graphProducer.getCRN ());
 	}
 
@@ -168,7 +106,7 @@ public class CellMLDiff extends Diff
 	public String getCRNDotGraph ()
 	{
 		if (graphProducer == null)
-			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+			graphProducer = new CellMLGraphProducer (doc1);
 		return new GraphTranslatorDot ().translate (graphProducer.getCRN ());
 	}
 
@@ -176,7 +114,7 @@ public class CellMLDiff extends Diff
 	public String getCRNJsonGraph ()
 	{
 		if (graphProducer == null)
-			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+			graphProducer = new CellMLGraphProducer (doc1);
 		return new GraphTranslatorJson ().translate (graphProducer.getCRN ());
 	}
 
@@ -187,7 +125,7 @@ public class CellMLDiff extends Diff
 	public String getHierarchyDotGraph()
 	{
 		if (graphProducer == null)
-			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+			graphProducer = new CellMLGraphProducer (doc1);
 		return new GraphTranslatorDot ().translate (graphProducer.getHierarchy ());
 	}
 
@@ -195,19 +133,8 @@ public class CellMLDiff extends Diff
 	public String getHierarchyJsonGraph ()
 	{
 		if (graphProducer == null)
-			graphProducer = new CellMLGraphProducer (connections, doc1, doc2);
+			graphProducer = new CellMLGraphProducer (doc1);
 		return new GraphTranslatorJson ().translate (graphProducer.getHierarchy ());
-	}
-
-	@Override
-	public String getReport (Typesetting ts)
-	{
-		if (interpreter == null)
-		{
-			interpreter = new CellMLDiffInterpreter (connections, doc1, doc2);
-			interpreter.interprete ();
-		}
-		return ts.markup (interpreter.getReport ());
 	}
 
 }

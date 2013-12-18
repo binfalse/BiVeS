@@ -8,8 +8,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -17,77 +15,44 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
-import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
-import de.unirostock.sems.bives.algorithm.general.PatchProducer;
 import de.unirostock.sems.bives.algorithm.general.XyWeighter;
 import de.unirostock.sems.bives.ds.graph.GraphTranslator;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
 import de.unirostock.sems.bives.exception.BivesDocumentParseException;
-import de.unirostock.sems.bives.markup.Typesetting;
+
 
 /**
- * @author Martin Scharm
+ * @author martin
  *
  */
-public abstract class Diff
+public abstract class Single
 {
-	public static final int PROD_DIFF = 0;
-	public static final int PROD_GRAPH = 1;
-	public static final int PROD_REPORT = 2;
-	public static final int PROD_ALL = 3;
-	
-	protected File a,b;
-	protected TreeDocument treeA, treeB;
-	protected ClearConnectionManager connections;
+	protected File a;
+	protected TreeDocument treeA;
 
-	public Diff (File a, File b) throws ParserConfigurationException, BivesDocumentParseException, FileNotFoundException, SAXException, IOException
+	public Single (File a) throws ParserConfigurationException, BivesDocumentParseException, FileNotFoundException, SAXException, IOException
 	{
 		this.a = a;
-		this.b = b;
 
 		DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
 			.newDocumentBuilder ();
 		
 		treeA = new TreeDocument (builder.parse (new FileInputStream (a)), new XyWeighter (), a.toURI ());
-		treeB = new TreeDocument (builder.parse (new FileInputStream (b)), new XyWeighter (), b.toURI ());
 	}
 
-	public Diff (String a, String b) throws ParserConfigurationException, BivesDocumentParseException, FileNotFoundException, SAXException, IOException
+	public Single (String a) throws ParserConfigurationException, BivesDocumentParseException, FileNotFoundException, SAXException, IOException
 	{
 		this.a = null;
-		this.b = null;
 
 		DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
 			.newDocumentBuilder ();
 		
 		treeA = new TreeDocument (builder.parse (new ByteArrayInputStream(a.getBytes ())), new XyWeighter (), null);
-		treeB = new TreeDocument (builder.parse (new ByteArrayInputStream (b.getBytes ())), new XyWeighter (), null);
 	}
 
-	public Diff (TreeDocument a, TreeDocument b)
+	public Single (TreeDocument a)
 	{
 		treeA = a;
-		treeB = b;
-	}
-	
-	public abstract boolean mapTrees () throws Exception;
-	
-	/*public String getJSON () throws ParserConfigurationException
-	{
-		Map<String, Object> json=new LinkedHashMap<String, Object>();
-
-		json.put("graphml", getGraphML ());
-		json.put("htmlreport", getHTMLReport ());
-		json.put("xmldiff", getDiff ());
-		return JSONValue.toJSONString(json);
-		
-	}*/
-	
-	public String getDiff ()
-	{
-		PatchProducer producer = new PatchProducer ();
-		producer.init (connections, treeA, treeB);
-		return producer.produce ();
 	}
 	
 	/**
@@ -155,34 +120,5 @@ public abstract class Diff
 	 * @throws Exception the exception
 	 */
 	public abstract String getHierarchyJsonGraph ();
-	
-	/**
-	 * Returns the report providing an on markup processor.
-	 *
-	 * @param ts the ts
-	 * @return the report or null if not available
-	 */
-	public abstract String getReport (Typesetting ts);
-	
-	/**
-	 * Returns the report encoded in HTML.
-	 *
-	 * @return the hTML report or null if not available
-	 */
-	public abstract String getHTMLReport ();
-	
-	/**
-	 * Returns the report encoded MarkDown.
-	 *
-	 * @return the mark down report or null if not available
-	 */
-	public abstract String getMarkDownReport ();
-	
-	/**
-	 * Returns the report encoded in ReStructured text.
-	 *
-	 * @return the ReStructured text report or null if not available
-	 */
-	public abstract String getReStructuredTextReport ();
 	
 }

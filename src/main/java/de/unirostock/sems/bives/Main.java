@@ -16,10 +16,16 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import de.binfalse.bflog.LOGGER;
+import de.unirostock.sems.bives.algorithm.GraphProducer;
+import de.unirostock.sems.bives.algorithm.cellml.CellMLGraphProducer;
+import de.unirostock.sems.bives.algorithm.sbml.SBMLGraphProducer;
 import de.unirostock.sems.bives.api.CellMLDiff;
+import de.unirostock.sems.bives.api.CellMLSingle;
 import de.unirostock.sems.bives.api.Diff;
 import de.unirostock.sems.bives.api.RegularDiff;
 import de.unirostock.sems.bives.api.SBMLDiff;
+import de.unirostock.sems.bives.api.SBMLSingle;
+import de.unirostock.sems.bives.api.Single;
 import de.unirostock.sems.bives.ds.cellml.CellMLDocument;
 import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
 import de.unirostock.sems.bives.ds.xml.TreeDocument;
@@ -52,6 +58,14 @@ public class Main
 	public static final int WANT_SBML = 4096;
 	public static final int WANT_CELLML = 8192;
 	public static final int WANT_REGULAR = 16384;
+
+	// single
+	public static final int WANT_SINGLE_CRN_GRAPHML = 32;
+	public static final int WANT_SINGLE_CRN_DOT = 64;
+	public static final int WANT_SINGLE_COMP_HIERARCHY_GRAPHML = 128;
+	public static final int WANT_SINGLE_COMP_HIERARCHY_DOT = 256;
+	public static final int WANT_SINGLE_COMP_HIERARCHY_JSON = 1024;
+	public static final int WANT_SINGLE_CRN_JSON = 2048;
 	
 	
 	public static final String REQ_FILES = "files";
@@ -68,6 +82,13 @@ public class Main
 	public static final String REQ_WANT_COMP_HIERARCHY_GRAPHML = "compHierarchyGraphml";
 	public static final String REQ_WANT_COMP_HIERARCHY_DOT = "compHierarchyDot";
 	public static final String REQ_WANT_COMP_HIERARCHY_JSON = "compHierarchyJson";
+
+	public static final String REQ_WANT_SINGLE_CRN_GRAPHML = "singleCrnGraphml";
+	public static final String REQ_WANT_SINGLE_CRN_DOT = "singleCrnDot";
+	public static final String REQ_WANT_SINGLE_CRN_JSON = "singleCrnJson";
+	public static final String REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML = "singleCompHierarchyGraphml";
+	public static final String REQ_WANT_SINGLE_COMP_HIERARCHY_DOT = "singleCompHierarchyDot";
+	public static final String REQ_WANT_SINGLE_COMP_HIERARCHY_JSON = "singleCompHierarchyJson";
 	
 	private class Option 
 	{
@@ -79,8 +100,9 @@ public class Main
 			this.value = value;
 		}
 	}
-	
+
 	private HashMap<String, Option> options;
+	private HashMap<String, Option> addOptions;
 	
 	private void fillOptions ()
 	{
@@ -100,6 +122,16 @@ public class Main
 		options.put ("--SBML", new Option (WANT_SBML, "force SBML comparison"));
 		options.put ("--CellML", new Option (WANT_CELLML, "force CellML comparison"));
 		options.put ("--regular", new Option (WANT_REGULAR, "force regular XML comparison"));
+		
+		addOptions = new HashMap<String, Option> ();
+		addOptions.put ("--documentType", new Option (WANT_DOCUMENTTYPE, "get the documentType of an XML file"));
+		addOptions.put ("--meta", new Option (WANT_META, "get some meta information about an XML file"));
+		addOptions.put ("--singleCrnJson", new Option (WANT_SINGLE_CRN_JSON, "get the chemical reaction network of a single file encoded in JSON"));
+		addOptions.put ("--singleCrnGraphml", new Option (WANT_SINGLE_CRN_GRAPHML, "get the chemical reaction network of a single file encoded in GraphML"));
+		addOptions.put ("--singleCrnDot", new Option (WANT_SINGLE_CRN_DOT, "get the chemical reaction network of a single file encoded in DOT language"));
+		addOptions.put ("--singleCompHierarchyJson", new Option (WANT_SINGLE_COMP_HIERARCHY_JSON, "get the hierarchy of components in a single CellML document encoded in JSON"));
+		addOptions.put ("--singleCompHierarchyGraphml", new Option (WANT_SINGLE_COMP_HIERARCHY_GRAPHML, "get the hierarchy of components in a single CellML document encoded in GraphML"));
+		addOptions.put ("--singleCompHierarchyDot", new Option (WANT_SINGLE_COMP_HIERARCHY_DOT, "get the hierarchy of components in a single CellML document encoded in DOT language"));
 	}
 	
 	
@@ -113,9 +145,7 @@ public class Main
 		}
 		
 		System.out.println ("ARGUMENTS:");
-		System.out.println ("\t[option] FILE1 FILE2  compute the differences between 2 XML files");
-		System.out.println ("\t--documentType FILE1  get the documentType of an XML file");
-		System.out.println ("\t--meta FILE1          get some meta information about an XML file");
+		System.out.println ("\t[option] FILE1 [FILE2]  compute the differences between 2 XML files");
 		System.out.println ();
 		System.out.println ("FILE1 and FILE2 define XML files to compare");
 		System.out.println ();
@@ -123,6 +153,12 @@ public class Main
 		SortedSet<String> keys = new TreeSet<String>(options.keySet());
 		int longest = 0;
 		for (String key : keys)
+		{
+			if (key.length () > longest)
+				longest = key.length ();
+		}
+		SortedSet<String> addKeys = new TreeSet<String>(addOptions.keySet());
+		for (String key : addKeys)
 		{
 			if (key.length () > longest)
 				longest = key.length ();
@@ -146,6 +182,13 @@ public class Main
 		System.out.println ("\tby default we will just dump the result to the terminal. Thus, it's only usefull if you call for one single output.");
 		System.out.println ("\t--json"+Tools.repeat (" ", longest - "--json".length ()) +"encode results in JSON");
 		System.out.println ("\t--xml"+Tools.repeat (" ", longest - "--xml".length ()) +"encode results in XML");
+		System.out.println ();
+
+		System.out.println ("\tADDITIONAL OPTIONS for single files");
+		for (String key : addKeys)
+			System.out.println ("\t"+key + Tools.repeat (" ", longest - key.length ()) + addOptions.get (key).description);
+		System.out.println ();
+
 		System.exit (2);
 	}
 	
@@ -168,8 +211,10 @@ public class Main
 		//args = new String [] {"--debugg", "--reportRST", "--crnGraphml", "--json", "--regular", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
 		//args = new String [] {"--meta", "test/BSA-ptinst-2012-11-11"};
 		//args = new String [] {"--documentType", "test/BSA-ptinst-2012-11-11"};
+		//args = new String [] {"--documentType", "test/BSA-ptinst-2012-11-11", "test/BSA-ptinst-2012-11-11"};
 		//args = new String [] {"--debugg", "--reportHtml", "test/potato (3).xml", "test/potato (3).xml"};
 		//args = new String [] {"--help"};
+		args = new String [] {"--singleCompHierarchyJson", "test/bhalla_iyengar_1999_j_v1.cellml"};
 		
 		new Main ().run (args); 
 	}
@@ -195,7 +240,13 @@ public class Main
     for (int i = 0; i < args.length; i++)
     {
     	Option o = options.get (args[i]);
-    	if (want >= 0 && o != null)
+    	if (o != null)
+    	{
+    		want |= o.value;
+    		continue;
+    	}
+    	o = addOptions.get (args[i]);
+    	if (o != null)
     	{
     		want |= o.value;
     		continue;
@@ -223,7 +274,7 @@ public class Main
     		output = 2;
     		continue;
     	}
-    	if (args[i].equals ("--meta"))
+    	/*if (args[i].equals ("--meta"))
     	{
     		want = -1;
     		continue;
@@ -232,7 +283,7 @@ public class Main
     	{
     		want = -2;
     		continue;
-    	}
+    	}*/
     	if (args[i].equals ("--help"))
     	{
     		usage ("");
@@ -246,9 +297,19 @@ public class Main
     		
     }
     
-    if (want < 0 && file1 != null)
+
+    if (file1 == null)
+    	usage ("no file provided");
+    if (!file1.exists ())
+    	usage ("cannot find " + file1.getAbsolutePath ());
+    if (!file1.canRead ())
+    	usage ("cannot read " + file1.getAbsolutePath ());
+    
+    
+    if (file2 == null)
     {
-    	if (want == -1)
+    	// single mode
+    	if ((WANT_META & want) > 0)
     	{
     		// meta
     		classifier = new DocumentClassifier ();
@@ -273,32 +334,49 @@ public class Main
 				}
 				toReturn.put (REQ_WANT_META, ret);
     	}
-    	else if (want == -2)
+    	if ((WANT_DOCUMENTTYPE & want) > 0)
     	{
     		// doc type
     		classifier = new DocumentClassifier ();
     		int type = classifier.classify (file1);
-/*
-  			String ret = "";
-    		
-    		if ((type & DocumentClassifier.XML) != 0)
-					ret += ("XML,");
-				if ((type & DocumentClassifier.CELLML) != 0)
-					ret += ("CellML,");
-				if ((type & DocumentClassifier.SBML) != 0)
-					ret += ("SBML,");*/
 				
 				toReturn.put (REQ_WANT_DOCUMENTTYPE, DocumentClassifier.humanReadable (type));
     	}
+    	
+    	if ((WANT_SINGLE_COMP_HIERARCHY_DOT|WANT_SINGLE_COMP_HIERARCHY_JSON|WANT_SINGLE_COMP_HIERARCHY_GRAPHML|WANT_SINGLE_CRN_JSON|WANT_SINGLE_CRN_GRAPHML|WANT_SINGLE_CRN_DOT & want) > 0)
+    	{
+    		Single single = null;
+	    	classifier = new DocumentClassifier ();
+	    	int type = classifier.classify (file1);
+	    	
+	    	if ((type & DocumentClassifier.SBML) != 0)
+	    	{
+	    		single = new SBMLSingle (file1);
+	    	}
+	    	else if ((type & DocumentClassifier.CELLML) != 0)
+	    	{
+	    		single = new CellMLSingle (file1);
+	    	}
+	    	if (single == null)
+	    		usage ("cannot produce the requested output for the provided file.");
+    		if ((want & WANT_SINGLE_CRN_JSON) > 0)
+    			toReturn.put (REQ_WANT_SINGLE_CRN_JSON, result (single.getCRNJsonGraph ()));
+    		if ((want & WANT_SINGLE_CRN_GRAPHML) > 0)
+    			toReturn.put (REQ_WANT_SINGLE_CRN_GRAPHML, result (single.getCRNGraphML ()));
+    		if ((want & WANT_SINGLE_CRN_DOT) > 0)
+    			toReturn.put (REQ_WANT_SINGLE_CRN_DOT, result (single.getCRNDotGraph ()));
+    		if ((want & WANT_SINGLE_COMP_HIERARCHY_JSON) > 0)
+    			toReturn.put (REQ_WANT_SINGLE_COMP_HIERARCHY_JSON, result (single.getHierarchyJsonGraph ()));
+    		if ((want & WANT_SINGLE_COMP_HIERARCHY_GRAPHML) > 0)
+    			toReturn.put (REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML, result (single.getHierarchyGraphML ()));
+    		if ((want & WANT_SINGLE_COMP_HIERARCHY_DOT) > 0)
+    			toReturn.put (REQ_WANT_SINGLE_COMP_HIERARCHY_DOT, result (single.getHierarchyDotGraph ()));
+    	}
+    		
     }
     else
     {
-	    if (file1 == null || file2 == null)
-	    	usage ("you need to provide 2 files!");
-	    if (!file1.exists ())
-	    	usage ("cannot find " + file1.getAbsolutePath ());
-	    if (!file1.canRead ())
-	    	usage ("cannot read " + file1.getAbsolutePath ());
+    	// compare mode
 	    if (!file2.exists ())
 	    	usage ("cannot find " + file2.getAbsolutePath ());
 	    if (!file2.canRead ())
@@ -377,6 +455,10 @@ public class Main
 				toReturn.put (REQ_WANT_REPORT_RST, result (diff.getReStructuredTextReport ()));
     }
 
+		if (toReturn.size () < 1)
+		{
+			usage ("invalid call. no output produced.");
+		}
     
     if (output == 0)
     {
