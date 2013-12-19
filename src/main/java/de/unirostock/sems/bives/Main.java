@@ -196,7 +196,7 @@ public class Main
 	 * @param args
 	 * @throws Exception 
 	 */
-	public static void main (String[] args) throws Exception
+	public static void main (String[] args)
 	{
 		LOGGER.setLogToStdErr (false);
 		LOGGER.setLogToStdOut (false);
@@ -204,6 +204,8 @@ public class Main
 		
 		//args = new String [] {"test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
 		//args = new String [] {"--reportHtml", "--xml", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
+		//args = new String [] {"--reportHtml", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
+		//args = new String [] {"--reportHtml", "test/BSA-ptinst-2012-11-11", "test/BSA-ptinst-2012-11-11"};
 		//args = new String [] {"--reportRST", "--crnGraphml", "--json", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
 		//args = new String [] {"--reportRST", "--crnGraphml", "--json", "--CellML", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
 		//args = new String [] {"--reportRST", "--crnGraphml", "--json", "--regular", "test/BSA-ptinst-2012-11-11", "test/BSA-sigbprlysis-2012-11-11"};
@@ -215,8 +217,17 @@ public class Main
 		//args = new String [] {"--debugg", "--reportHtml", "test/potato (3).xml", "test/potato (3).xml"};
 		//args = new String [] {"--help"};
 		//args = new String [] {"--singleCompHierarchyJson", "test/bhalla_iyengar_1999_j_v1.cellml"};
+		//args = new String [] {"--reportHtml", "--SBML", "test/teusink-1.dat", "test/teusink-1.dat"};
 		
-		new Main ().run (args); 
+		Main m = new Main ();
+		try
+		{
+			m.run (args); 
+		}
+		catch (Exception e)
+		{
+			m.usage ("ERROR: " + e.getClass ().getSimpleName () + ": " + e.getMessage ());
+		}
 	}
 	
 	private Main ()
