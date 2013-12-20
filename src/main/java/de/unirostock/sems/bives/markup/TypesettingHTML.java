@@ -58,13 +58,13 @@ public class TypesettingHTML
 			sub += markupElement (e);
 		
 		if (sub.length () > 0)
-			return s + "<table>" + sub + "</table>";
+			return s + "<table class='bives-table-"+section.getHeader ().replaceAll ("[^a-zA-Z0-9]", "_")+"'>" + sub + "</table>";
 		return "";
 	}
 	
 	private String markupElement (MarkupElement element)
 	{
-		String s = "<tr><td>" + element.getHeader () + "</td><td>";
+		String s = "<tr><td class='bives-table-left'>" + element.getHeader () + "</td><td class='bives-table-right'>";
 		String sub = "";
 		
 		Vector<String> values = element.getValues ();
