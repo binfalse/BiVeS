@@ -2,6 +2,6 @@ jsbml.log
 build
 bin
 dist
-test
+testfiles
 target
 lib
