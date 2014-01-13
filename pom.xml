@@ -29,6 +29,12 @@
             <artifactId>json-simple</artifactId>
             <version>1.1.1</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.8.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
     <distributionManagement>
         <downloadUrl>http://mvn.sems.uni-rostock.de</downloadUrl>   
