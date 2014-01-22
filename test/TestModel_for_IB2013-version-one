@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" version="4">
+	<model name="TestModel_for_IB2013">
+		<listOfCompartments>
+			<compartment id="compartment" name="compartment" size="1"/>
+		</listOfCompartments>
+		<listOfSpecies>
+			<species id="A" name="RB/E2F" compartment="compartment" initialConcentration="100"/>
+			<species id="B" name="RB-Hypo" compartment="compartment" initialConcentration="0"/>
+			<species id="C" name="free E3F" compartment="compartment" initialConcentration="0"/>
+			<species id="D" name="cycE/cdk2" compartment="compartment" initialConcentration="0"/>
+		</listOfSpecies>
+		<listOfReactions>
+			<reaction id="r" name="r">
+				<listOfReactants>
+					<speciesReference species="A"/>
+				</listOfReactants>
+				<listOfProducts>
+					<speciesReference species="C"/>
+					<speciesReference species="B"/>
+				</listOfProducts>
+				<listOfModifiers>
+					<modifierSpeciesReference species="D" sboTerm="SBO:0000459"/>
+				</listOfModifiers>
+			</reaction>
+		</listOfReactions>
+		</model>
+</sbml>

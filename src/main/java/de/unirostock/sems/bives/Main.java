@@ -43,7 +43,9 @@ import de.unirostock.sems.bives.tools.XmlTools;
  */
 public class Main
 {
-	public static final int WANT_DIFF = 1;
+	public static boolean exit = true;
+	
+	/*public static final int WANT_DIFF = 1;
 	public static final int WANT_DOCUMENTTYPE = 2;
 	public static final int WANT_META = 4;
 	public static final int WANT_REPORT_MD = 8;
@@ -132,7 +134,7 @@ public class Main
 		addOptions.put ("--singleCompHierarchyJson", new Option (WANT_SINGLE_COMP_HIERARCHY_JSON, "get the hierarchy of components in a single CellML document encoded in JSON"));
 		addOptions.put ("--singleCompHierarchyGraphml", new Option (WANT_SINGLE_COMP_HIERARCHY_GRAPHML, "get the hierarchy of components in a single CellML document encoded in GraphML"));
 		addOptions.put ("--singleCompHierarchyDot", new Option (WANT_SINGLE_COMP_HIERARCHY_DOT, "get the hierarchy of components in a single CellML document encoded in DOT language"));
-	}
+	}*/
 	
 	
 	
@@ -143,6 +145,9 @@ public class Main
 			System.err.println (msg);
 			System.out.println ();
 		}
+
+		HashMap<String, Executer.Option> options = exe.getOptions ();
+		HashMap<String, Executer.Option> addOptions = exe.getAddOptions ();
 		
 		System.out.println ("ARGUMENTS:");
 		System.out.println ("\t[option] FILE1 [FILE2]  compute the differences between 2 XML files");
@@ -175,7 +180,7 @@ public class Main
 		System.out.println ("\tMAPPING OPTIONS");
 		
 		for (String key : keys)
-			System.out.println ("\t"+key + Tools.repeat (" ", longest - key.length ()) + options.get (key).description);
+			System.out.println ("\t--"+key + Tools.repeat (" ", longest - key.length ()) + options.get (key).description);
 		System.out.println ();
 
 		System.out.println ("\tENCODING OPTIONS");
@@ -186,10 +191,11 @@ public class Main
 
 		System.out.println ("\tADDITIONAL OPTIONS for single files");
 		for (String key : addKeys)
-			System.out.println ("\t"+key + Tools.repeat (" ", longest - key.length ()) + addOptions.get (key).description);
+			System.out.println ("\t--"+key + Tools.repeat (" ", longest - key.length ()) + addOptions.get (key).description);
 		System.out.println ();
 
-		System.exit (2);
+		if (exit)
+			System.exit (2);
 	}
 	
 	/**
@@ -224,43 +230,56 @@ public class Main
 		{
 			m.run (args); 
 		}
+		catch (HelpException e)
+		{
+			m.usage (null);
+		}
 		catch (Exception e)
 		{
-			m.usage ("ERROR: " + e.getClass ().getSimpleName () + ": " + e.getMessage ());
+			m.usage (e.getClass ().getSimpleName () + ": " + e.getMessage ());
+			//System.exit (2);
 		}
 	}
 	
+	private class HelpException extends Exception
+	{}
+	
+	public static class ExecutionException extends Exception
+	{
+		public ExecutionException (String msg)
+		{
+			super (msg);
+		}
+	}
+	
+	Executer exe;
+	
 	private Main ()
 	{
-		fillOptions ();
+		exe = new Executer ();
 	}
 	
 	@SuppressWarnings("unchecked")
 	private void run (String[] args) throws Exception
 	{
 		
-		Diff diff = null;
     File file1 = null, file2 = null;
     int output = 0;
   	int want = 0;
-  	DocumentClassifier classifier = null;
     HashMap<String, String> toReturn = new HashMap<String, String> ();
     
 
     
     for (int i = 0; i < args.length; i++)
     {
-    	Option o = options.get (args[i]);
-    	if (o != null)
+    	if (args[i].substring (0, 2).equals ("--"))
     	{
-    		want |= o.value;
-    		continue;
-    	}
-    	o = addOptions.get (args[i]);
-    	if (o != null)
-    	{
-    		want |= o.value;
-    		continue;
+	    	Executer.Option o = exe.get (args[i].substring (2));
+	    	if (o != null)
+	    	{
+	    		want |= o.value;
+	    		continue;
+	    	}
     	}
     	
     	if (args[i].equals ("--debug"))
@@ -285,190 +304,43 @@ public class Main
     		output = 2;
     		continue;
     	}
-    	/*if (args[i].equals ("--meta"))
-    	{
-    		want = -1;
-    		continue;
-    	}
-    	if (args[i].equals ("--documentType"))
-    	{
-    		want = -2;
-    		continue;
-    	}*/
     	if (args[i].equals ("--help"))
     	{
-    		usage ("");
+    		throw new HelpException ();
     	}
     	if (file1 == null)
     		file1 = new File (args[i]);
     	else if (file2 == null)
     		file2 = new File (args[i]);
     	else
-    		usage ("do not understand " + args[i] + " (found files " + file1 + " and " + file2 + ")");
+    		throw new ExecutionException ("do not understand " + args[i] + " (found files " + file1 + " and " + file2 + ")");
     		
     }
     
 
     if (file1 == null)
-    	usage ("no file provided");
+    	throw new ExecutionException ("no file provided");
     if (!file1.exists ())
-    	usage ("cannot find " + file1.getAbsolutePath ());
+    	throw new ExecutionException ("cannot find " + file1.getAbsolutePath ());
     if (!file1.canRead ())
-    	usage ("cannot read " + file1.getAbsolutePath ());
+    	throw new ExecutionException ("cannot read " + file1.getAbsolutePath ());
     
     
     if (file2 == null)
     {
     	// single mode
-    	if ((WANT_META & want) > 0)
-    	{
-    		// meta
-    		classifier = new DocumentClassifier ();
-    		int type = classifier.classify (file1);
-
-  			String ret = "";
-  			
-    		if ((type & DocumentClassifier.SBML) > 0)
-    		{
-    			SBMLDocument doc = classifier.getSbmlDocument ();
-    			ret += "sbmlVersion:" + doc.getVersion () + ";sbmlLevel:" + doc.getLevel () + ";modelId:" + doc.getModel ().getID () + ";modelName:" + doc.getModel ().getName () + ";";
-    		}
-    		if ((type & DocumentClassifier.CELLML) > 0)
-    		{
-    			CellMLDocument doc = classifier.getCellMlDocument ();
-    			ret += "containsImports:" + doc.containsImports () + ";modelName:" + doc.getModel ().getName () + ";";
-    		}
-				if ((type & DocumentClassifier.XML) > 0)
-				{
-					TreeDocument doc = classifier.getXmlDocument ();
-					ret += "nodestats:" + doc.getNodeStats () + ";";
-				}
-				toReturn.put (REQ_WANT_META, ret);
-    	}
-    	if ((WANT_DOCUMENTTYPE & want) > 0)
-    	{
-    		// doc type
-    		classifier = new DocumentClassifier ();
-    		int type = classifier.classify (file1);
-				
-				toReturn.put (REQ_WANT_DOCUMENTTYPE, DocumentClassifier.humanReadable (type));
-    	}
-    	
-    	if ((WANT_SINGLE_COMP_HIERARCHY_DOT|WANT_SINGLE_COMP_HIERARCHY_JSON|WANT_SINGLE_COMP_HIERARCHY_GRAPHML|WANT_SINGLE_CRN_JSON|WANT_SINGLE_CRN_GRAPHML|WANT_SINGLE_CRN_DOT & want) > 0)
-    	{
-    		Single single = null;
-	    	classifier = new DocumentClassifier ();
-	    	int type = classifier.classify (file1);
-	    	
-	    	if ((type & DocumentClassifier.SBML) != 0)
-	    	{
-	    		single = new SBMLSingle (file1);
-	    	}
-	    	else if ((type & DocumentClassifier.CELLML) != 0)
-	    	{
-	    		single = new CellMLSingle (file1);
-	    	}
-	    	if (single == null)
-	    		usage ("cannot produce the requested output for the provided file.");
-    		if ((want & WANT_SINGLE_CRN_JSON) > 0)
-    			toReturn.put (REQ_WANT_SINGLE_CRN_JSON, result (single.getCRNJsonGraph ()));
-    		if ((want & WANT_SINGLE_CRN_GRAPHML) > 0)
-    			toReturn.put (REQ_WANT_SINGLE_CRN_GRAPHML, result (single.getCRNGraphML ()));
-    		if ((want & WANT_SINGLE_CRN_DOT) > 0)
-    			toReturn.put (REQ_WANT_SINGLE_CRN_DOT, result (single.getCRNDotGraph ()));
-    		if ((want & WANT_SINGLE_COMP_HIERARCHY_JSON) > 0)
-    			toReturn.put (REQ_WANT_SINGLE_COMP_HIERARCHY_JSON, result (single.getHierarchyJsonGraph ()));
-    		if ((want & WANT_SINGLE_COMP_HIERARCHY_GRAPHML) > 0)
-    			toReturn.put (REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML, result (single.getHierarchyGraphML ()));
-    		if ((want & WANT_SINGLE_COMP_HIERARCHY_DOT) > 0)
-    			toReturn.put (REQ_WANT_SINGLE_COMP_HIERARCHY_DOT, result (single.getHierarchyDotGraph ()));
-    	}
-    		
+    	exe.executeSingle (file1, toReturn, want);
     }
     else
     {
-    	// compare mode
-	    if (!file2.exists ())
-	    	usage ("cannot find " + file2.getAbsolutePath ());
-	    if (!file2.canRead ())
-	    	usage ("cannot read " + file2.getAbsolutePath ());
-	    
-	    if (want == 0)
-	    	want = WANT_DIFF;
-	    
-	    // decide which kind of mapper to use
-	    if ((WANT_CELLML & want) > 0)
-	    	diff = new CellMLDiff (file1, file2);
-	    else if ((WANT_SBML & want) > 0)
-	    	diff = new SBMLDiff (file1, file2);
-	    else if ((WANT_REGULAR & want) > 0)
-	    	diff = new RegularDiff (file1, file2);
-	    else
-	    {
-	    	classifier = new DocumentClassifier ();
-	    	int type1 = classifier.classify (file1);
-	    	int type2 = classifier.classify (file2);
-	    	int type = type1 & type2;
-	    	if ((type & DocumentClassifier.SBML) != 0)
-	    	{
-	    		diff = new SBMLDiff (file1, file2);
-	    	}
-	    	else if ((type & DocumentClassifier.CELLML) != 0)
-	    	{
-	    		diff = new CellMLDiff (file1, file2);
-	    	}
-	    	else if ((type & DocumentClassifier.XML) != 0)
-	    	{
-	    		diff = new RegularDiff (file1, file2);
-	    	}
-	    	else
-	    		usage ("cannot compare these files (["+DocumentClassifier.humanReadable (type1) + "] ["+DocumentClassifier.humanReadable (type2)+"])");
-	    }
-	    
-	    if (diff == null)
-	  		usage ("cannot compare these files");
-	
-	  	//System.out.println (want);
-	    
-	    // create mapping
-	    diff.mapTrees ();
-	    
-	    
-	    // compute results
-			if ((want & WANT_DIFF) > 0)
-				toReturn.put (REQ_WANT_DIFF, result (diff.getDiff ()));
-			
-			if ((want & WANT_CRN_GRAPHML) > 0)
-				toReturn.put (REQ_WANT_CRN_GRAPHML, result (diff.getCRNGraphML ()));
-			
-			if ((want & WANT_CRN_DOT) > 0)
-				toReturn.put (REQ_WANT_CRN_DOT, result (diff.getCRNDotGraph ()));
-			
-			if ((want & WANT_CRN_JSON) > 0)
-				toReturn.put (REQ_WANT_CRN_JSON, result (diff.getCRNJsonGraph ()));
-			
-			if ((want & WANT_COMP_HIERARCHY_DOT) > 0)
-				toReturn.put (REQ_WANT_COMP_HIERARCHY_DOT, result (diff.getHierarchyDotGraph ()));
-			
-			if ((want & WANT_COMP_HIERARCHY_JSON) > 0)
-				toReturn.put (REQ_WANT_COMP_HIERARCHY_JSON, result (diff.getHierarchyJsonGraph ()));
-			
-			if ((want & WANT_COMP_HIERARCHY_GRAPHML) > 0)
-				toReturn.put (REQ_WANT_COMP_HIERARCHY_GRAPHML, result (diff.getHierarchyGraphML ()));
-			
-			if ((want & WANT_REPORT_HTML) > 0)
-				toReturn.put (REQ_WANT_REPORT_HTML, result (diff.getHTMLReport ()));
-			
-			if ((want & WANT_REPORT_MD) > 0)
-				toReturn.put (REQ_WANT_REPORT_MD, result (diff.getMarkDownReport ()));
-			
-			if ((want & WANT_REPORT_RST) > 0)
-				toReturn.put (REQ_WANT_REPORT_RST, result (diff.getReStructuredTextReport ()));
+    	// compare two files
+    	exe.executeCompare (file1, file2, toReturn, want);
     }
+    
 
 		if (toReturn.size () < 1)
 		{
-			usage ("invalid call. no output produced.");
+			throw new ExecutionException ("invalid call. no output produced.");
 		}
     
     if (output == 0)
@@ -503,13 +375,6 @@ public class Main
     		json.put (ret, toReturn.get (ret));
     	System.out.println (json);
     }
-	}
-	
-	public static String result (String s)
-	{
-		if (s == null)
-			return "";
-		return s;
 	}
 	
 }

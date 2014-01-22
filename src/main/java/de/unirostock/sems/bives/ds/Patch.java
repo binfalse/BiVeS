@@ -46,6 +46,26 @@ public class Patch
 		init ();
 	}
 	
+	public int getNumMoves ()
+	{
+		return move.getChildNodes ().getLength ();
+	}
+	
+	public int getNumUpdates ()
+	{
+		return update.getChildNodes ().getLength ();
+	}
+	
+	public int getNumDeletes ()
+	{
+		return delete.getChildNodes ().getLength ();
+	}
+	
+	public int getNumInsterts ()
+	{
+		return insert.getChildNodes ().getLength ();
+	}
+	
 	public Document getDocument ()
 	{
 		return xmlDoc;

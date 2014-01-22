@@ -110,8 +110,8 @@ public class FileRetriever
 		
 		LOGGER.info ("trying to retrieve file from: " + file + " to: " + dest);
 		
-			// file: -> copy
-		if (file.getScheme ().toLowerCase ().startsWith ("file:"))
+		// file: -> copy
+		if (file.getScheme ().toLowerCase ().startsWith ("file"))
 			copy (file, dest);
 		// otherwise download
 		else

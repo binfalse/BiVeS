@@ -50,6 +50,11 @@ public class PatchProducer
 		fullDiff = true;
 		LOGGER.info ("creating patch producer: ");// + conMgmt + " " + docA + " " + docB);
 	}
+	
+	public Patch getPatch ()
+	{
+		return patch;
+	}
 
 	/* (non-Javadoc)
 	 * @see de.unirostock.sems.xmldiff.algorithm.Producer#produce()
