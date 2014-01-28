@@ -12,7 +12,6 @@ import org.w3c.dom.Element;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
-import de.unirostock.sems.bives.algorithm.ConnectionManager;
 
 
 /**

@@ -48,8 +48,8 @@ public abstract class Diff
 		DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
 			.newDocumentBuilder ();
 		
-		treeA = new TreeDocument (builder.parse (new FileInputStream (a)), new XyWeighter (), a.toURI ());
-		treeB = new TreeDocument (builder.parse (new FileInputStream (b)), new XyWeighter (), b.toURI ());
+		treeA = new TreeDocument (builder.parse (new FileInputStream (a)), a.toURI ());
+		treeB = new TreeDocument (builder.parse (new FileInputStream (b)), b.toURI ());
 	}
 
 	public Diff (String a, String b) throws ParserConfigurationException, BivesDocumentParseException, FileNotFoundException, SAXException, IOException
@@ -60,8 +60,8 @@ public abstract class Diff
 		DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
 			.newDocumentBuilder ();
 		
-		treeA = new TreeDocument (builder.parse (new ByteArrayInputStream(a.getBytes ())), new XyWeighter (), null);
-		treeB = new TreeDocument (builder.parse (new ByteArrayInputStream (b.getBytes ())), new XyWeighter (), null);
+		treeA = new TreeDocument (builder.parse (new ByteArrayInputStream(a.getBytes ())), null);
+		treeB = new TreeDocument (builder.parse (new ByteArrayInputStream (b.getBytes ())), null);
 	}
 
 	public Diff (TreeDocument a, TreeDocument b)

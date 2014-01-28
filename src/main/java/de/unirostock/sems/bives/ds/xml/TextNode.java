@@ -13,7 +13,6 @@ import org.w3c.dom.Node;
 import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
-import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Weighter;
 import de.unirostock.sems.bives.ds.MultiNodeMapper;
 import de.unirostock.sems.bives.ds.NodeMapper;

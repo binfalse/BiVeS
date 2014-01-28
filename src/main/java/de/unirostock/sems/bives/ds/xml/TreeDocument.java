@@ -35,6 +35,21 @@ public class TreeDocument
 	private boolean uniqueIds;
 	private URI baseUri;
 
+	public TreeDocument (Document d, URI baseUri) throws BivesDocumentParseException
+	{
+		Weighter w = new XyWeighter (); // default xy
+		pathMapper = new NodeMapper<TreeNode> ();
+		idMapper = new NodeMapper<DocumentNode> ();
+		hashMapper = new MultiNodeMapper<TreeNode> ();
+		tagMapper = new MultiNodeMapper<DocumentNode> ();
+		subtreesBySize = new Vector<TreeNode> ();
+		root = new DocumentNode (d.getDocumentElement (), null, this, w, 1, 0);//, pathMapper, idMapper, hashMapper, tagMapper, subtreesBySize);
+		Collections.sort (subtreesBySize, new TreeNode.TreeNodeComparatorBySubtreeSize ());
+		ordered = true;
+		uniqueIds = true;
+		this.baseUri = baseUri;
+	}
+
 	public TreeDocument (Document d, Weighter w, URI baseUri) throws BivesDocumentParseException
 	{
 		if (w == null)
@@ -49,6 +64,19 @@ public class TreeDocument
 		ordered = true;
 		uniqueIds = true;
 		this.baseUri = baseUri;
+	}
+	public TreeDocument (Document d, URI baseUri, boolean ordered) throws BivesDocumentParseException
+	{
+		Weighter w = new XyWeighter (); // default xy
+		pathMapper = new NodeMapper<TreeNode> ();
+		idMapper = new NodeMapper<DocumentNode> ();
+		hashMapper = new MultiNodeMapper<TreeNode> ();
+		tagMapper = new MultiNodeMapper<DocumentNode> ();
+		subtreesBySize = new Vector<TreeNode> ();
+		root = new DocumentNode (d.getDocumentElement (), null, this, w, 1, 0);//, pathMapper, idMapper, hashMapper, tagMapper, subtreesBySize);
+		Collections.sort (subtreesBySize, new TreeNode.TreeNodeComparatorBySubtreeSize ());
+		this.ordered = ordered;
+		uniqueIds = true;
 	}
 	public TreeDocument (Document d, Weighter w, URI baseUri, boolean ordered) throws BivesDocumentParseException
 	{

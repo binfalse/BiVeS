@@ -13,7 +13,6 @@ import javax.xml.transform.TransformerException;
 import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connection;
-import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Producer;
 import de.unirostock.sems.bives.ds.Patch;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;

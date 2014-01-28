@@ -11,7 +11,6 @@ import java.util.Vector;
 
 import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.algorithm.Connection;
-import de.unirostock.sems.bives.algorithm.ConnectionManager;
 import de.unirostock.sems.bives.algorithm.Connector;
 import de.unirostock.sems.bives.ds.xml.DocumentNode;
 import de.unirostock.sems.bives.ds.xml.NodeComparer;
