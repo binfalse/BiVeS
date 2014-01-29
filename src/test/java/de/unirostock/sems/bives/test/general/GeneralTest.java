@@ -1,22 +1,23 @@
 package de.unirostock.sems.bives.test.general;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.Test;
 
 import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.general.PatchProducer;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
-import de.unirostock.sems.bives.algorithm.general.XyWeighter;
 import de.unirostock.sems.bives.ds.Patch;
-import de.unirostock.sems.bives.ds.xml.TreeDocument;
+import de.unirostock.sems.xmltools.alg.XyWeighter;
+import de.unirostock.sems.xmltools.ds.TreeDocument;
 
 
 public class GeneralTest
@@ -34,8 +35,8 @@ public class GeneralTest
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
 				.newDocumentBuilder ();
 			
-			TreeDocument treeA = new TreeDocument (builder.parse (new FileInputStream (a)), new XyWeighter (), a.toURI ());
-			TreeDocument treeB = new TreeDocument (builder.parse (new FileInputStream (b)), new XyWeighter (), b.toURI ());
+			TreeDocument treeA = new TreeDocument (builder.parse (new FileInputStream (a)), a.toURI ());
+			TreeDocument treeB = new TreeDocument (builder.parse (new FileInputStream (b)), b.toURI ());
 			
 			XyDiffConnector con = new XyDiffConnector();
 			con.init (treeA, treeB);

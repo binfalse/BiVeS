@@ -14,22 +14,23 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.xml.sax.SAXException;
 
 import de.unirostock.sems.bives.Main.ExecutionException;
-import de.unirostock.sems.bives.api.CellMLDiff;
-import de.unirostock.sems.bives.api.CellMLSingle;
 import de.unirostock.sems.bives.api.Diff;
 import de.unirostock.sems.bives.api.RegularDiff;
-import de.unirostock.sems.bives.api.SBMLDiff;
-import de.unirostock.sems.bives.api.SBMLSingle;
 import de.unirostock.sems.bives.api.Single;
-import de.unirostock.sems.bives.ds.cellml.CellMLDocument;
-import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
-import de.unirostock.sems.bives.ds.xml.TreeDocument;
-import de.unirostock.sems.bives.exception.BivesCellMLParseException;
-import de.unirostock.sems.bives.exception.BivesConsistencyException;
-import de.unirostock.sems.bives.exception.BivesDocumentParseException;
+import de.unirostock.sems.bives.cellml.api.CellMLDiff;
+import de.unirostock.sems.bives.cellml.api.CellMLSingle;
+import de.unirostock.sems.bives.cellml.exception.BivesCellMLParseException;
+import de.unirostock.sems.bives.cellml.parser.CellMLDocument;
 import de.unirostock.sems.bives.exception.BivesImportException;
 import de.unirostock.sems.bives.exception.BivesLogicalException;
+import de.unirostock.sems.bives.exception.BivesDocumentConsistencyException;
+import de.unirostock.sems.bives.sbml.api.SBMLDiff;
+import de.unirostock.sems.bives.sbml.api.SBMLSingle;
+import de.unirostock.sems.bives.sbml.exception.BivesSBMLParseException;
+import de.unirostock.sems.bives.sbml.parser.SBMLDocument;
 import de.unirostock.sems.bives.tools.DocumentClassifier;
+import de.unirostock.sems.xmltools.ds.TreeDocument;
+import de.unirostock.sems.xmltools.exception.XmlDocumentParseException;
 
 
 /**
@@ -162,7 +163,7 @@ public class Executer
 		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_DOT, new Option (WANT_SINGLE_COMP_HIERARCHY_DOT, "get the hierarchy of components in a single CellML document encoded in DOT language"));
 	}
 	
-	public void executeSingle (File file1, HashMap<String, String> toReturn, int want) throws ExecutionException, ParserConfigurationException, BivesDocumentParseException, FileNotFoundException, SAXException, IOException, BivesConsistencyException, BivesCellMLParseException, BivesLogicalException, URISyntaxException, BivesImportException
+	public void executeSingle (File file1, HashMap<String, String> toReturn, int want) throws ExecutionException, ParserConfigurationException, FileNotFoundException, SAXException, IOException, BivesCellMLParseException, BivesLogicalException, URISyntaxException, BivesImportException, XmlDocumentParseException, BivesDocumentConsistencyException, BivesSBMLParseException
 	{
   	DocumentClassifier classifier = null;
 

@@ -1,16 +1,17 @@
 package de.unirostock.sems.bives.test.sysmoseek;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Test;
 
-import de.unirostock.sems.bives.Main;
 import de.unirostock.sems.bives.test.general.CommandLineTest;
 import de.unirostock.sems.bives.test.general.CommandLineTest.CommandLineResults;
 

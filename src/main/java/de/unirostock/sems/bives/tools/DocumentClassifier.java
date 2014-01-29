@@ -7,7 +7,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Vector;
@@ -20,11 +19,10 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import de.unirostock.sems.bives.algorithm.general.XyWeighter;
-import de.unirostock.sems.bives.ds.cellml.CellMLDocument;
-import de.unirostock.sems.bives.ds.sbml.SBMLDocument;
-import de.unirostock.sems.bives.ds.xml.TreeDocument;
-import de.unirostock.sems.bives.exception.BivesDocumentParseException;
+import de.unirostock.sems.bives.cellml.parser.CellMLDocument;
+import de.unirostock.sems.bives.sbml.parser.SBMLDocument;
+import de.unirostock.sems.xmltools.alg.XyWeighter;
+import de.unirostock.sems.xmltools.ds.TreeDocument;
 
 
 /**
@@ -121,7 +119,7 @@ public class DocumentClassifier
 		{
 			exceptions.add (e);
 		}
-		catch (IOException e)
+		catch (Exception e)
 		{
 			exceptions.add (e);
 		}
