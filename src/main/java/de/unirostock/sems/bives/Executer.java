@@ -29,8 +29,8 @@ import de.unirostock.sems.bives.sbml.api.SBMLSingle;
 import de.unirostock.sems.bives.sbml.exception.BivesSBMLParseException;
 import de.unirostock.sems.bives.sbml.parser.SBMLDocument;
 import de.unirostock.sems.bives.tools.DocumentClassifier;
-import de.unirostock.sems.xmltools.ds.TreeDocument;
-import de.unirostock.sems.xmltools.exception.XmlDocumentParseException;
+import de.unirostock.sems.xmlutils.ds.TreeDocument;
+import de.unirostock.sems.xmlutils.exception.XmlDocumentParseException;
 
 
 /**

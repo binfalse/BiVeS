@@ -16,8 +16,7 @@ import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
 import de.unirostock.sems.bives.algorithm.general.PatchProducer;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
 import de.unirostock.sems.bives.ds.Patch;
-import de.unirostock.sems.xmltools.alg.XyWeighter;
-import de.unirostock.sems.xmltools.ds.TreeDocument;
+import de.unirostock.sems.xmlutils.ds.TreeDocument;
 
 
 public class GeneralTest
@@ -69,8 +68,8 @@ public class GeneralTest
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
 				.newDocumentBuilder ();
 			
-			TreeDocument treeA = new TreeDocument (builder.parse (new FileInputStream (a)), new XyWeighter (), a.toURI ());
-			TreeDocument treeB = new TreeDocument (builder.parse (new FileInputStream (b)), new XyWeighter (), b.toURI ());
+			TreeDocument treeA = new TreeDocument (builder.parse (new FileInputStream (a)), a.toURI ());
+			TreeDocument treeB = new TreeDocument (builder.parse (new FileInputStream (b)), b.toURI ());
 			
 			XyDiffConnector con = new XyDiffConnector();
 			con.init (treeA, treeB);

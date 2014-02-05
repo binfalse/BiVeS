@@ -17,7 +17,7 @@ import org.w3c.dom.Element;
 
 import de.binfalse.bflog.LOGGER;
 import de.binfalse.bfutils.GeneralTools;
-import de.unirostock.sems.xmltools.tools.XmlTools;
+import de.unirostock.sems.xmlutils.tools.XmlTools;
 
 //TODO: detect document type
 //TODO: graph producer

@@ -21,8 +21,7 @@ import org.xml.sax.SAXParseException;
 
 import de.unirostock.sems.bives.cellml.parser.CellMLDocument;
 import de.unirostock.sems.bives.sbml.parser.SBMLDocument;
-import de.unirostock.sems.xmltools.alg.XyWeighter;
-import de.unirostock.sems.xmltools.ds.TreeDocument;
+import de.unirostock.sems.xmlutils.ds.TreeDocument;
 
 
 /**
@@ -106,7 +105,7 @@ public class DocumentClassifier
 		clear ();
 		try
 		{
-			xml = new TreeDocument (builder.parse (model), new XyWeighter (), baseUri);
+			xml = new TreeDocument (builder.parse (model), baseUri);
 			type |= XML;
 			
 			// is sbml?
