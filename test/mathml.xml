@@ -1,0 +1,26 @@
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+    <apply>
+        <plus/>
+        <apply>
+            <times/>
+            <ci> G2K </ci>
+            <apply>
+                <ci> kwee </ci>
+                <ci> Wee1 </ci>
+                <ci> Vw </ci>
+                <ci> Vwprime </ci>
+            </apply>
+        </apply>
+        <apply>
+            <times/>
+            <cn type="integer"> -1 </cn>
+            <apply>
+                <ci> k25 </ci>
+                <ci> Cdc25 </ci>
+                <ci> V25 </ci>
+                <ci> V25prime </ci>
+            </apply>
+            <ci> PG2 </ci>
+        </apply>
+    </apply>
+</math>
