@@ -11,7 +11,7 @@ import java.util.UUID;
 
 
 /**
- * @author martin
+ * @author Martin Scharm
  *
  */
 public class TestResources

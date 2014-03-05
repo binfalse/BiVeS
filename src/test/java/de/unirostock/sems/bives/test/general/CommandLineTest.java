@@ -15,6 +15,10 @@ import org.junit.Test;
 import de.unirostock.sems.bives.Main;
 
 
+/**
+ * @author Martin Scharm
+ *
+ */
 public class CommandLineTest
 {
 	public static class CommandLineResults

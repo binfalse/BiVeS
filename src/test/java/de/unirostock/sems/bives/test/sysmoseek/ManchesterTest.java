@@ -19,6 +19,7 @@ import de.unirostock.sems.bives.test.general.CommandLineTest.CommandLineResults;
 /**
  * Tests implemented after BiVeS was integrated in SysMO/Seek in Dec2013 to make sure we don't destroy anything used in seek.
  *  
+ * @author Martin Scharm
  */
 public class ManchesterTest
 {

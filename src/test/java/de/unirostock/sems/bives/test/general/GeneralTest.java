@@ -12,13 +12,17 @@ import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.junit.Test;
 
-import de.unirostock.sems.bives.algorithm.ClearConnectionManager;
+import de.unirostock.sems.bives.algorithm.SimpleConnectionManager;
 import de.unirostock.sems.bives.algorithm.general.PatchProducer;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
 import de.unirostock.sems.bives.ds.Patch;
 import de.unirostock.sems.xmlutils.ds.TreeDocument;
 
 
+/**
+ * @author Martin Scharm
+ *
+ */
 public class GeneralTest
 {
 	
@@ -37,16 +41,15 @@ public class GeneralTest
 			TreeDocument treeA = new TreeDocument (builder.parse (new FileInputStream (a)), a.toURI ());
 			TreeDocument treeB = new TreeDocument (builder.parse (new FileInputStream (b)), b.toURI ());
 			
-			XyDiffConnector con = new XyDiffConnector();
-			con.init (treeA, treeB);
+			XyDiffConnector con = new XyDiffConnector (treeA, treeB);
 			con.findConnections ();
-			ClearConnectionManager connections = con.getConnections();
+			SimpleConnectionManager connections = con.getConnections();
 			
 			PatchProducer producer = new PatchProducer ();
 			producer.init (connections, treeA, treeB);
 			producer.produce ();
 			Patch patch = producer.getPatch ();
-			assertEquals ("same files must not result in a patch", 0, patch.getNumInsterts () + patch.getNumDeletes () + patch.getNumMoves () + patch.getNumUpdates ());
+			assertEquals ("same files must not result in a patch", 0, patch.getNumInserts () + patch.getNumDeletes () + patch.getNumMoves () + patch.getNumUpdates ());
 		}
 		catch (Exception e)
 		{
@@ -71,16 +74,15 @@ public class GeneralTest
 			TreeDocument treeA = new TreeDocument (builder.parse (new FileInputStream (a)), a.toURI ());
 			TreeDocument treeB = new TreeDocument (builder.parse (new FileInputStream (b)), b.toURI ());
 			
-			XyDiffConnector con = new XyDiffConnector();
-			con.init (treeA, treeB);
+			XyDiffConnector con = new XyDiffConnector (treeA, treeB);
 			con.findConnections ();
-			ClearConnectionManager connections = con.getConnections();
+			SimpleConnectionManager connections = con.getConnections();
 			
 			PatchProducer producer = new PatchProducer ();
 			producer.init (connections, treeA, treeB);
 			producer.produce ();
 			Patch patch = producer.getPatch ();
-			assertTrue ("different files must result in a patch", 0 < patch.getNumInsterts () + patch.getNumDeletes () + patch.getNumMoves () + patch.getNumUpdates ());
+			assertTrue ("different files must result in a patch", 0 < patch.getNumInserts () + patch.getNumDeletes () + patch.getNumMoves () + patch.getNumUpdates ());
 		}
 		catch (Exception e)
 		{

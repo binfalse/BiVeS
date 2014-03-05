@@ -9,7 +9,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URI;
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,7 +37,7 @@ public class DocumentClassifier
 	public static final int CELLML = 4;
 	
 	private static DocumentBuilder builder;
-	private Vector<Exception> exceptions;
+	private List<Exception> exceptions;
 	private int type;
 	
 	private SBMLDocument sbml;
@@ -93,14 +94,14 @@ public class DocumentClassifier
 		return sbml;
 	}
 	
-	public  Vector<Exception> getExceptions ()
+	public  List<Exception> getExceptions ()
 	{
 		return exceptions;
 	}
 	
 	public int classify (InputStream model, URI baseUri)
 	{
-		exceptions = new Vector<Exception> ();
+		exceptions = new ArrayList<Exception> ();
 		type = UNKNOWN;
 		clear ();
 		try
@@ -128,13 +129,13 @@ public class DocumentClassifier
 	
 	public int classify (String model)
 	{
-		exceptions = new Vector<Exception> ();
+		exceptions = new ArrayList<Exception> ();
 		return classify (new ByteArrayInputStream(model.getBytes ()), null);
 	}
 	
 	public int classify (File model)
 	{
-		exceptions = new Vector<Exception> ();
+		exceptions = new ArrayList<Exception> ();
 		try
 		{
 			return classify (new FileInputStream (model), model.toURI ());
