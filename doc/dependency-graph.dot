@@ -1,0 +1,26 @@
+digraph g
+{
+	bflog [label="BFLog"];
+	bfutils [label="BFUtils"];
+	xmlutils [label="xmlutils"];
+	json [label="json-simple"];
+	sbml [label="BiVeS-SBML"];
+	core [label="BiVeS-Core"];
+	cellml [label="BiVeS-CellML"];
+	fw [label="BiVeS"];
+	
+	xmlutils -> bflog;
+	xmlutils -> bfutils;
+	
+	core -> xmlutils;
+	core -> json;
+	
+	sbml -> core;
+	cellml-> core;
+	
+	fw -> sbml;
+	fw -> core;
+	fw -> cellml;
+	
+	{ rank=same; sbml cellml }
+}
