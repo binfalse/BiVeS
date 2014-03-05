@@ -23,4 +23,9 @@ digraph g
 	fw -> cellml;
 	
 	{ rank=same; sbml cellml }
+	
+	label=<<br/> <br/>Dependency graph<br/> of the BiVeS project>;
+	labelloc=br;
+	labeljust=right;
+	fontsize=10;
 }
