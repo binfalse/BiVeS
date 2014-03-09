@@ -1,10 +1,10 @@
-<project name="BiVeS" default="compile" basedir=".">
+<project name="BiVeS" default="dist" basedir=".">
 	<description>
-		Bives Diff Generation Toolkit
+		A toolkit useful for working with XML documents
 	</description>
 	
 	<property name="app.name" value="BiVeS" />
-	<property name="app.version" value="1.0" />
+	<property name="app.version" value="1.2.3" />
 	<property name="src" location="src/main/java" />
 	<property name="build" location="build" />
 	<property name="dist" location="dist" />
@@ -17,27 +17,30 @@
 	</path>
 	
 	
-	<target name="init">
+	<target name="init" description="initialize workspace">
+		<assertDirAvailable dir="${lib}" />
 		<tstamp />
 		<mkdir dir="${build}" />
-		<copy todir="${build}">
+		<!--copy todir="${build}">
 			<fileset dir="${src}" includes="**/*.xml,**/*.properties,**/*.txt,**/*.ico" />
-		</copy>
-		
+		</copy-->
+		<mkdir dir="${dist}" />
 	</target>
 	
-	<target name="compile" depends="init" description="compile the source ">
-		<javac srcdir="${src}" destdir="${build}"><!-- excludes="de/unirostock/sems/bives/algorithm/sbmldeprecated/*.java,de/unirostock/sems/bives/frameworks/*.java"-->
+	<target name="compile" depends="init" description="compile the source">
+		<javac srcdir="${src}" destdir="${build}">
 			<classpath refid="compile.classpath" />
 		</javac>
 	</target>
 	
 	<target name="dist" depends="compile" description="generate the distribution">
-		<mkdir dir="${dist}" />
 		<manifest file="build/MANIFEST.MF">
 			<attribute name="Main-Class" value="de.unirostock.sems.bives.Main" />
 		</manifest>
 		<jar jarfile="${dist}/${app.name}-${app.version}.jar" basedir="${build}" manifest="build/MANIFEST.MF">
+			<zipfileset dir="res" includes="*xsl" prefix="res"/>
+		</jar>
+		<jar jarfile="${dist}/${app.name}-${app.version}-fat.jar" basedir="${build}" manifest="build/MANIFEST.MF">
 			<zipgroupfileset dir="lib" includes="*.jar" excludes=""/>
 			<zipfileset dir="res" includes="*xsl" prefix="res"/>
 		</jar>
@@ -48,7 +51,7 @@
 		<move file="${dist}/${app.name}-${app.version}.jar.MD5" tofile="${dist}/${app.name}-${app.version}.jar.md5"/>
 		<exec executable="gpg">
 			<arg value="--output"/>
-			<arg value="${dist}/${app.name}-${app.version}.jar.md5.sign"/>
+			<arg value="${dist}/${app.name}-${app.version}.jar.md5.sig"/>
 			<arg value="-abs"/>
 			<arg value="${dist}/${app.name}-${app.version}.jar.md5"/>
 		</exec>
@@ -59,4 +62,16 @@
 		<delete dir="${dist}" />
 	</target>
 	
+	<macrodef name="assertDirAvailable">
+			<attribute name="dir" />
+			<sequential>
+					<fail message="Please create dir @{dir} containing the depenencies:${line.separator}${line.separator} >> BiVeS-Core${line.separator} >> BiVeS-CellML${line.separator} >> BiVeS-SBML${line.separator}${line.separator}(download latest binaries from http://bin.sems.uni-rostock.de/)">
+							<condition>
+									<not>
+											<available file="@{dir}" type="dir" />
+									</not>
+							</condition>
+					</fail>
+			</sequential>
+	</macrodef>
 </project>
