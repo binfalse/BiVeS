@@ -7,7 +7,9 @@ digraph g
 	sbml [label="BiVeS-SBML"];
 	core [label="BiVeS-Core"];
 	cellml [label="BiVeS-CellML"];
-	fw [label="BiVeS"];
+	fw [label="BiVeS", style=filled,fillcolor="#BB0000",fontcolor="#ffffff"];
+	ws [label="BiVeS-WS"];
+	wsclient [label="BiVeS-WS-Client"];
 	
 	xmlutils -> bflog;
 	xmlutils -> bfutils;
@@ -22,7 +24,15 @@ digraph g
 	fw -> core;
 	fw -> cellml;
 	
+	ws -> fw;
+	
+	subgraph Rel1 {
+		edge [dir=none, style=dashed, weight=.2]
+		ws -> wsclient [label="HTTP",fontcolor="#999999",fontsize=12.0];
+	}
+	
 	{ rank=same; sbml cellml }
+	{ rank=same; fw wsclient }
 	
 	label=<<br/> <br/>Dependency graph<br/> of the BiVeS project>;
 	labelloc=br;
