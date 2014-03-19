@@ -41,12 +41,12 @@ public class XmlTest
 			}
 			catch (Exception e)
 			{
-				LOGGER.error ("cannot read " + MATHML_DOC + " -> skipping tests", e);
+				LOGGER.error (e, "cannot read ", MATHML_DOC, " -> skipping tests");
 			}
 		}
 		else
 		{
-			LOGGER.error ("cannot read " + MATHML_DOC + " -> skipping tests");
+			LOGGER.error ("cannot read ", MATHML_DOC, " -> skipping tests");
 		}
 	}
 
@@ -67,7 +67,7 @@ public class XmlTest
 			// test for typical content functions.
 			assertTrue (
 				"original mathml doesn't seem to be content mathml",
-				orig.contains ("<apply>") && orig.contains ("<plus/>")
+				orig.contains ("<apply>") && (orig.contains ("<plus />") || orig.contains ("<plus/>"))
 					&& orig.contains ("<ci>"));
 			
 			String presentation = DocumentTools

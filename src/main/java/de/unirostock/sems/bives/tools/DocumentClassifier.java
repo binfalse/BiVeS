@@ -7,22 +7,19 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXException;
-import org.xml.sax.SAXParseException;
+import org.jdom2.JDOMException;
 
 import de.unirostock.sems.bives.cellml.parser.CellMLDocument;
 import de.unirostock.sems.bives.sbml.parser.SBMLDocument;
 import de.unirostock.sems.xmlutils.ds.TreeDocument;
+import de.unirostock.sems.xmlutils.exception.XmlDocumentParseException;
+import de.unirostock.sems.xmlutils.tools.XmlTools;
 
 
 /**
@@ -36,41 +33,12 @@ public class DocumentClassifier
 	public static final int SBML= 2;
 	public static final int CELLML = 4;
 	
-	private static DocumentBuilder builder;
 	private List<Exception> exceptions;
 	private int type;
 	
 	private SBMLDocument sbml;
 	private CellMLDocument cellml;
 	private TreeDocument xml;
-	
-	public DocumentClassifier () throws ParserConfigurationException
-	{
-		builder = DocumentBuilderFactory.newInstance ().newDocumentBuilder ();
-		builder.setErrorHandler (new ErrorHandler ()
-		{
-			
-			@Override
-			public void warning (SAXParseException e) throws SAXException
-			{
-				throw e;
-			}
-			
-			
-			@Override
-			public void fatalError (SAXParseException e) throws SAXException
-			{
-				throw e;
-			}
-			
-			
-			@Override
-			public void error (SAXParseException e) throws SAXException
-			{
-				throw e;
-			}
-		});
-	}
 	
 	private void clear ()
 	{
@@ -106,18 +74,7 @@ public class DocumentClassifier
 		clear ();
 		try
 		{
-			xml = new TreeDocument (builder.parse (model), baseUri);
-			type |= XML;
-			
-			// is sbml?
-			isSBML (xml);
-			
-			// is cellml?
-			isCellML (xml);
-		}
-		catch (SAXException e)
-		{
-			exceptions.add (e);
+			return classify (new TreeDocument (XmlTools.readDocument (model), baseUri));
 		}
 		catch (Exception e)
 		{
@@ -126,6 +83,25 @@ public class DocumentClassifier
 		
 		return type;
 	}
+
+	public int classify (TreeDocument model)
+	{
+		type = UNKNOWN;
+		clear ();
+		
+		
+		type |= XML;
+		
+		// is sbml?
+		isSBML (model);
+		
+		// is cellml?
+		isCellML (model);
+		
+		return type;
+	}
+	
+	
 	
 	public int classify (String model)
 	{
@@ -149,6 +125,7 @@ public class DocumentClassifier
 	
 	private void isSBML (TreeDocument doc)
 	{
+		exceptions = new ArrayList<Exception> ();
 		try
 		{
 			sbml = new SBMLDocument (doc);

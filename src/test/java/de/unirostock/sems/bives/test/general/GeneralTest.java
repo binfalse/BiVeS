@@ -17,6 +17,7 @@ import de.unirostock.sems.bives.algorithm.general.PatchProducer;
 import de.unirostock.sems.bives.algorithm.general.XyDiffConnector;
 import de.unirostock.sems.bives.ds.Patch;
 import de.unirostock.sems.xmlutils.ds.TreeDocument;
+import de.unirostock.sems.xmlutils.tools.XmlTools;
 
 
 /**
@@ -25,7 +26,11 @@ import de.unirostock.sems.xmlutils.ds.TreeDocument;
  */
 public class GeneralTest
 {
-	
+	@Test
+	public void simpleTest ()
+	{
+		
+	}
 	
 	@Test
 	public void noDiffIfEquals ()
@@ -35,11 +40,8 @@ public class GeneralTest
 			File a = new File ("test/potato.xml");
 			File b = new File ("test/potato.xml");
 			
-			DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
-				.newDocumentBuilder ();
-			
-			TreeDocument treeA = new TreeDocument (builder.parse (new FileInputStream (a)), a.toURI ());
-			TreeDocument treeB = new TreeDocument (builder.parse (new FileInputStream (b)), b.toURI ());
+			TreeDocument treeA = new TreeDocument (XmlTools.readDocument (a), a.toURI ());
+			TreeDocument treeB = new TreeDocument (XmlTools.readDocument (b), b.toURI ());
 			
 			XyDiffConnector con = new XyDiffConnector (treeA, treeB);
 			con.findConnections ();
@@ -71,8 +73,8 @@ public class GeneralTest
 			DocumentBuilder builder = DocumentBuilderFactory.newInstance ()
 				.newDocumentBuilder ();
 			
-			TreeDocument treeA = new TreeDocument (builder.parse (new FileInputStream (a)), a.toURI ());
-			TreeDocument treeB = new TreeDocument (builder.parse (new FileInputStream (b)), b.toURI ());
+			TreeDocument treeA = new TreeDocument (XmlTools.readDocument (a), a.toURI ());
+			TreeDocument treeB = new TreeDocument (XmlTools.readDocument (b), b.toURI ());
 			
 			XyDiffConnector con = new XyDiffConnector (treeA, treeB);
 			con.findConnections ();

@@ -4,16 +4,15 @@
 package de.unirostock.sems.bives;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
+import org.jdom2.Document;
+import org.jdom2.Element;
 import org.json.simple.JSONObject;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 import de.binfalse.bflog.LOGGER;
 import de.binfalse.bfutils.GeneralTools;
@@ -46,7 +45,7 @@ public class Main
 		System.out.println ("ARGUMENTS:");
 		System.out.println ("\t[option] FILE1 [FILE2]  compute the differences between 2 XML files");
 		System.out.println ();
-		System.out.println ("FILE1 and FILE2 define XML files to compare");
+		System.out.println ("FILE1 and FILE2 define XML files or URLs to XML files on the internet");
 		System.out.println ();
 		System.out.println ("OPTIONS:");
 		SortedSet<String> keys = new TreeSet<String>(options.keySet());
@@ -131,16 +130,16 @@ public class Main
 	
 	Executer exe;
 	
-	private Main ()
+	public Main ()
 	{
 		exe = new Executer ();
 	}
 	
 	@SuppressWarnings("unchecked")
-	private void run (String[] args) throws Exception
+	public void run (String[] args) throws Exception
 	{
 		
-    File file1 = null, file2 = null;
+    String file1 = null, file2 = null;
     int output = 0;
   	int want = 0;
     HashMap<String, String> toReturn = new HashMap<String, String> ();
@@ -186,9 +185,9 @@ public class Main
     		throw new HelpException ();
     	}
     	if (file1 == null)
-    		file1 = new File (args[i]);
+    		file1 = args[i];
     	else if (file2 == null)
-    		file2 = new File (args[i]);
+    		file2 = args[i];
     	else
     		throw new ExecutionException ("do not understand " + args[i] + " (found files " + file1 + " and " + file2 + ")");
     		
@@ -197,21 +196,36 @@ public class Main
 
     if (file1 == null)
     	throw new ExecutionException ("no file provided");
-    if (!file1.exists ())
-    	throw new ExecutionException ("cannot find " + file1.getAbsolutePath ());
-    if (!file1.canRead ())
-    	throw new ExecutionException ("cannot read " + file1.getAbsolutePath ());
     
+    if (!file1.matches ("^https?://.*"))
+    {
+    	File tmp = new File (file1);
+	    if (!tmp.exists ())
+	    	throw new ExecutionException ("cannot find " + tmp.getAbsolutePath ());
+	    if (!tmp.canRead ())
+	    	throw new ExecutionException ("cannot read " + tmp.getAbsolutePath ());
+	    file1 = tmp.toURI ().toURL ().toString ();//GeneralTools.fileToString (tmp);
+    }
     
+    List<Exception> errors = new ArrayList<Exception> ();
     if (file2 == null)
     {
     	// single mode
-    	exe.executeSingle (file1, toReturn, want);
+    	exe.executeSingle (file1, toReturn, want, errors);
     }
     else
     {
     	// compare two files
-    	exe.executeCompare (file1, file2, toReturn, want);
+      if (!file2.matches ("^https?://.*"))
+      {
+      	File tmp = new File (file2);
+  	    if (!tmp.exists ())
+  	    	throw new ExecutionException ("cannot find " + tmp.getAbsolutePath ());
+  	    if (!tmp.canRead ())
+  	    	throw new ExecutionException ("cannot read " + tmp.getAbsolutePath ());
+  	    file2 =  tmp.toURI ().toURL ().toString ();//GeneralTools.fileToString (tmp);
+      }
+    	exe.executeCompare (file1, file2, toReturn, want, errors);
     }
     
 
@@ -222,24 +236,23 @@ public class Main
     
     if (output == 0)
     {
+    	for (Exception e : errors)
+    		System.err.println ("ERROR: " + e);
+    	
     	for (String ret : toReturn.keySet ())
     		System.out.println (toReturn.get (ret));
     }
     else if (output == 1)
     {
     	//xml
-    	DocumentBuilderFactory factory =
-      DocumentBuilderFactory.newInstance();
-      DocumentBuilder builder = factory.newDocumentBuilder();
-    	Document document = builder.newDocument();
-    	Element root =  (Element) document.createElement("bivesResult"); 
-    	document.appendChild(root);
+    	Element root =  new Element ("bivesResult");
+    	Document document = new Document (root);
 
     	for (String ret : toReturn.keySet ())
     	{
-    		Element el = (Element) document.createElement(ret);
-    		el.appendChild (document.createTextNode(toReturn.get (ret)));
-    		root.appendChild(el);
+    		Element el = new Element (ret);
+    		el.setText (toReturn.get (ret));
+    		root.addContent (el);
     	}
     	
     	System.out.println (XmlTools.prettyPrintDocument (document));
@@ -253,5 +266,5 @@ public class Main
     	System.out.println (json);
     }
 	}
-	
+	 
 }

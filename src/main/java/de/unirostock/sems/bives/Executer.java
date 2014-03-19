@@ -3,15 +3,10 @@
  */
 package de.unirostock.sems.bives;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
+import java.util.List;
+import java.util.regex.Pattern;
 
 import de.unirostock.sems.bives.Main.ExecutionException;
 import de.unirostock.sems.bives.api.Diff;
@@ -19,18 +14,14 @@ import de.unirostock.sems.bives.api.RegularDiff;
 import de.unirostock.sems.bives.api.Single;
 import de.unirostock.sems.bives.cellml.api.CellMLDiff;
 import de.unirostock.sems.bives.cellml.api.CellMLSingle;
-import de.unirostock.sems.bives.cellml.exception.BivesCellMLParseException;
 import de.unirostock.sems.bives.cellml.parser.CellMLDocument;
-import de.unirostock.sems.bives.exception.BivesImportException;
-import de.unirostock.sems.bives.exception.BivesLogicalException;
-import de.unirostock.sems.bives.exception.BivesDocumentConsistencyException;
 import de.unirostock.sems.bives.sbml.api.SBMLDiff;
 import de.unirostock.sems.bives.sbml.api.SBMLSingle;
-import de.unirostock.sems.bives.sbml.exception.BivesSBMLParseException;
 import de.unirostock.sems.bives.sbml.parser.SBMLDocument;
 import de.unirostock.sems.bives.tools.DocumentClassifier;
 import de.unirostock.sems.xmlutils.ds.TreeDocument;
-import de.unirostock.sems.xmlutils.exception.XmlDocumentParseException;
+import de.unirostock.sems.xmlutils.tools.DocumentTools;
+import de.unirostock.sems.xmlutils.tools.XmlTools;
 
 
 /**
@@ -39,6 +30,10 @@ import de.unirostock.sems.xmlutils.exception.XmlDocumentParseException;
  */
 public class Executer
 {
+	
+	/** Pattern to distinguish xml files from URLs */
+	public static final Pattern	XML_PATTERN	= Pattern.compile ("^\\s*<.*",
+																						Pattern.DOTALL);
 	
 	public static final int WANT_DIFF = 1;
 	public static final int WANT_DOCUMENTTYPE = 2;
@@ -63,6 +58,7 @@ public class Executer
 	public static final int WANT_SINGLE_COMP_HIERARCHY_DOT = 256;
 	public static final int WANT_SINGLE_COMP_HIERARCHY_JSON = 1024;
 	public static final int WANT_SINGLE_CRN_JSON = 2048;
+	public static final int WANT_SINGLE_FLATTEN = 32768;
 	
 	
 	public static final String REQ_FILES = "files";
@@ -90,6 +86,7 @@ public class Executer
 	public static final String REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML = "singleCompHierarchyGraphml";
 	public static final String REQ_WANT_SINGLE_COMP_HIERARCHY_DOT = "singleCompHierarchyDot";
 	public static final String REQ_WANT_SINGLE_COMP_HIERARCHY_JSON = "singleCompHierarchyJson";
+	public static final String REQ_WANT_SINGLE_FLATTEN = "singleFlatten";
 	
 
 	private HashMap<String, Option> options;
@@ -161,17 +158,26 @@ public class Executer
 		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_JSON, new Option (WANT_SINGLE_COMP_HIERARCHY_JSON, "get the hierarchy of components in a single CellML document encoded in JSON"));
 		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML, new Option (WANT_SINGLE_COMP_HIERARCHY_GRAPHML, "get the hierarchy of components in a single CellML document encoded in GraphML"));
 		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_DOT, new Option (WANT_SINGLE_COMP_HIERARCHY_DOT, "get the hierarchy of components in a single CellML document encoded in DOT language"));
+		addOptions.put (REQ_WANT_SINGLE_FLATTEN, new Option (WANT_SINGLE_FLATTEN, "flatten the model"));
 	}
 	
-	public void executeSingle (File file1, HashMap<String, String> toReturn, int want) throws ExecutionException, ParserConfigurationException, FileNotFoundException, SAXException, IOException, BivesCellMLParseException, BivesLogicalException, URISyntaxException, BivesImportException, XmlDocumentParseException, BivesDocumentConsistencyException, BivesSBMLParseException
+	public void executeSingle (String document, HashMap<String, String> toReturn, int want, List<Exception> errors) throws Exception
 	{
-  	DocumentClassifier classifier = null;
-
+		TreeDocument td = null;
+		if (XML_PATTERN.matcher (document).find ())
+			td = new TreeDocument (XmlTools.readDocument (document), null);
+		else
+		{
+			URL url = new URL (document);
+			td = new TreeDocument (XmlTools.readDocument (url), url.toURI ());
+		}
+		
+		DocumentClassifier classifier = null;
   	if ((Executer.WANT_META & want) > 0)
   	{
   		// meta
   		classifier = new DocumentClassifier ();
-  		int type = classifier.classify (file1);
+  		int type = classifier.classify (td);
 
 			String ret = "";
 			
@@ -192,85 +198,172 @@ public class Executer
 			}
 			toReturn.put (Executer.REQ_WANT_META, ret);
   	}
+  	
   	if ((Executer.WANT_DOCUMENTTYPE & want) > 0)
   	{
   		// doc type
   		classifier = new DocumentClassifier ();
-  		int type = classifier.classify (file1);
+  		int type = classifier.classify (document);
 			
 			toReturn.put (Executer.REQ_WANT_DOCUMENTTYPE, DocumentClassifier.humanReadable (type));
   	}
-  	
-  	if ((Executer.WANT_SINGLE_COMP_HIERARCHY_DOT|Executer.WANT_SINGLE_COMP_HIERARCHY_JSON|Executer.WANT_SINGLE_COMP_HIERARCHY_GRAPHML|Executer.WANT_SINGLE_CRN_JSON|Executer.WANT_SINGLE_CRN_GRAPHML|Executer.WANT_SINGLE_CRN_DOT & want) > 0)
+			
+  	if ((Executer.WANT_SINGLE_FLATTEN|Executer.WANT_SINGLE_COMP_HIERARCHY_DOT|Executer.WANT_SINGLE_COMP_HIERARCHY_JSON|Executer.WANT_SINGLE_COMP_HIERARCHY_GRAPHML|Executer.WANT_SINGLE_CRN_JSON|Executer.WANT_SINGLE_CRN_GRAPHML|Executer.WANT_SINGLE_CRN_DOT & want) > 0)
   	{
   		Single single = null;
-    	classifier = new DocumentClassifier ();
-    	int type = classifier.classify (file1);
+  		
+      // decide which kind of mapper to use
+      if ((Executer.WANT_CELLML & want) > 0)
+      	single = new CellMLSingle (td);
+      else if ((Executer.WANT_SBML & want) > 0)
+      	single = new SBMLSingle (td);
+      else
+      {
+      	classifier = new DocumentClassifier ();
+      	int type = classifier.classify (td);
+      	if ((type & DocumentClassifier.SBML) != 0)
+      	{
+        	single = new SBMLSingle (td);
+      	}
+      	else if ((type & DocumentClassifier.CELLML) != 0)
+      	{
+        	single = new CellMLSingle (td);
+      	}
+      	else
+      		throw new ExecutionException ("cannot process this file (type is: ["+DocumentClassifier.humanReadable (type) + "])");
+      }
     	
-    	if ((type & DocumentClassifier.SBML) != 0)
-    	{
-    		single = new SBMLSingle (file1);
-    	}
-    	else if ((type & DocumentClassifier.CELLML) != 0)
-    	{
-    		single = new CellMLSingle (file1);
-    	}
-    	if (single == null)
-    		throw new ExecutionException ("cannot produce the requested output for the provided file.");
   		if ((want & Executer.WANT_SINGLE_CRN_JSON) > 0)
-  			toReturn.put (Executer.REQ_WANT_SINGLE_CRN_JSON, result (single.getCRNJsonGraph ()));
+  		{
+  			try
+				{
+  				toReturn.put (Executer.REQ_WANT_SINGLE_CRN_JSON, result (single.getCRNJsonGraph ()));
+				}
+				catch (Exception e)
+				{
+					errors.add (e);
+				}
+  		}
   		if ((want & Executer.WANT_SINGLE_CRN_GRAPHML) > 0)
-  			toReturn.put (Executer.REQ_WANT_SINGLE_CRN_GRAPHML, result (single.getCRNGraphML ()));
+  		{
+  			try
+				{
+  				toReturn.put (Executer.REQ_WANT_SINGLE_CRN_GRAPHML, result (single.getCRNGraphML ()));
+				}
+				catch (Exception e)
+				{
+					errors.add (e);
+				}
+  		}
   		if ((want & Executer.WANT_SINGLE_CRN_DOT) > 0)
-  			toReturn.put (Executer.REQ_WANT_SINGLE_CRN_DOT, result (single.getCRNDotGraph ()));
+  		{
+  			try
+				{
+  				toReturn.put (Executer.REQ_WANT_SINGLE_CRN_DOT, result (single.getCRNDotGraph ()));
+				}
+				catch (Exception e)
+				{
+					errors.add (e);
+				}
+  		}
   		if ((want & Executer.WANT_SINGLE_COMP_HIERARCHY_JSON) > 0)
-  			toReturn.put (Executer.REQ_WANT_SINGLE_COMP_HIERARCHY_JSON, result (single.getHierarchyJsonGraph ()));
+  		{
+  			try
+				{
+  				toReturn.put (Executer.REQ_WANT_SINGLE_COMP_HIERARCHY_JSON, result (single.getHierarchyJsonGraph ()));
+				}
+				catch (Exception e)
+				{
+					errors.add (e);
+				}
+  		}
   		if ((want & Executer.WANT_SINGLE_COMP_HIERARCHY_GRAPHML) > 0)
-  			toReturn.put (Executer.REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML, result (single.getHierarchyGraphML ()));
+  		{
+  			try
+				{
+  				toReturn.put (Executer.REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML, result (single.getHierarchyGraphML ()));
+				}
+				catch (Exception e)
+				{
+					errors.add (e);
+				}
+  		}
   		if ((want & Executer.WANT_SINGLE_COMP_HIERARCHY_DOT) > 0)
-  			toReturn.put (Executer.REQ_WANT_SINGLE_COMP_HIERARCHY_DOT, result (single.getHierarchyDotGraph ()));
+  		{
+  			try
+				{
+  				toReturn.put (Executer.REQ_WANT_SINGLE_COMP_HIERARCHY_DOT, result (single.getHierarchyDotGraph ()));
+				}
+				catch (Exception e)
+				{
+					errors.add (e);
+				}
+  		}
+  		if ((want & Executer.WANT_SINGLE_FLATTEN) > 0)
+  		{
+  			try
+				{
+					toReturn.put (Executer.REQ_WANT_SINGLE_FLATTEN, result (single.flatten ()));
+				}
+				catch (Exception e)
+				{
+					errors.add (e);
+				}
+  		}
   	}
+		
 	}
 	
 	
-	public void executeCompare (File file1, File file2, HashMap<String, String> toReturn, int want) throws Exception
+	public void executeCompare (String document1, String document2, HashMap<String, String> toReturn, int want, List<Exception> errors) throws Exception
 	{
+		TreeDocument td1 = null, td2 = null;
+		if (XML_PATTERN.matcher (document1).find ())
+			td1 = new TreeDocument (XmlTools.readDocument (document1), null);
+		else
+		{
+			URL url = new URL (document1);
+			td1 = new TreeDocument (XmlTools.readDocument (url), url.toURI ());
+		}
+		if (XML_PATTERN.matcher (document2).find ())
+			td2 = new TreeDocument (XmlTools.readDocument (document2), null);
+		else
+		{
+			URL url = new URL (document2);
+			td2 = new TreeDocument (XmlTools.readDocument (url), url.toURI ());
+		}
+		
   	// compare mode
 		Diff diff = null;
   	DocumentClassifier classifier = null;
-		
-    if (!file2.exists ())
-    	throw new ExecutionException ("cannot find " + file2.getAbsolutePath ());
-    if (!file2.canRead ())
-    	throw new ExecutionException ("cannot read " + file2.getAbsolutePath ());
     
     if (want == 0)
     	want = Executer.WANT_DIFF;
     
     // decide which kind of mapper to use
     if ((Executer.WANT_CELLML & want) > 0)
-    	diff = new CellMLDiff (file1, file2);
+    	diff = new CellMLDiff (td1, td2);
     else if ((Executer.WANT_SBML & want) > 0)
-    	diff = new SBMLDiff (file1, file2);
+    	diff = new SBMLDiff (td1, td2);
     else if ((Executer.WANT_REGULAR & want) > 0)
-    	diff = new RegularDiff (file1, file2);
+    	diff = new RegularDiff (td1, td2);
     else
     {
     	classifier = new DocumentClassifier ();
-    	int type1 = classifier.classify (file1);
-    	int type2 = classifier.classify (file2);
+    	int type1 = classifier.classify (td1);
+    	int type2 = classifier.classify (td2);
     	int type = type1 & type2;
     	if ((type & DocumentClassifier.SBML) != 0)
     	{
-    		diff = new SBMLDiff (file1, file2);
+    		diff = new SBMLDiff (td1, td2);
     	}
     	else if ((type & DocumentClassifier.CELLML) != 0)
     	{
-    		diff = new CellMLDiff (file1, file2);
+    		diff = new CellMLDiff (td1, td2);
     	}
     	else if ((type & DocumentClassifier.XML) != 0)
     	{
-    		diff = new RegularDiff (file1, file2);
+    		diff = new RegularDiff (td1, td2);
     	}
     	else
     		throw new ExecutionException ("cannot compare these files (["+DocumentClassifier.humanReadable (type1) + "] ["+DocumentClassifier.humanReadable (type2)+"])");
@@ -284,34 +377,104 @@ public class Executer
     
     // compute results
 		if ((want & Executer.WANT_DIFF) > 0)
-			toReturn.put (Executer.REQ_WANT_DIFF, result (diff.getDiff ()));
+			try
+			{
+				toReturn.put (Executer.REQ_WANT_DIFF, result (diff.getDiff ()));
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
 		
 		if ((want & Executer.WANT_CRN_GRAPHML) > 0)
-			toReturn.put (Executer.REQ_WANT_CRN_GRAPHML, result (diff.getCRNGraphML ()));
+			try
+			{
+				toReturn.put (Executer.REQ_WANT_CRN_GRAPHML, result (diff.getCRNGraphML ()));
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
 		
 		if ((want & Executer.WANT_CRN_DOT) > 0)
-			toReturn.put (Executer.REQ_WANT_CRN_DOT, result (diff.getCRNDotGraph ()));
+			try
+			{
+				toReturn.put (Executer.REQ_WANT_CRN_DOT, result (diff.getCRNDotGraph ()));
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
 		
 		if ((want & Executer.WANT_CRN_JSON) > 0)
-			toReturn.put (Executer.REQ_WANT_CRN_JSON, result (diff.getCRNJsonGraph ()));
+			try
+			{
+				toReturn.put (Executer.REQ_WANT_CRN_JSON, result (diff.getCRNJsonGraph ()));
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
 		
 		if ((want & Executer.WANT_COMP_HIERARCHY_DOT) > 0)
-			toReturn.put (Executer.REQ_WANT_COMP_HIERARCHY_DOT, result (diff.getHierarchyDotGraph ()));
+			try
+			{
+				toReturn.put (Executer.REQ_WANT_COMP_HIERARCHY_DOT, result (diff.getHierarchyDotGraph ()));
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
 		
 		if ((want & Executer.WANT_COMP_HIERARCHY_JSON) > 0)
-			toReturn.put (Executer.REQ_WANT_COMP_HIERARCHY_JSON, result (diff.getHierarchyJsonGraph ()));
+			try
+			{
+				toReturn.put (Executer.REQ_WANT_COMP_HIERARCHY_JSON, result (diff.getHierarchyJsonGraph ()));
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
 		
 		if ((want & Executer.WANT_COMP_HIERARCHY_GRAPHML) > 0)
-			toReturn.put (Executer.REQ_WANT_COMP_HIERARCHY_GRAPHML, result (diff.getHierarchyGraphML ()));
+			try
+			{
+				toReturn.put (Executer.REQ_WANT_COMP_HIERARCHY_GRAPHML, result (diff.getHierarchyGraphML ()));
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
 		
 		if ((want & Executer.WANT_REPORT_HTML) > 0)
-			toReturn.put (Executer.REQ_WANT_REPORT_HTML, result (diff.getHTMLReport ()));
+			try
+			{
+				toReturn.put (Executer.REQ_WANT_REPORT_HTML, result (diff.getHTMLReport ()));
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
 		
 		if ((want & Executer.WANT_REPORT_MD) > 0)
-			toReturn.put (Executer.REQ_WANT_REPORT_MD, result (diff.getMarkDownReport ()));
+			try
+			{
+				toReturn.put (Executer.REQ_WANT_REPORT_MD, result (diff.getMarkDownReport ()));
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
 		
 		if ((want & Executer.WANT_REPORT_RST) > 0)
-			toReturn.put (Executer.REQ_WANT_REPORT_RST, result (diff.getReStructuredTextReport ()));
+			try
+			{
+				toReturn.put (Executer.REQ_WANT_REPORT_RST, result (diff.getReStructuredTextReport ()));
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
 	}
 
 	
