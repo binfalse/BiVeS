@@ -203,7 +203,7 @@ public class Executer
   	{
   		// doc type
   		classifier = new DocumentClassifier ();
-  		int type = classifier.classify (document);
+  		int type = classifier.classify (td);
 			
 			toReturn.put (Executer.REQ_WANT_DOCUMENTTYPE, DocumentClassifier.humanReadable (type));
   	}

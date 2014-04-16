@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.jdom2.JDOMException;
 
+import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.cellml.parser.CellMLDocument;
 import de.unirostock.sems.bives.sbml.parser.SBMLDocument;
 import de.unirostock.sems.xmlutils.ds.TreeDocument;
@@ -89,7 +90,7 @@ public class DocumentClassifier
 		type = UNKNOWN;
 		clear ();
 		
-		
+		xml = model;
 		type |= XML;
 		
 		// is sbml?
