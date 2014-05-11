@@ -20,7 +20,6 @@ import de.unirostock.sems.bives.sbml.api.SBMLSingle;
 import de.unirostock.sems.bives.sbml.parser.SBMLDocument;
 import de.unirostock.sems.bives.tools.DocumentClassifier;
 import de.unirostock.sems.xmlutils.ds.TreeDocument;
-import de.unirostock.sems.xmlutils.tools.DocumentTools;
 import de.unirostock.sems.xmlutils.tools.XmlTools;
 
 
@@ -40,24 +39,24 @@ public class Executer
 	public static final int WANT_META = 4;
 	public static final int WANT_REPORT_MD = 8;
 	public static final int WANT_REPORT_HTML = 16;
-	public static final int WANT_CRN_GRAPHML = 32;
-	public static final int WANT_CRN_DOT = 64;
+	public static final int WANT_REACTION_GRAPHML = 32;
+	public static final int WANT_REACTION_DOT = 64;
 	public static final int WANT_COMP_HIERARCHY_GRAPHML = 128;
 	public static final int WANT_COMP_HIERARCHY_DOT = 256;
 	public static final int WANT_REPORT_RST = 512;
 	public static final int WANT_COMP_HIERARCHY_JSON = 1024;
-	public static final int WANT_CRN_JSON = 2048;
+	public static final int WANT_REACTION_JSON = 2048;
 	public static final int WANT_SBML = 4096;
 	public static final int WANT_CELLML = 8192;
 	public static final int WANT_REGULAR = 16384;
 
 	// single
-	public static final int WANT_SINGLE_CRN_GRAPHML = 32;
-	public static final int WANT_SINGLE_CRN_DOT = 64;
+	public static final int WANT_SINGLE_REACTION_GRAPHML = 32;
+	public static final int WANT_SINGLE_REACTION_DOT = 64;
 	public static final int WANT_SINGLE_COMP_HIERARCHY_GRAPHML = 128;
 	public static final int WANT_SINGLE_COMP_HIERARCHY_DOT = 256;
 	public static final int WANT_SINGLE_COMP_HIERARCHY_JSON = 1024;
-	public static final int WANT_SINGLE_CRN_JSON = 2048;
+	public static final int WANT_SINGLE_REACTION_JSON = 2048;
 	public static final int WANT_SINGLE_FLATTEN = 32768;
 	
 	
@@ -69,9 +68,9 @@ public class Executer
 	public static final String REQ_WANT_REPORT_MD = "reportMd";
 	public static final String REQ_WANT_REPORT_RST = "reportRST";
 	public static final String REQ_WANT_REPORT_HTML = "reportHtml";
-	public static final String REQ_WANT_CRN_GRAPHML = "crnGraphml";
-	public static final String REQ_WANT_CRN_DOT = "crnDot";
-	public static final String REQ_WANT_CRN_JSON = "crnJson";
+	public static final String REQ_WANT_REACTION_GRAPHML = "reactionsGraphml";
+	public static final String REQ_WANT_REACTION_DOT = "reactionsDot";
+	public static final String REQ_WANT_REACTION_JSON = "reactionsJson";
 	public static final String REQ_WANT_COMP_HIERARCHY_GRAPHML = "compHierarchyGraphml";
 	public static final String REQ_WANT_COMP_HIERARCHY_DOT = "compHierarchyDot";
 	public static final String REQ_WANT_COMP_HIERARCHY_JSON = "compHierarchyJson";
@@ -80,9 +79,9 @@ public class Executer
 	public static final String REQ_WANT_CELLML = "CellML";
 	public static final String REQ_WANT_REGULAR = "regular";
 
-	public static final String REQ_WANT_SINGLE_CRN_GRAPHML = "singleCrnGraphml";
-	public static final String REQ_WANT_SINGLE_CRN_DOT = "singleCrnDot";
-	public static final String REQ_WANT_SINGLE_CRN_JSON = "singleCrnJson";
+	public static final String REQ_WANT_SINGLE_REACTION_GRAPHML = "singleReactionsGraphml";
+	public static final String REQ_WANT_SINGLE_REACTION_DOT = "singleReactionsDot";
+	public static final String REQ_WANT_SINGLE_REACTION_JSON = "singleReactionsJson";
 	public static final String REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML = "singleCompHierarchyGraphml";
 	public static final String REQ_WANT_SINGLE_COMP_HIERARCHY_DOT = "singleCompHierarchyDot";
 	public static final String REQ_WANT_SINGLE_COMP_HIERARCHY_JSON = "singleCompHierarchyJson";
@@ -139,9 +138,9 @@ public class Executer
 		options.put (REQ_WANT_REPORT_MD, new Option (WANT_REPORT_MD, "get the report of changes encoded in MarkDown"));
 		options.put (REQ_WANT_REPORT_RST, new Option (WANT_REPORT_RST, "get the report of changes encoded in ReStructuredText"));
 		options.put (REQ_WANT_REPORT_HTML, new Option (WANT_REPORT_HTML, "get the report of changes encoded in HTML"));
-		options.put (REQ_WANT_CRN_GRAPHML, new Option (WANT_CRN_GRAPHML, "get the highlighted chemical reaction network encoded in GraphML"));
-		options.put (REQ_WANT_CRN_DOT, new Option (WANT_CRN_DOT, "get the highlighted chemical reaction network encoded in DOT language"));
-		options.put (REQ_WANT_CRN_JSON, new Option (WANT_CRN_JSON, "get the highlighted chemical reaction network encoded in JSON"));
+		options.put (REQ_WANT_REACTION_GRAPHML, new Option (WANT_REACTION_GRAPHML, "get the highlighted reaction network encoded in GraphML"));
+		options.put (REQ_WANT_REACTION_DOT, new Option (WANT_REACTION_DOT, "get the highlighted reaction network encoded in DOT language"));
+		options.put (REQ_WANT_REACTION_JSON, new Option (WANT_REACTION_JSON, "get the highlighted reaction network encoded in JSON"));
 		options.put (REQ_WANT_COMP_HIERARCHY_GRAPHML, new Option (WANT_COMP_HIERARCHY_GRAPHML, "get the hierarchy of components in a CellML document encoded in GraphML"));
 		options.put (REQ_WANT_COMP_HIERARCHY_DOT, new Option (WANT_COMP_HIERARCHY_DOT, "get the hierarchy of components in a CellML document encoded in DOT language"));
 		options.put (REQ_WANT_COMP_HIERARCHY_JSON, new Option (WANT_COMP_HIERARCHY_JSON, "get the hierarchy of components in a CellML document encoded in JSON"));
@@ -152,9 +151,9 @@ public class Executer
 		addOptions = new HashMap<String, Option> ();
 		addOptions.put (REQ_WANT_DOCUMENTTYPE, new Option (WANT_DOCUMENTTYPE, "get the documentType of an XML file"));
 		addOptions.put (REQ_WANT_META, new Option (WANT_META, "get some meta information about an XML file"));
-		addOptions.put (REQ_WANT_SINGLE_CRN_JSON, new Option (WANT_SINGLE_CRN_JSON, "get the chemical reaction network of a single file encoded in JSON"));
-		addOptions.put (REQ_WANT_SINGLE_CRN_GRAPHML, new Option (WANT_SINGLE_CRN_GRAPHML, "get the chemical reaction network of a single file encoded in GraphML"));
-		addOptions.put (REQ_WANT_SINGLE_CRN_DOT, new Option (WANT_SINGLE_CRN_DOT, "get the chemical reaction network of a single file encoded in DOT language"));
+		addOptions.put (REQ_WANT_SINGLE_REACTION_JSON, new Option (WANT_SINGLE_REACTION_JSON, "get the reaction network of a single file encoded in JSON"));
+		addOptions.put (REQ_WANT_SINGLE_REACTION_GRAPHML, new Option (WANT_SINGLE_REACTION_GRAPHML, "get the reaction network of a single file encoded in GraphML"));
+		addOptions.put (REQ_WANT_SINGLE_REACTION_DOT, new Option (WANT_SINGLE_REACTION_DOT, "get the reaction network of a single file encoded in DOT language"));
 		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_JSON, new Option (WANT_SINGLE_COMP_HIERARCHY_JSON, "get the hierarchy of components in a single CellML document encoded in JSON"));
 		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML, new Option (WANT_SINGLE_COMP_HIERARCHY_GRAPHML, "get the hierarchy of components in a single CellML document encoded in GraphML"));
 		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_DOT, new Option (WANT_SINGLE_COMP_HIERARCHY_DOT, "get the hierarchy of components in a single CellML document encoded in DOT language"));
@@ -208,7 +207,7 @@ public class Executer
 			toReturn.put (Executer.REQ_WANT_DOCUMENTTYPE, DocumentClassifier.humanReadable (type));
   	}
 			
-  	if ((Executer.WANT_SINGLE_FLATTEN|Executer.WANT_SINGLE_COMP_HIERARCHY_DOT|Executer.WANT_SINGLE_COMP_HIERARCHY_JSON|Executer.WANT_SINGLE_COMP_HIERARCHY_GRAPHML|Executer.WANT_SINGLE_CRN_JSON|Executer.WANT_SINGLE_CRN_GRAPHML|Executer.WANT_SINGLE_CRN_DOT & want) > 0)
+  	if ((Executer.WANT_SINGLE_FLATTEN|Executer.WANT_SINGLE_COMP_HIERARCHY_DOT|Executer.WANT_SINGLE_COMP_HIERARCHY_JSON|Executer.WANT_SINGLE_COMP_HIERARCHY_GRAPHML|Executer.WANT_SINGLE_REACTION_JSON|Executer.WANT_SINGLE_REACTION_GRAPHML|Executer.WANT_SINGLE_REACTION_DOT & want) > 0)
   	{
   		Single single = null;
   		
@@ -233,33 +232,33 @@ public class Executer
       		throw new ExecutionException ("cannot process this file (type is: ["+DocumentClassifier.humanReadable (type) + "])");
       }
     	
-  		if ((want & Executer.WANT_SINGLE_CRN_JSON) > 0)
+  		if ((want & Executer.WANT_SINGLE_REACTION_JSON) > 0)
   		{
   			try
 				{
-  				toReturn.put (Executer.REQ_WANT_SINGLE_CRN_JSON, result (single.getCRNJsonGraph ()));
+  				toReturn.put (Executer.REQ_WANT_SINGLE_REACTION_JSON, result (single.getReactionsJsonGraph ()));
 				}
 				catch (Exception e)
 				{
 					errors.add (e);
 				}
   		}
-  		if ((want & Executer.WANT_SINGLE_CRN_GRAPHML) > 0)
+  		if ((want & Executer.WANT_SINGLE_REACTION_GRAPHML) > 0)
   		{
   			try
 				{
-  				toReturn.put (Executer.REQ_WANT_SINGLE_CRN_GRAPHML, result (single.getCRNGraphML ()));
+  				toReturn.put (Executer.REQ_WANT_SINGLE_REACTION_GRAPHML, result (single.getReactionsGraphML ()));
 				}
 				catch (Exception e)
 				{
 					errors.add (e);
 				}
   		}
-  		if ((want & Executer.WANT_SINGLE_CRN_DOT) > 0)
+  		if ((want & Executer.WANT_SINGLE_REACTION_DOT) > 0)
   		{
   			try
 				{
-  				toReturn.put (Executer.REQ_WANT_SINGLE_CRN_DOT, result (single.getCRNDotGraph ()));
+  				toReturn.put (Executer.REQ_WANT_SINGLE_REACTION_DOT, result (single.getReactionsDotGraph ()));
 				}
 				catch (Exception e)
 				{
@@ -386,30 +385,30 @@ public class Executer
 				errors.add (e);
 			}
 		
-		if ((want & Executer.WANT_CRN_GRAPHML) > 0)
+		if ((want & Executer.WANT_REACTION_GRAPHML) > 0)
 			try
 			{
-				toReturn.put (Executer.REQ_WANT_CRN_GRAPHML, result (diff.getCRNGraphML ()));
+				toReturn.put (Executer.REQ_WANT_REACTION_GRAPHML, result (diff.getReactionsGraphML ()));
 			}
 			catch (Exception e)
 			{
 				errors.add (e);
 			}
 		
-		if ((want & Executer.WANT_CRN_DOT) > 0)
+		if ((want & Executer.WANT_REACTION_DOT) > 0)
 			try
 			{
-				toReturn.put (Executer.REQ_WANT_CRN_DOT, result (diff.getCRNDotGraph ()));
+				toReturn.put (Executer.REQ_WANT_REACTION_DOT, result (diff.getReactionsDotGraph ()));
 			}
 			catch (Exception e)
 			{
 				errors.add (e);
 			}
 		
-		if ((want & Executer.WANT_CRN_JSON) > 0)
+		if ((want & Executer.WANT_REACTION_JSON) > 0)
 			try
 			{
-				toReturn.put (Executer.REQ_WANT_CRN_JSON, result (diff.getCRNJsonGraph ()));
+				toReturn.put (Executer.REQ_WANT_REACTION_JSON, result (diff.getReactionsJsonGraph ()));
 			}
 			catch (Exception e)
 			{

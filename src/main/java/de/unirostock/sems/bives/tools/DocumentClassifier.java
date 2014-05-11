@@ -7,19 +7,14 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jdom2.JDOMException;
-
-import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.cellml.parser.CellMLDocument;
 import de.unirostock.sems.bives.sbml.parser.SBMLDocument;
 import de.unirostock.sems.xmlutils.ds.TreeDocument;
-import de.unirostock.sems.xmlutils.exception.XmlDocumentParseException;
 import de.unirostock.sems.xmlutils.tools.XmlTools;
 
 

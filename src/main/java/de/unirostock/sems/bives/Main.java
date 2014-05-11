@@ -184,6 +184,41 @@ public class Main
     	{
     		throw new HelpException ();
     	}
+    	
+    	// START backwards compatibility
+    	if (args[i].equals ("--crnGraphml"))
+    	{
+    		want |= Executer.WANT_REACTION_GRAPHML;
+    		continue;
+    	}
+    	if (args[i].equals ("--crnDot"))
+    	{
+    		want |= Executer.WANT_REACTION_DOT;
+    		continue;
+    	}
+    	if (args[i].equals ("--crnJson"))
+    	{
+    		want |= Executer.WANT_REACTION_JSON;
+    		continue;
+    	}
+    	if (args[i].equals ("--singleCrnGraphml"))
+    	{
+    		want |= Executer.WANT_SINGLE_REACTION_GRAPHML;
+    		continue;
+    	}
+    	if (args[i].equals ("--singleCrnDot"))
+    	{
+    		want |= Executer.WANT_SINGLE_REACTION_DOT;
+    		continue;
+    	}
+    	if (args[i].equals ("--singleCrnJson"))
+    	{
+    		want |= Executer.WANT_SINGLE_REACTION_JSON;
+    		continue;
+    	}
+    	// END backwards compatibility
+    	
+    	
     	if (file1 == null)
     		file1 = args[i];
     	else if (file2 == null)
