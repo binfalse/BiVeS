@@ -143,7 +143,7 @@ public class Main
     int output = 0;
   	int want = 0;
     HashMap<String, String> toReturn = new HashMap<String, String> ();
-    
+    boolean chemicalReactionNetwork = false;
 
     
     for (int i = 0; i < args.length; i++)
@@ -189,31 +189,37 @@ public class Main
     	if (args[i].equals ("--crnGraphml"))
     	{
     		want |= Executer.WANT_REACTION_GRAPHML;
+    		chemicalReactionNetwork = true;
     		continue;
     	}
     	if (args[i].equals ("--crnDot"))
     	{
     		want |= Executer.WANT_REACTION_DOT;
+    		chemicalReactionNetwork = true;
     		continue;
     	}
     	if (args[i].equals ("--crnJson"))
     	{
     		want |= Executer.WANT_REACTION_JSON;
+    		chemicalReactionNetwork = true;
     		continue;
     	}
     	if (args[i].equals ("--singleCrnGraphml"))
     	{
     		want |= Executer.WANT_SINGLE_REACTION_GRAPHML;
+    		chemicalReactionNetwork = true;
     		continue;
     	}
     	if (args[i].equals ("--singleCrnDot"))
     	{
     		want |= Executer.WANT_SINGLE_REACTION_DOT;
+    		chemicalReactionNetwork = true;
     		continue;
     	}
     	if (args[i].equals ("--singleCrnJson"))
     	{
     		want |= Executer.WANT_SINGLE_REACTION_JSON;
+    		chemicalReactionNetwork = true;
     		continue;
     	}
     	// END backwards compatibility
@@ -247,6 +253,16 @@ public class Main
     {
     	// single mode
     	exe.executeSingle (file1, toReturn, want, errors);
+    	// check for backwards compatibility
+    	if (chemicalReactionNetwork)
+    	{
+    		if (toReturn.get (Executer.REQ_WANT_SINGLE_REACTIONS_GRAPHML) != null)
+    			toReturn.put ("singleCrnGraphml", toReturn.get (Executer.REQ_WANT_SINGLE_REACTIONS_GRAPHML));
+    		if (toReturn.get (Executer.REQ_WANT_SINGLE_REACTIONS_JSON) != null)
+    			toReturn.put ("singleCrnJson", toReturn.get (Executer.REQ_WANT_SINGLE_REACTIONS_JSON));
+    		if (toReturn.get (Executer.REQ_WANT_SINGLE_REACTIONS_DOT) != null)
+    			toReturn.put ("singleCrnDot", toReturn.get (Executer.REQ_WANT_SINGLE_REACTIONS_DOT));
+    	}
     }
     else
     {
@@ -261,6 +277,16 @@ public class Main
   	    file2 =  tmp.toURI ().toURL ().toString ();//GeneralTools.fileToString (tmp);
       }
     	exe.executeCompare (file1, file2, toReturn, want, errors);
+    	// check for backwards compatibility
+    	if (chemicalReactionNetwork)
+    	{
+    		if (toReturn.get (Executer.REQ_WANT_REACTIONS_GRAPHML) != null)
+    			toReturn.put ("crnGraphml", toReturn.get (Executer.REQ_WANT_REACTIONS_GRAPHML));
+    		if (toReturn.get (Executer.REQ_WANT_REACTIONS_JSON) != null)
+    			toReturn.put ("crnJson", toReturn.get (Executer.REQ_WANT_REACTIONS_JSON));
+    		if (toReturn.get (Executer.REQ_WANT_REACTIONS_DOT) != null)
+    			toReturn.put ("crnDot", toReturn.get (Executer.REQ_WANT_REACTIONS_DOT));
+    	}
     }
     
 
