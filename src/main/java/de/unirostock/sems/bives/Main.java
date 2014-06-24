@@ -143,6 +143,7 @@ public class Main
     int output = 0;
   	int want = 0;
     HashMap<String, String> toReturn = new HashMap<String, String> ();
+    // check for backwards compatibility (we moved from crn to rn)
     boolean chemicalReactionNetwork = false;
 
     
