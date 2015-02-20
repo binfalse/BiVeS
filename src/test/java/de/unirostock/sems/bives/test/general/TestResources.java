@@ -11,15 +11,26 @@ import java.util.UUID;
 
 
 /**
- * @author Martin Scharm
+ * The Class TestResources.
  *
+ * @author Martin Scharm
  */
 public class TestResources
 {
+	
+	/** The rand. */
 	public static Random rand = new Random(); 
+	
+	/** The test dir. */
 	private static String testDir = "test" + File.separatorChar;
+	
+	/** The nonexistent file. */
 	private static File nonexistentFile;
+	
+	/** The invalid sbml file. */
 	private static File invalidSbmlFile;
+	
+	/** The valid sbml. */
 	private static String [] validSbml = new String []
 		{
 		"TestModel_for_IB2013-version-one",
@@ -28,6 +39,8 @@ public class TestResources
 		"Teusink-2013Dec20.xml",
 		"potato.xml"
 		};
+	
+	/** The valid cell ml. */
 	private static String [] validCellML = new String []
 		{
 		"bhalla_iyengar_1999_j_v1.cellml",
@@ -39,6 +52,11 @@ public class TestResources
 	
 	
 	
+	/**
+	 * Gets the invalid xml file.
+	 *
+	 * @return the invalid xml file
+	 */
 	public static File getInvalidXmlFile ()
 	{
 		if (invalidSbmlFile == null)
@@ -51,6 +69,11 @@ public class TestResources
 	
 	
 	
+	/**
+	 * Gets the nonexistent file.
+	 *
+	 * @return the nonexistent file
+	 */
 	public static File getNonexistentFile ()
 	{
 		if (nonexistentFile == null)
@@ -64,6 +87,11 @@ public class TestResources
 
 
 
+	/**
+	 * Gets the valid sbml file.
+	 *
+	 * @return the valid sbml file
+	 */
 	public static File getValidSbmlFile ()
 	{
 		File f = new File ("test/" + validSbml[rand.nextInt (validSbml.length)]);

@@ -22,14 +22,22 @@ import de.unirostock.sems.xmlutils.tools.XmlTools;
 
 
 /**
- * @author Martin Scharm
+ * The Class XmlTest.
  *
+ * @author Martin Scharm
  */
 public class XmlTest
 {
+	
+	/** The Constant MATHML_DOC. */
 	private static final File		MATHML_DOC	= new File ("test/mathml.xml");
+	
+	/** The mathml file. */
 	private static TreeDocument mathmlFile;
 
+	/**
+	 * Read files.
+	 */
 	@BeforeClass
 	public static void readFiles ()
 	{
@@ -50,6 +58,9 @@ public class XmlTest
 		}
 	}
 
+	/**
+	 * Test math ml.
+	 */
 	@Test
 	public void testMathML ()
 	{

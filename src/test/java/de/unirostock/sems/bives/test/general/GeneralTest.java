@@ -5,7 +5,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.io.FileInputStream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -21,17 +20,25 @@ import de.unirostock.sems.xmlutils.tools.XmlTools;
 
 
 /**
- * @author Martin Scharm
+ * The Class GeneralTest.
  *
+ * @author Martin Scharm
  */
 public class GeneralTest
 {
+	
+	/**
+	 * Simple test.
+	 */
 	@Test
 	public void simpleTest ()
 	{
 		
 	}
 	
+	/**
+	 * No diff if equals.
+	 */
 	@Test
 	public void noDiffIfEquals ()
 	{
@@ -62,6 +69,9 @@ public class GeneralTest
 	
 	
 	
+	/**
+	 * Diff if not equal.
+	 */
 	@Test
 	public void diffIfNotEqual ()
 	{

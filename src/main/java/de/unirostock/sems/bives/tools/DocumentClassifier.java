@@ -19,23 +19,43 @@ import de.unirostock.sems.xmlutils.tools.XmlTools;
 
 
 /**
- * @author Martin Scharm
+ * The Class DocumentClassifier.
  *
+ * @author Martin Scharm
  */
 public class DocumentClassifier
 {
+	
+	/** The Constant UNKNOWN. */
 	public static final int UNKNOWN = 0;
+	
+	/** The Constant XML. */
 	public static final int XML = 1;
+	
+	/** The Constant SBML. */
 	public static final int SBML= 2;
+	
+	/** The Constant CELLML. */
 	public static final int CELLML = 4;
 	
+	/** The exceptions. */
 	private List<Exception> exceptions;
+	
+	/** The type. */
 	private int type;
 	
+	/** The sbml. */
 	private SBMLDocument sbml;
+	
+	/** The cellml. */
 	private CellMLDocument cellml;
+	
+	/** The xml. */
 	private TreeDocument xml;
 	
+	/**
+	 * Clear.
+	 */
 	private void clear ()
 	{
 		sbml = null;
@@ -43,26 +63,53 @@ public class DocumentClassifier
 		xml = null;
 	}
 	
+	/**
+	 * Gets the xml document.
+	 *
+	 * @return the xml document
+	 */
 	public TreeDocument getXmlDocument ()
 	{
 		return xml;
 	}
 	
+	/**
+	 * Gets the cell ml document.
+	 *
+	 * @return the cell ml document
+	 */
 	public CellMLDocument getCellMlDocument ()
 	{
 		return cellml;
 	}
 	
+	/**
+	 * Gets the sbml document.
+	 *
+	 * @return the sbml document
+	 */
 	public SBMLDocument getSbmlDocument ()
 	{
 		return sbml;
 	}
 	
+	/**
+	 * Gets the exceptions.
+	 *
+	 * @return the exceptions
+	 */
 	public  List<Exception> getExceptions ()
 	{
 		return exceptions;
 	}
 	
+	/**
+	 * Classify.
+	 *
+	 * @param model the model
+	 * @param baseUri the base uri
+	 * @return the int
+	 */
 	public int classify (InputStream model, URI baseUri)
 	{
 		exceptions = new ArrayList<Exception> ();
@@ -80,6 +127,12 @@ public class DocumentClassifier
 		return type;
 	}
 
+	/**
+	 * Classify.
+	 *
+	 * @param model the model
+	 * @return the int
+	 */
 	public int classify (TreeDocument model)
 	{
 		type = UNKNOWN;
@@ -99,12 +152,24 @@ public class DocumentClassifier
 	
 	
 	
+	/**
+	 * Classify.
+	 *
+	 * @param model the model
+	 * @return the int
+	 */
 	public int classify (String model)
 	{
 		exceptions = new ArrayList<Exception> ();
 		return classify (new ByteArrayInputStream(model.getBytes ()), null);
 	}
 	
+	/**
+	 * Classify.
+	 *
+	 * @param model the model
+	 * @return the int
+	 */
 	public int classify (File model)
 	{
 		exceptions = new ArrayList<Exception> ();
@@ -119,6 +184,11 @@ public class DocumentClassifier
 		return UNKNOWN;
 	}
 	
+	/**
+	 * Checks if is sbml.
+	 *
+	 * @param doc the doc
+	 */
 	private void isSBML (TreeDocument doc)
 	{
 		exceptions = new ArrayList<Exception> ();
@@ -133,6 +203,11 @@ public class DocumentClassifier
 		}
 	}
 	
+	/**
+	 * Checks if is cell ml.
+	 *
+	 * @param doc the doc
+	 */
 	private void isCellML (TreeDocument doc)
 	{
 		try
@@ -146,6 +221,12 @@ public class DocumentClassifier
 		}
 	}
 
+	/**
+	 * Human readable.
+	 *
+	 * @param type the type
+	 * @return the string
+	 */
 	public static String humanReadable (int type)
 	{
 		String ret = "";

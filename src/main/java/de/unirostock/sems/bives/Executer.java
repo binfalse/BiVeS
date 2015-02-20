@@ -24,73 +24,169 @@ import de.unirostock.sems.xmlutils.tools.XmlTools;
 
 
 /**
- * @author Martin Scharm
+ * The Class Executer.
  *
+ * @author Martin Scharm
  */
 public class Executer
 {
 	
-	/** Pattern to distinguish xml files from URLs */
+	/** Pattern to distinguish xml files from URLs. */
 	public static final Pattern	XML_PATTERN	= Pattern.compile ("^\\s*<.*",
 																						Pattern.DOTALL);
 	
+	/** The Constant WANT_DIFF. */
 	public static final int WANT_DIFF = 1;
+	
+	/** The Constant WANT_DOCUMENTTYPE. */
 	public static final int WANT_DOCUMENTTYPE = 2;
+	
+	/** The Constant WANT_META. */
 	public static final int WANT_META = 4;
+	
+	/** The Constant WANT_REPORT_MD. */
 	public static final int WANT_REPORT_MD = 8;
+	
+	/** The Constant WANT_REPORT_HTML. */
 	public static final int WANT_REPORT_HTML = 16;
+	
+	/** The Constant WANT_REACTION_GRAPHML. */
 	public static final int WANT_REACTION_GRAPHML = 32;
+	
+	/** The Constant WANT_REACTION_DOT. */
 	public static final int WANT_REACTION_DOT = 64;
+	
+	/** The Constant WANT_COMP_HIERARCHY_GRAPHML. */
 	public static final int WANT_COMP_HIERARCHY_GRAPHML = 128;
+	
+	/** The Constant WANT_COMP_HIERARCHY_DOT. */
 	public static final int WANT_COMP_HIERARCHY_DOT = 256;
+	
+	/** The Constant WANT_REPORT_RST. */
 	public static final int WANT_REPORT_RST = 512;
+	
+	/** The Constant WANT_COMP_HIERARCHY_JSON. */
 	public static final int WANT_COMP_HIERARCHY_JSON = 1024;
+	
+	/** The Constant WANT_REACTION_JSON. */
 	public static final int WANT_REACTION_JSON = 2048;
+	
+	/** The Constant WANT_SBML. */
 	public static final int WANT_SBML = 4096;
+	
+	/** The Constant WANT_CELLML. */
 	public static final int WANT_CELLML = 8192;
+	
+	/** The Constant WANT_REGULAR. */
 	public static final int WANT_REGULAR = 16384;
 
 	// single
+	/** The Constant WANT_SINGLE_REACTION_GRAPHML. */
 	public static final int WANT_SINGLE_REACTION_GRAPHML = 32;
+	
+	/** The Constant WANT_SINGLE_REACTION_DOT. */
 	public static final int WANT_SINGLE_REACTION_DOT = 64;
+	
+	/** The Constant WANT_SINGLE_COMP_HIERARCHY_GRAPHML. */
 	public static final int WANT_SINGLE_COMP_HIERARCHY_GRAPHML = 128;
+	
+	/** The Constant WANT_SINGLE_COMP_HIERARCHY_DOT. */
 	public static final int WANT_SINGLE_COMP_HIERARCHY_DOT = 256;
+	
+	/** The Constant WANT_SINGLE_COMP_HIERARCHY_JSON. */
 	public static final int WANT_SINGLE_COMP_HIERARCHY_JSON = 1024;
+	
+	/** The Constant WANT_SINGLE_REACTION_JSON. */
 	public static final int WANT_SINGLE_REACTION_JSON = 2048;
+	
+	/** The Constant WANT_SINGLE_FLATTEN. */
 	public static final int WANT_SINGLE_FLATTEN = 32768;
 	
 	
+	/** The Constant REQ_FILES. */
 	public static final String REQ_FILES = "files";
+	
+	/** The Constant REQ_WANT. */
 	public static final String REQ_WANT = "get";
+	
+	/** The Constant REQ_WANT_META. */
 	public static final String REQ_WANT_META = "meta";
+	
+	/** The Constant REQ_WANT_DOCUMENTTYPE. */
 	public static final String REQ_WANT_DOCUMENTTYPE = "documentType";
+	
+	/** The Constant REQ_WANT_DIFF. */
 	public static final String REQ_WANT_DIFF = "xmlDiff";
+	
+	/** The Constant REQ_WANT_REPORT_MD. */
 	public static final String REQ_WANT_REPORT_MD = "reportMd";
+	
+	/** The Constant REQ_WANT_REPORT_RST. */
 	public static final String REQ_WANT_REPORT_RST = "reportRST";
+	
+	/** The Constant REQ_WANT_REPORT_HTML. */
 	public static final String REQ_WANT_REPORT_HTML = "reportHtml";
+	
+	/** The Constant REQ_WANT_REACTIONS_GRAPHML. */
 	public static final String REQ_WANT_REACTIONS_GRAPHML = "reactionsGraphml";
+	
+	/** The Constant REQ_WANT_REACTIONS_DOT. */
 	public static final String REQ_WANT_REACTIONS_DOT = "reactionsDot";
+	
+	/** The Constant REQ_WANT_REACTIONS_JSON. */
 	public static final String REQ_WANT_REACTIONS_JSON = "reactionsJson";
+	
+	/** The Constant REQ_WANT_COMP_HIERARCHY_GRAPHML. */
 	public static final String REQ_WANT_COMP_HIERARCHY_GRAPHML = "compHierarchyGraphml";
+	
+	/** The Constant REQ_WANT_COMP_HIERARCHY_DOT. */
 	public static final String REQ_WANT_COMP_HIERARCHY_DOT = "compHierarchyDot";
+	
+	/** The Constant REQ_WANT_COMP_HIERARCHY_JSON. */
 	public static final String REQ_WANT_COMP_HIERARCHY_JSON = "compHierarchyJson";
 	
+	/** The Constant REQ_WANT_SBML. */
 	public static final String REQ_WANT_SBML = "SBML";
+	
+	/** The Constant REQ_WANT_CELLML. */
 	public static final String REQ_WANT_CELLML = "CellML";
+	
+	/** The Constant REQ_WANT_REGULAR. */
 	public static final String REQ_WANT_REGULAR = "regular";
 
+	/** The Constant REQ_WANT_SINGLE_REACTIONS_GRAPHML. */
 	public static final String REQ_WANT_SINGLE_REACTIONS_GRAPHML = "singleReactionsGraphml";
+	
+	/** The Constant REQ_WANT_SINGLE_REACTIONS_DOT. */
 	public static final String REQ_WANT_SINGLE_REACTIONS_DOT = "singleReactionsDot";
+	
+	/** The Constant REQ_WANT_SINGLE_REACTIONS_JSON. */
 	public static final String REQ_WANT_SINGLE_REACTIONS_JSON = "singleReactionsJson";
+	
+	/** The Constant REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML. */
 	public static final String REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML = "singleCompHierarchyGraphml";
+	
+	/** The Constant REQ_WANT_SINGLE_COMP_HIERARCHY_DOT. */
 	public static final String REQ_WANT_SINGLE_COMP_HIERARCHY_DOT = "singleCompHierarchyDot";
+	
+	/** The Constant REQ_WANT_SINGLE_COMP_HIERARCHY_JSON. */
 	public static final String REQ_WANT_SINGLE_COMP_HIERARCHY_JSON = "singleCompHierarchyJson";
+	
+	/** The Constant REQ_WANT_SINGLE_FLATTEN. */
 	public static final String REQ_WANT_SINGLE_FLATTEN = "singleFlatten";
 	
 
+	/** The options. */
 	private HashMap<String, Option> options;
+	
+	/** The add options. */
 	private HashMap<String, Option> addOptions;
 	
+	/**
+	 * Gets the options.
+	 *
+	 * @return the options
+	 */
 	public HashMap<String, Option> getOptions ()
 	{
 		return options;
@@ -99,6 +195,11 @@ public class Executer
 
 
 	
+	/**
+	 * Gets the adds the options.
+	 *
+	 * @return the adds the options
+	 */
 	public HashMap<String, Option> getAddOptions ()
 	{
 		return addOptions;
@@ -107,10 +208,24 @@ public class Executer
 
 
 
+	/**
+	 * The Class Option.
+	 */
 	public static class Option 
 	{
+		
+		/** The description. */
 		public String description;
+		
+		/** The value. */
 		public int value;
+		
+		/**
+		 * Instantiates a new option.
+		 *
+		 * @param value the value
+		 * @param description the description
+		 */
 		public Option (int value, String description)
 		{
 			this.description = description;
@@ -118,11 +233,20 @@ public class Executer
 		}
 	}
 	
+	/**
+	 * Instantiates a new executer.
+	 */
 	public Executer ()
 	{
 		fillOptions ();
 	}
 	
+	/**
+	 * Gets the.
+	 *
+	 * @param key the key
+	 * @return the option
+	 */
 	public Option get (String key)
 	{
 		Option o = options.get (key);
@@ -131,6 +255,9 @@ public class Executer
 		return o;
 	}
 	
+	/**
+	 * Fill options.
+	 */
 	private void fillOptions ()
 	{
 		options = new HashMap<String, Option> ();
@@ -160,6 +287,15 @@ public class Executer
 		addOptions.put (REQ_WANT_SINGLE_FLATTEN, new Option (WANT_SINGLE_FLATTEN, "flatten the model"));
 	}
 	
+	/**
+	 * Execute single.
+	 *
+	 * @param document the document
+	 * @param toReturn the to return
+	 * @param want the want
+	 * @param errors the errors
+	 * @throws Exception the exception
+	 */
 	public void executeSingle (String document, HashMap<String, String> toReturn, int want, List<Exception> errors) throws Exception
 	{
 		TreeDocument td = null;
@@ -314,6 +450,16 @@ public class Executer
 	}
 	
 	
+	/**
+	 * Execute compare.
+	 *
+	 * @param document1 the document1
+	 * @param document2 the document2
+	 * @param toReturn the to return
+	 * @param want the want
+	 * @param errors the errors
+	 * @throws Exception the exception
+	 */
 	public void executeCompare (String document1, String document2, HashMap<String, String> toReturn, int want, List<Exception> errors) throws Exception
 	{
 		TreeDocument td1 = null, td2 = null;
@@ -477,6 +623,12 @@ public class Executer
 	}
 
 	
+	/**
+	 * Result.
+	 *
+	 * @param s the s
+	 * @return the string
+	 */
 	public static String result (String s)
 	{
 		if (s == null)

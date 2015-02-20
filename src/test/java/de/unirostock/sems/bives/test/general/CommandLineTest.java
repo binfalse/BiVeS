@@ -16,14 +16,30 @@ import de.unirostock.sems.bives.Main;
 
 
 /**
- * @author Martin Scharm
+ * The Class CommandLineTest.
  *
+ * @author Martin Scharm
  */
 public class CommandLineTest
 {
+	
+	/**
+	 * The Class CommandLineResults.
+	 */
 	public static class CommandLineResults
 	{
-		public ByteArrayOutputStream sysOut, sysErr;
+
+		/** The sys out. */
+		public ByteArrayOutputStream sysOut;
+		/** The sys err. */
+		public ByteArrayOutputStream sysErr;
+		
+		/**
+		 * Instantiates a new command line results.
+		 *
+		 * @param sysOut the sys out
+		 * @param sysErr the sys err
+		 */
 		public CommandLineResults (ByteArrayOutputStream sysOut, ByteArrayOutputStream sysErr)
 		{
 			this.sysOut = sysOut;
@@ -59,6 +75,9 @@ public class CommandLineTest
 		return new CommandLineResults (sysOut, sysErr);
 	}
 	 
+	/**
+	 * Test valid json.
+	 */
 	@Test
 	public void testValidJson()
 	{

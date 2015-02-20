@@ -4,6 +4,7 @@
 package de.unirostock.sems.bives;
 
 import java.io.File;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,10 +28,17 @@ import de.unirostock.sems.xmlutils.tools.XmlTools;
  */
 public class Main
 {
+	
+	/** Should we exit?. */
 	public static boolean exit = true;
 	
 	
 	
+	/**
+	 * Usage.
+	 *
+	 * @param msg the error/info msg
+	 */
 	public void usage (String msg)
 	{
 		if (msg != null && msg.length () > 0)
@@ -64,10 +72,11 @@ public class Main
 		
 		longest += 2;
 		System.out.println ("\tCOMMON OPTIONS");
-		System.out.println ("\t[none]"+GeneralTools.repeat (" ", longest - "[none]".length ()) +"expect XML files and print patch");
-		System.out.println ("\t--help"+GeneralTools.repeat (" ", longest - "--help".length ()) +"print this help");
-		System.out.println ("\t--debug"+GeneralTools.repeat (" ", longest - "--debug".length ()) +"enable verbose mode");
-		System.out.println ("\t--debugg"+GeneralTools.repeat (" ", longest - "--debugg".length ()) +"enable even more verbose mode");
+		System.out.println ("\t[none]  "+GeneralTools.repeat (" ", longest - "[none]".length ()) +"expect XML files and print patch");
+		System.out.println ("\t--help"+GeneralTools.repeat (" ", longest - "help".length ()) +"print this help");
+		System.out.println ("\t--debug"+GeneralTools.repeat (" ", longest - "debug".length ()) +"enable verbose mode");
+		System.out.println ("\t--debugg"+GeneralTools.repeat (" ", longest - "debugg".length ()) +"enable even more verbose mode");
+		System.out.println ("\t--out FILE"+GeneralTools.repeat (" ", longest - "out FILE".length ()) +"write output to FILE");
 
 		System.out.println ();
 		System.out.println ("\tMAPPING OPTIONS");
@@ -78,8 +87,8 @@ public class Main
 
 		System.out.println ("\tENCODING OPTIONS");
 		System.out.println ("\tby default we will just dump the result to the terminal. Thus, it's only usefull if you call for one single output.");
-		System.out.println ("\t--json"+GeneralTools.repeat (" ", longest - "--json".length ()) +"encode results in JSON");
-		System.out.println ("\t--xml"+GeneralTools.repeat (" ", longest - "--xml".length ()) +"encode results in XML");
+		System.out.println ("\t--json"+GeneralTools.repeat (" ", longest - "json".length ()) +"encode results in JSON");
+		System.out.println ("\t--xml"+GeneralTools.repeat (" ", longest - "xml".length ()) +"encode results in XML");
 		System.out.println ();
 
 		System.out.println ("\tADDITIONAL OPTIONS for single files");
@@ -92,8 +101,7 @@ public class Main
 	}
 	
 	/**
-	 * @param args
-	 * @throws Exception 
+	 * @param args 
 	 */
 	public static void main (String[] args)
 	{
@@ -118,10 +126,29 @@ public class Main
 	}
 	
 	private class HelpException extends Exception
-	{}
+	{
+
+		/**
+		 * 
+		 */
+		private static final long	serialVersionUID	= 1L;}
 	
+	/**
+	 * The Class ExecutionException.
+	 */
 	public static class ExecutionException extends Exception
 	{
+		
+		/**
+		 * 
+		 */
+		private static final long	serialVersionUID	= 1L;
+
+		/**
+		 * Instantiates a new execution exception.
+		 *
+		 * @param msg the msg
+		 */
 		public ExecutionException (String msg)
 		{
 			super (msg);
@@ -130,11 +157,20 @@ public class Main
 	
 	Executer exe;
 	
+	/**
+	 * Instantiates a new main.
+	 */
 	public Main ()
 	{
 		exe = new Executer ();
 	}
 	
+	/**
+	 * Run.
+	 *
+	 * @param args the args
+	 * @throws Exception the exception
+	 */
 	@SuppressWarnings("unchecked")
 	public void run (String[] args) throws Exception
 	{
@@ -145,6 +181,7 @@ public class Main
     HashMap<String, String> toReturn = new HashMap<String, String> ();
     // check for backwards compatibility (we moved from crn to rn)
     boolean chemicalReactionNetwork = false;
+    File outFile = null;
 
     
     for (int i = 0; i < args.length; i++)
@@ -179,6 +216,12 @@ public class Main
     	if (args[i].equals ("--json"))
     	{
     		output = 2;
+    		continue;
+    	}
+    	if (args[i].equals ("--out") && i < args.length - 1)
+    	{
+    		outFile = new File (args[i + 1]);
+    		i++;
     		continue;
     	}
     	if (args[i].equals ("--help"))
@@ -296,13 +339,18 @@ public class Main
 			throw new ExecutionException ("invalid call. no output produced.");
 		}
     
+		PrintStream out = System.out;
+		if (outFile != null)
+		{
+			out = new PrintStream (outFile);
+		}
     if (output == 0)
     {
     	for (Exception e : errors)
     		System.err.println ("ERROR: " + e);
     	
     	for (String ret : toReturn.keySet ())
-    		System.out.println (toReturn.get (ret));
+    		out.println (toReturn.get (ret));
     }
     else if (output == 1)
     {
@@ -317,7 +365,7 @@ public class Main
     		root.addContent (el);
     	}
     	
-    	System.out.println (XmlTools.prettyPrintDocument (document));
+    	out.println (XmlTools.prettyPrintDocument (document));
     }
     else
     {
@@ -325,7 +373,7 @@ public class Main
     	JSONObject json = new JSONObject ();
     	for (String ret : toReturn.keySet ())
     		json.put (ret, toReturn.get (ret));
-    	System.out.println (json);
+    	out.println (json);
     }
 	}
 	 
