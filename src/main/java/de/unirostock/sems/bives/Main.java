@@ -4,6 +4,7 @@
 package de.unirostock.sems.bives;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -342,7 +343,7 @@ public class Main
 		PrintStream out = System.out;
 		if (outFile != null)
 		{
-			out = new PrintStream (outFile);
+			out = new PrintStream (new FileOutputStream (outFile), true, "UTF-8");
 		}
     if (output == 0)
     {
@@ -375,6 +376,9 @@ public class Main
     		json.put (ret, toReturn.get (ret));
     	out.println (json);
     }
+    
+    if (outFile != null)
+    	out.close ();
 	}
 	 
 }
