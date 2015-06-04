@@ -58,4 +58,41 @@ public class ManchesterTest
 		}
 	}
 	
+	/**
+	 * Test command line used in SysMO/Seek. BiVeS is called from ruby using the command line:
+	 * {"--reportHtml", "--json", "--crnJson", FILE1, FILE2};
+	 */
+	@Test
+	public void testManchesterCommandLineV2 ()
+	{
+		String [] args = new String [] {"--reportHtml", "--json", "--crnJson", "test/assmus-v1.xml", "test/assmus-v2.xml"};
+		
+		CommandLineResults clr = CommandLineTest.runCommandLine (args);
+
+		ByteArrayOutputStream sysErr = clr.sysErr;
+		ByteArrayOutputStream sysOut = clr.sysOut;
+		
+		assertTrue ("sys err should be empty: " + sysErr.toString (), sysErr.toString().isEmpty());
+		
+		try
+		{
+			JSONObject json = (JSONObject) new JSONParser ().parse (sysOut.toString());
+			assertNotNull ("html report must not be null", json.get ("reportHtml"));
+			assertNotNull ("json crn must not be null", json.get ("crnJson"));
+			assertFalse ("html report must not be empty",((String)json.get ("reportHtml")).isEmpty ());
+			assertFalse ("json crn must not be empty",((String)json.get ("crnJson")).isEmpty ());
+			String html = (String) json.get ("reportHtml");
+			assertFalse ("couldn't generate math", html.contains ("error generating math"));
+			
+		}
+		catch (ParseException e)
+		{
+			fail ("bives output not in JSON format: " + e.getMessage ());
+		}
+		catch (Exception e)
+		{
+			fail ("unexpected exception during output evaluation: " + e.getMessage ());
+		}
+	}
+	
 }
