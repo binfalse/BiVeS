@@ -15,6 +15,7 @@ import de.unirostock.sems.bives.api.Single;
 import de.unirostock.sems.bives.cellml.api.CellMLDiff;
 import de.unirostock.sems.bives.cellml.api.CellMLSingle;
 import de.unirostock.sems.bives.cellml.parser.CellMLDocument;
+import de.unirostock.sems.bives.markup.Typesetting;
 import de.unirostock.sems.bives.sbml.api.SBMLDiff;
 import de.unirostock.sems.bives.sbml.api.SBMLSingle;
 import de.unirostock.sems.bives.sbml.parser.SBMLDocument;
@@ -102,6 +103,9 @@ public class Executer
 	/** The Constant WANT_SINGLE_FLATTEN. */
 	public static final int WANT_SINGLE_FLATTEN = 32768;
 	
+	/** The Constant WANT_REPORT_HTML_FP. */
+	public static final int WANT_REPORT_HTML_FP = 65536;
+	
 	
 	/** The Constant REQ_FILES. */
 	public static final String REQ_FILES = "files";
@@ -126,6 +130,9 @@ public class Executer
 	
 	/** The Constant REQ_WANT_REPORT_HTML. */
 	public static final String REQ_WANT_REPORT_HTML = "reportHtml";
+	
+	/** The Constant REQ_WANT_REPORT_HTML_FP. */
+	public static final String REQ_WANT_REPORT_HTML_FP = "reportHtmlFp";
 	
 	/** The Constant REQ_WANT_REACTIONS_GRAPHML. */
 	public static final String REQ_WANT_REACTIONS_GRAPHML = "reactionsGraphml";
@@ -265,6 +272,7 @@ public class Executer
 		options.put (REQ_WANT_REPORT_MD, new Option (WANT_REPORT_MD, "get the report of changes encoded in MarkDown"));
 		options.put (REQ_WANT_REPORT_RST, new Option (WANT_REPORT_RST, "get the report of changes encoded in ReStructuredText"));
 		options.put (REQ_WANT_REPORT_HTML, new Option (WANT_REPORT_HTML, "get the report of changes encoded in HTML"));
+		options.put (REQ_WANT_REPORT_HTML_FP, new Option (WANT_REPORT_HTML_FP, "get the report of changes embedded in full HTML page (incl. HTML skeleton)"));
 		options.put (REQ_WANT_REACTIONS_GRAPHML, new Option (WANT_REACTION_GRAPHML, "get the highlighted reaction network encoded in GraphML"));
 		options.put (REQ_WANT_REACTIONS_DOT, new Option (WANT_REACTION_DOT, "get the highlighted reaction network encoded in DOT language"));
 		options.put (REQ_WANT_REACTIONS_JSON, new Option (WANT_REACTION_JSON, "get the highlighted reaction network encoded in JSON"));
@@ -601,6 +609,19 @@ public class Executer
 				errors.add (e);
 			}
 		
+		if ((want & Executer.WANT_REPORT_HTML_FP) > 0)
+			try
+			{
+				String result = result (diff.getHTMLReport ());
+				if (result != null)
+					result = htmlPageStart () + result + htmlPageEnd ();
+				toReturn.put (Executer.REQ_WANT_REPORT_HTML, result);
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
+		
 		if ((want & Executer.WANT_REPORT_MD) > 0)
 			try
 			{
@@ -634,6 +655,35 @@ public class Executer
 		if (s == null)
 			return "";
 		return s;
+	}
+	
+	
+	public static String htmlPageStart ()
+	{
+		return "<!DOCTYPE html>"
+			+ Typesetting.NL_TXT
+			+ "<html><head><title>BiVeS differences</title>"
+			+ "<style type=\"text/css\">"
+			+ ".bives-insert"
+			+ "{color:#01DF01;}"
+			+ ".bives-delete"
+			+ "{color:#FF4000;}"
+			+ ".bives-attr"
+			+ "{font-weight: bold;font-style: italic;}"
+			+ ".bives-suppl"
+			+ "{color:#A4A4A4;}"
+			+ ".bives-update"
+			+ "{color:#DFA601;}"
+			+ ".bives-move"
+			+ "{color:#014ADF;}"
+			+ "</style>"
+			+ "</head><body>";
+
+	}
+	
+	public static String htmlPageEnd ()
+	{
+		return "</body></html>";
 	}
 	
 }
