@@ -676,6 +676,8 @@ public class Executer
 			+ "{color:#DFA601;}"
 			+ ".bives-move"
 			+ "{color:#014ADF;}"
+			+ ".bives-suppl"
+			+ "{font-size:.8em;}"
 			+ "</style>"
 			+ "</head><body>";
 
