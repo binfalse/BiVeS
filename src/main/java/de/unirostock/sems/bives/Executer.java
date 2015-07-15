@@ -192,6 +192,10 @@ public class Executer
 		options.addOption (Option.builder ().longOpt (REQ_WANT_SBML).desc ("force SBML comparison").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_CELLML).desc ("force CellML comparison").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REGULAR).desc ("force regular XML comparison").build ());
+
+		options.addOption (Option.builder ().longOpt (REQ_WANT_MATCHING_IDS).desc ("ids of mapped nodes MUST match").build ());
+		options.addOption (Option.builder ().longOpt (REQ_WANT_NEGLECT_NAMES).desc ("treat names as usual attributes").build ());
+		options.addOption (Option.builder ().longOpt (REQ_WANT_STRICT_NAMES).desc ("compare names more strictly").build ());
 		
 		
 		options.addOption (Option.builder ().longOpt (REQ_WANT_DOCUMENTTYPE).desc ("get the documentType of an XML file").build ());
