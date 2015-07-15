@@ -184,17 +184,17 @@ public class Executer
 	
 
 	/** The options. */
-	private HashMap<String, Option> options;
+	private HashMap<String, BivesOption> options;
 	
 	/** The add options. */
-	private HashMap<String, Option> addOptions;
+	private HashMap<String, BivesOption> addOptions;
 	
 	/**
 	 * Gets the options.
 	 *
 	 * @return the options
 	 */
-	public HashMap<String, Option> getOptions ()
+	public HashMap<String, BivesOption> getOptions ()
 	{
 		return options;
 	}
@@ -207,7 +207,7 @@ public class Executer
 	 *
 	 * @return the adds the options
 	 */
-	public HashMap<String, Option> getAddOptions ()
+	public HashMap<String, BivesOption> getAddOptions ()
 	{
 		return addOptions;
 	}
@@ -215,30 +215,6 @@ public class Executer
 
 
 
-	/**
-	 * The Class Option.
-	 */
-	public static class Option 
-	{
-		
-		/** The description. */
-		public String description;
-		
-		/** The value. */
-		public int value;
-		
-		/**
-		 * Instantiates a new option.
-		 *
-		 * @param value the value
-		 * @param description the description
-		 */
-		public Option (int value, String description)
-		{
-			this.description = description;
-			this.value = value;
-		}
-	}
 	
 	/**
 	 * Instantiates a new executer.
@@ -254,9 +230,9 @@ public class Executer
 	 * @param key the key
 	 * @return the option
 	 */
-	public Option get (String key)
+	public BivesOption get (String key)
 	{
-		Option o = options.get (key);
+		BivesOption o = options.get (key);
 		if (o == null)
 			o = addOptions.get (key);
 		return o;
@@ -267,32 +243,32 @@ public class Executer
 	 */
 	private void fillOptions ()
 	{
-		options = new HashMap<String, Option> ();
-		options.put (REQ_WANT_DIFF, new Option (WANT_DIFF, "get the diff encoded in XML format"));
-		options.put (REQ_WANT_REPORT_MD, new Option (WANT_REPORT_MD, "get the report of changes encoded in MarkDown"));
-		options.put (REQ_WANT_REPORT_RST, new Option (WANT_REPORT_RST, "get the report of changes encoded in ReStructuredText"));
-		options.put (REQ_WANT_REPORT_HTML, new Option (WANT_REPORT_HTML, "get the report of changes encoded in HTML"));
-		options.put (REQ_WANT_REPORT_HTML_FP, new Option (WANT_REPORT_HTML_FP, "get the report of changes embedded in full HTML page (incl. HTML skeleton)"));
-		options.put (REQ_WANT_REACTIONS_GRAPHML, new Option (WANT_REACTION_GRAPHML, "get the highlighted reaction network encoded in GraphML"));
-		options.put (REQ_WANT_REACTIONS_DOT, new Option (WANT_REACTION_DOT, "get the highlighted reaction network encoded in DOT language"));
-		options.put (REQ_WANT_REACTIONS_JSON, new Option (WANT_REACTION_JSON, "get the highlighted reaction network encoded in JSON"));
-		options.put (REQ_WANT_COMP_HIERARCHY_GRAPHML, new Option (WANT_COMP_HIERARCHY_GRAPHML, "get the hierarchy of components in a CellML document encoded in GraphML"));
-		options.put (REQ_WANT_COMP_HIERARCHY_DOT, new Option (WANT_COMP_HIERARCHY_DOT, "get the hierarchy of components in a CellML document encoded in DOT language"));
-		options.put (REQ_WANT_COMP_HIERARCHY_JSON, new Option (WANT_COMP_HIERARCHY_JSON, "get the hierarchy of components in a CellML document encoded in JSON"));
-		options.put (REQ_WANT_SBML, new Option (WANT_SBML, "force SBML comparison"));
-		options.put (REQ_WANT_CELLML, new Option (WANT_CELLML, "force CellML comparison"));
-		options.put (REQ_WANT_REGULAR, new Option (WANT_REGULAR, "force regular XML comparison"));
+		options = new HashMap<String, BivesOption> ();
+		options.put (REQ_WANT_DIFF, new BivesOption (WANT_DIFF, "get the diff encoded in XML format"));
+		options.put (REQ_WANT_REPORT_MD, new BivesOption (WANT_REPORT_MD, "get the report of changes encoded in MarkDown"));
+		options.put (REQ_WANT_REPORT_RST, new BivesOption (WANT_REPORT_RST, "get the report of changes encoded in ReStructuredText"));
+		options.put (REQ_WANT_REPORT_HTML, new BivesOption (WANT_REPORT_HTML, "get the report of changes encoded in HTML"));
+		options.put (REQ_WANT_REPORT_HTML_FP, new BivesOption (WANT_REPORT_HTML_FP, "get the report of changes embedded in full HTML page (incl. HTML skeleton)"));
+		options.put (REQ_WANT_REACTIONS_GRAPHML, new BivesOption (WANT_REACTION_GRAPHML, "get the highlighted reaction network encoded in GraphML"));
+		options.put (REQ_WANT_REACTIONS_DOT, new BivesOption (WANT_REACTION_DOT, "get the highlighted reaction network encoded in DOT language"));
+		options.put (REQ_WANT_REACTIONS_JSON, new BivesOption (WANT_REACTION_JSON, "get the highlighted reaction network encoded in JSON"));
+		options.put (REQ_WANT_COMP_HIERARCHY_GRAPHML, new BivesOption (WANT_COMP_HIERARCHY_GRAPHML, "get the hierarchy of components in a CellML document encoded in GraphML"));
+		options.put (REQ_WANT_COMP_HIERARCHY_DOT, new BivesOption (WANT_COMP_HIERARCHY_DOT, "get the hierarchy of components in a CellML document encoded in DOT language"));
+		options.put (REQ_WANT_COMP_HIERARCHY_JSON, new BivesOption (WANT_COMP_HIERARCHY_JSON, "get the hierarchy of components in a CellML document encoded in JSON"));
+		options.put (REQ_WANT_SBML, new BivesOption (WANT_SBML, "force SBML comparison"));
+		options.put (REQ_WANT_CELLML, new BivesOption (WANT_CELLML, "force CellML comparison"));
+		options.put (REQ_WANT_REGULAR, new BivesOption (WANT_REGULAR, "force regular XML comparison"));
 		
-		addOptions = new HashMap<String, Option> ();
-		addOptions.put (REQ_WANT_DOCUMENTTYPE, new Option (WANT_DOCUMENTTYPE, "get the documentType of an XML file"));
-		addOptions.put (REQ_WANT_META, new Option (WANT_META, "get some meta information about an XML file"));
-		addOptions.put (REQ_WANT_SINGLE_REACTIONS_JSON, new Option (WANT_SINGLE_REACTION_JSON, "get the reaction network of a single file encoded in JSON"));
-		addOptions.put (REQ_WANT_SINGLE_REACTIONS_GRAPHML, new Option (WANT_SINGLE_REACTION_GRAPHML, "get the reaction network of a single file encoded in GraphML"));
-		addOptions.put (REQ_WANT_SINGLE_REACTIONS_DOT, new Option (WANT_SINGLE_REACTION_DOT, "get the reaction network of a single file encoded in DOT language"));
-		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_JSON, new Option (WANT_SINGLE_COMP_HIERARCHY_JSON, "get the hierarchy of components in a single CellML document encoded in JSON"));
-		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML, new Option (WANT_SINGLE_COMP_HIERARCHY_GRAPHML, "get the hierarchy of components in a single CellML document encoded in GraphML"));
-		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_DOT, new Option (WANT_SINGLE_COMP_HIERARCHY_DOT, "get the hierarchy of components in a single CellML document encoded in DOT language"));
-		addOptions.put (REQ_WANT_SINGLE_FLATTEN, new Option (WANT_SINGLE_FLATTEN, "flatten the model"));
+		addOptions = new HashMap<String, BivesOption> ();
+		addOptions.put (REQ_WANT_DOCUMENTTYPE, new BivesOption (WANT_DOCUMENTTYPE, "get the documentType of an XML file"));
+		addOptions.put (REQ_WANT_META, new BivesOption (WANT_META, "get some meta information about an XML file"));
+		addOptions.put (REQ_WANT_SINGLE_REACTIONS_JSON, new BivesOption (WANT_SINGLE_REACTION_JSON, "get the reaction network of a single file encoded in JSON"));
+		addOptions.put (REQ_WANT_SINGLE_REACTIONS_GRAPHML, new BivesOption (WANT_SINGLE_REACTION_GRAPHML, "get the reaction network of a single file encoded in GraphML"));
+		addOptions.put (REQ_WANT_SINGLE_REACTIONS_DOT, new BivesOption (WANT_SINGLE_REACTION_DOT, "get the reaction network of a single file encoded in DOT language"));
+		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_JSON, new BivesOption (WANT_SINGLE_COMP_HIERARCHY_JSON, "get the hierarchy of components in a single CellML document encoded in JSON"));
+		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_GRAPHML, new BivesOption (WANT_SINGLE_COMP_HIERARCHY_GRAPHML, "get the hierarchy of components in a single CellML document encoded in GraphML"));
+		addOptions.put (REQ_WANT_SINGLE_COMP_HIERARCHY_DOT, new BivesOption (WANT_SINGLE_COMP_HIERARCHY_DOT, "get the hierarchy of components in a single CellML document encoded in DOT language"));
+		addOptions.put (REQ_WANT_SINGLE_FLATTEN, new BivesOption (WANT_SINGLE_FLATTEN, "flatten the model"));
 	}
 	
 	/**

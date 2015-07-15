@@ -48,8 +48,8 @@ public class Main
 			System.out.println ();
 		}
 
-		HashMap<String, Executer.Option> options = exe.getOptions ();
-		HashMap<String, Executer.Option> addOptions = exe.getAddOptions ();
+		HashMap<String, BivesOption> options = exe.getOptions ();
+		HashMap<String, BivesOption> addOptions = exe.getAddOptions ();
 		
 		System.out.println ("ARGUMENTS:");
 		System.out.println ("\t[option] FILE1 [FILE2]  compute the differences between 2 XML files");
@@ -189,7 +189,7 @@ public class Main
     {
     	if (args[i].substring (0, 2).equals ("--"))
     	{
-	    	Executer.Option o = exe.get (args[i].substring (2));
+	    	BivesOption o = exe.get (args[i].substring (2));
 	    	if (o != null)
 	    	{
 	    		want |= o.value;
