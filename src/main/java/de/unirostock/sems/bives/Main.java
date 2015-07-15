@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -150,7 +149,6 @@ public class Main
 	{
     String file1 = null, file2 = null;
     int output = 0;
-  	int want = 0;
     HashMap<String, String> toReturn = new HashMap<String, String> ();
     File outFile = null;
 

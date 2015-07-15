@@ -57,6 +57,10 @@ public class Executer
 	/** The Constant REQ_WANT_DIFF. */
 	public static final String REQ_WANT_DIFF = "xmlDiff";
 	
+	public static final String REQ_WANT_MATCHING_IDS = "ids-must-match";
+	public static final String REQ_WANT_NEGLECT_NAMES = "neglect-names";
+	public static final String REQ_WANT_STRICT_NAMES = "strict-names";
+	
 	/** The Constant REQ_WANT_REPORT_MD. */
 	public static final String REQ_WANT_REPORT_MD = "reportMd";
 	
@@ -448,7 +452,11 @@ public class Executer
   	//System.out.println (want);
     
     // create mapping
-    diff.mapTrees ();
+    diff.mapTrees (
+    	!line.hasOption (REQ_WANT_MATCHING_IDS),
+    	!line.hasOption (REQ_WANT_NEGLECT_NAMES),
+    	line.hasOption (REQ_WANT_STRICT_NAMES)
+    	);
     
     
     // compute results
