@@ -2,6 +2,7 @@ package de.unirostock.sems.bives.test.sysmoseek;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -45,6 +46,8 @@ public class ManchesterTest
 			JSONObject json = (JSONObject) new JSONParser ().parse (sysOut.toString());
 			assertNotNull ("html report must not be null", json.get ("reportHtml"));
 			assertNotNull ("json crn must not be null", json.get ("crnJson"));
+			assertNull ("markdown report expected to be null", json.get ("reportMd"));
+			assertNull ("reactionsDot expected to be null", json.get ("reactionsDot"));
 			assertFalse ("html report must not be empty",((String)json.get ("reportHtml")).isEmpty ());
 			assertFalse ("json crn must not be empty",((String)json.get ("crnJson")).isEmpty ());
 		}
