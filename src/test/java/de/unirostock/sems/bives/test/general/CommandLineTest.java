@@ -1,8 +1,6 @@
 package de.unirostock.sems.bives.test.general;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -10,6 +8,9 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.UUID;
 
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.junit.Test;
 
 import de.unirostock.sems.bives.Main;
@@ -94,6 +95,18 @@ public class CommandLineTest
 		ByteArrayOutputStream sysOut = clr.sysOut;
 		
 		assertTrue ("bives main reports error for " + Arrays.toString (args), sysErr.toString().isEmpty());
+		
+		try
+		{
+			JSONObject json = (JSONObject) new JSONParser ().parse (sysOut.toString ());
+			assertTrue ("expected to get some results", json.size () > 0);
+			assertNotNull ("expected to get a report", json.get ("reportHtml"));
+			assertNotNull ("expected to get a diff", json.get ("xmlDiff"));
+		}
+		catch (ParseException e)
+		{
+			fail ("wasn't ablt to read json: " + e.getMessage ());
+		}
 	}
 	
 
