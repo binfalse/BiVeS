@@ -31,7 +31,7 @@ public class TestResources
 	private static File invalidSbmlFile;
 	
 	/** The valid sbml. */
-	private static String [] validSbml = new String []
+	public static String [] validSbml = new String []
 		{
 		"TestModel_for_IB2013-version-one",
 		"TestModel_for_IB2013-version-two",

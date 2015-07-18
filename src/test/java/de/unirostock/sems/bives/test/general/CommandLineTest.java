@@ -13,6 +13,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Test;
 
+import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.Main;
 
 
@@ -107,6 +108,57 @@ public class CommandLineTest
 		{
 			fail ("wasn't ablt to read json: " + e.getMessage ());
 		}
+	}
+	
+	
+	public static void testCommandLineOptions (File file1, File file2, String [] options, int add)
+	{
+		String [] args = new String [options.length + 3];
+		System.arraycopy (options, 0, args, 3, options.length);
+		args[0] = "--json";
+		args[1] = file1.getAbsolutePath ();
+		args[2] = file2.getAbsolutePath ();
+
+		CommandLineResults clr = CommandLineTest.runCommandLine (args);
+
+		ByteArrayOutputStream sysErr = clr.sysErr;
+		ByteArrayOutputStream sysOut = clr.sysOut;
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
+
+		try
+		{
+				//System.out.println (Arrays.toString (args) + " --- " + sysOut.toString ());
+			JSONObject json = (JSONObject) new JSONParser ().parse (sysOut.toString ());
+			//System.out.println (json);
+			assertEquals ("expected to get some results", add + options.length, json.size ());
+			for (String option : options){
+				assertNotNull ("expected to get " + option, json.get (option.substring (2)));
+			}
+			
+		}
+		catch (ParseException e)
+		{
+			fail ("wasn't ablt to read json: " + e.getMessage ());
+		}
+	}
+	
+	@Test
+	public void testSomeCommandLineOptions ()
+	{
+		File file1 = new File ("test/" + TestResources.validSbml[0]);
+		File file2 = new File ("test/" + TestResources.validSbml[1]);
+		
+		if (!file1.exists ())
+			fail ("file not found: " + file1.getAbsolutePath ());
+		
+		testCommandLineOptions (file1, file2, new String [] {"--reportHtml", "--xmlDiff"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--crnGraphml"}, 1);
+		testCommandLineOptions (file1, file2, new String [] {"--reportMd"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--reportHtml", "--reportMd"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--reportHtml", "--reportHtmlFp"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--reportHtml", "--reportHtmlFp", "--reactionsGraphml"}, 0);
+		LOGGER.closeLogger ();
 	}
 	
 

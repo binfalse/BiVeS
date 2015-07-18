@@ -540,23 +540,17 @@ public class Executer
 				errors.add (e);
 			}
 		
-		if (line.hasOption (REQ_WANT_REPORT_HTML))
-			try
-			{
-				toReturn.put (Executer.REQ_WANT_REPORT_HTML, result (diff.getHTMLReport ()));
-			}
-			catch (Exception e)
-			{
-				errors.add (e);
-			}
-		
-		if (line.hasOption (REQ_WANT_REPORT_HTML_FP))
+		if (line.hasOption (REQ_WANT_REPORT_HTML) || line.hasOption (REQ_WANT_REPORT_HTML_FP))
 			try
 			{
 				String result = result (diff.getHTMLReport ());
-				if (result != null)
-					result = htmlPageStart () + result + htmlPageEnd ();
-				toReturn.put (Executer.REQ_WANT_REPORT_HTML, result);
+				if (line.hasOption (REQ_WANT_REPORT_HTML))
+					toReturn.put (Executer.REQ_WANT_REPORT_HTML, result);
+				if (line.hasOption (REQ_WANT_REPORT_HTML_FP) && result != null)
+				{
+					toReturn.put (Executer.REQ_WANT_REPORT_HTML_FP, htmlPageStart () + result + htmlPageEnd ());
+				}
+					
 			}
 			catch (Exception e)
 			{
