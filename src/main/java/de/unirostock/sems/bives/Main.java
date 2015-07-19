@@ -98,7 +98,7 @@ public class Main
 		}
 	}
 	
-	private class HelpException extends Exception
+	public static class HelpException extends Exception
 	{
 
 		/**
@@ -138,6 +138,27 @@ public class Main
 		exe = new Executer ();
 	}
 	
+	
+	public static CommandLine parseCommandLine (String[] args, Executer exe) throws HelpException, ExecutionException
+	{
+    Options options = exe.getOptions ();
+		CommandLineParser parser = new DefaultParser ();
+
+    CommandLine line = null;
+		try
+		{
+			line = parser.parse (options, args);
+			if (line.hasOption ("help"))
+				throw new HelpException ();
+		}
+		catch (ParseException e)
+		{
+			throw new ExecutionException ("Parsing of command line options failed.  Reason: " + e.getMessage ());
+		}
+		
+		return line;
+	}
+	
 	/**
 	 * Run.
 	 *
@@ -152,19 +173,7 @@ public class Main
     HashMap<String, String> toReturn = new HashMap<String, String> ();
     File outFile = null;
 
-    Options options = exe.getOptions ();
-		CommandLineParser parser = new DefaultParser ();
-    CommandLine line = null;
-		try
-		{
-			line = parser.parse (options, args);
-			if (line.hasOption ("help"))
-				throw new HelpException ();
-		}
-		catch (ParseException e)
-		{
-			throw new ExecutionException ("Parsing of command line options failed.  Reason: " + e.getMessage ());
-		}
+    CommandLine line = parseCommandLine (args, exe);
   	
   	if (line.hasOption (Executer.REQ_DEBUG))
   	{
