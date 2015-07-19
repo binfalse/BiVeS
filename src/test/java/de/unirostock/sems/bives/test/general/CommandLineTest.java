@@ -186,6 +186,63 @@ public class CommandLineTest
 		}
 	}
 	
+	public static void testCommandLineOptions (File file1, String [] options, int add)
+	{
+		String [] args = new String [options.length + 2];
+		System.arraycopy (options, 0, args, 2, options.length);
+		args[0] = "--json";
+		args[1] = file1.getAbsolutePath ();
+
+		CommandLineResults clr = CommandLineTest.runCommandLine (args);
+
+		ByteArrayOutputStream sysErr = clr.sysErr;
+		ByteArrayOutputStream sysOut = clr.sysOut;
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
+
+		try
+		{
+				//System.out.println (Arrays.toString (args) + " --- " + sysOut.toString ());
+			JSONObject json = (JSONObject) new JSONParser ().parse (sysOut.toString ());
+			//System.out.println (json);
+			assertEquals ("expected to get some results", add + options.length, json.size ());
+			for (String option : options){
+				assertNotNull ("expected to get " + option, json.get (option.substring (2)));
+			}
+			
+		}
+		catch (ParseException e)
+		{
+			fail ("wasn't ablt to read json: " + e.getMessage ());
+		}
+		
+		
+		
+		args[0] = "--xml";
+		clr = CommandLineTest.runCommandLine (args);
+
+		sysErr = clr.sysErr;
+		sysOut = clr.sysOut;
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
+		
+		try
+		{
+			TreeDocument doc = new TreeDocument (XmlTools.readDocument (sysOut.toString ()), null);
+			DocumentNode root = doc.getRoot ();
+			assertEquals ("expected to get some results", add + options.length, root.getChildren ().size ());
+			for (String option : options){
+				assertEquals ("expected to get " + option, 1, root.getChildrenWithTag (option.substring (2)).size ());
+				assertNotNull ("expected to get " + option, root.getChildrenWithTag (option.substring (2)).get (0));
+			}
+			
+		}
+		catch (Exception e)
+		{
+			fail ("wasn't ablt to read xml results: " + e.getMessage ());
+		}
+	}
+	
 	
 	@Test
 	public void testRemotes ()
@@ -198,6 +255,49 @@ public class CommandLineTest
 		
 		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
 		assertFalse ("bives main doesn't sysout " + Arrays.toString (args) + ": " + sysOut.toString(), sysOut.toString().isEmpty());
+	}
+	
+	@Test
+	public void testSingleRemotes ()
+	{
+		String [] args = new String [] {"--SBML", "--singleReactionsGraphml", "http://budhat.sems.uni-rostock.de/download?downloadModel=24"};
+		CommandLineResults clr = CommandLineTest.runCommandLine (args);
+
+		ByteArrayOutputStream sysErr = clr.sysErr;
+		ByteArrayOutputStream sysOut = clr.sysOut;
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
+		assertFalse ("bives main doesn't sysout " + Arrays.toString (args) + ": " + sysOut.toString(), sysOut.toString().isEmpty());
+	}
+	
+	@Test
+	public void testSingle ()
+	{
+		File file1 = new File ("test/" + TestResources.validSbml[0]);
+		testCommandLineOptions (file1, new String [] {"--singleReactionsGraphml"}, 0);
+		testCommandLineOptions (file1, new String [] {"--singleCrnGraphml"}, 1);
+		testCommandLineOptions (file1, new String [] {"--singleReactionsGraphml", "--singleCrnGraphml"}, 0);
+		
+		testCommandLineOptions (file1, new String [] {"--singleReactionsDot"}, 0);
+		testCommandLineOptions (file1, new String [] {"--singleCrnDot"}, 1);
+		testCommandLineOptions (file1, new String [] {"--singleReactionsDot", "--singleCrnDot"}, 0);
+		
+		testCommandLineOptions (file1, new String [] {"--singleReactionsJson"}, 0);
+		testCommandLineOptions (file1, new String [] {"--singleCrnJson"}, 1);
+		testCommandLineOptions (file1, new String [] {"--singleReactionsJson", "--singleCrnJson"}, 0);
+		
+		testCommandLineOptions (file1, new String [] {"--meta"}, 0);
+		testCommandLineOptions (file1, new String [] {"--documentType"}, 0);
+		testCommandLineOptions (file1, new String [] {"--documentType", "--meta"}, 0);
+		testCommandLineOptions (file1, new String [] {"--documentType", "--meta", "--singleReactionsGraphml"}, 0);
+		testCommandLineOptions (file1, new String [] {"--documentType", "--meta", "--singleReactionsGraphml", "--singleCrnJson"}, 1);
+		
+		file1 = new File ("test/" + TestResources.validCellML[0]);
+		testCommandLineOptions (file1, new String [] {"--meta"}, 0);
+		testCommandLineOptions (file1, new String [] {"--documentType"}, 0);
+		testCommandLineOptions (file1, new String [] {"--documentType", "--meta"}, 0);
+		testCommandLineOptions (file1, new String [] {"--singleCompHierarchyJson", "--singleCompHierarchyDot", "--singleCompHierarchyGraphml"}, 0);
+		testCommandLineOptions (file1, new String [] {"--singleFlatten"}, 0);
 	}
 	
 	@Test
@@ -279,6 +379,30 @@ public class CommandLineTest
 
 		ByteArrayOutputStream sysErr = clr.sysErr;
 		ByteArrayOutputStream sysOut = clr.sysOut;
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
+		assertFalse ("bives main doesn't sysout " + Arrays.toString (args) + ": " + sysOut.toString(), sysOut.toString().isEmpty());
+		
+		
+		
+		
+		args = new String [] {"--SBML", file1Sbml.getAbsolutePath (), "--documentType", "--meta"};
+		clr = CommandLineTest.runCommandLine (args);
+
+		sysErr = clr.sysErr;
+		sysOut = clr.sysOut;
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
+		assertFalse ("bives main doesn't sysout " + Arrays.toString (args) + ": " + sysOut.toString(), sysOut.toString().isEmpty());
+		
+		
+		
+		
+		args = new String [] {"--CellML", file1Cellml.getAbsolutePath (), "--documentType", "--meta"};
+		clr = CommandLineTest.runCommandLine (args);
+
+		sysErr = clr.sysErr;
+		sysOut = clr.sysOut;
 		
 		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
 		assertFalse ("bives main doesn't sysout " + Arrays.toString (args) + ": " + sysOut.toString(), sysOut.toString().isEmpty());
