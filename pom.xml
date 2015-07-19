@@ -3,7 +3,7 @@
     <groupId>de.unirostock.sems</groupId>
     <artifactId>BiVeS</artifactId>
     <packaging>jar</packaging>
-    <version>1.6.4</version>
+    <version>1.6.5</version>
     <name>BiVeS</name>
     <description>
         BiVeS - BioModel Version Control System
@@ -53,6 +53,12 @@
             <artifactId>commons-cli</artifactId>
             <version>1.4-SNAPSHOT</version>
         </dependency>
+        <dependency>
+		    <groupId>log4j</groupId>
+		    <artifactId>log4j</artifactId>
+		    <version>1.2.17</version>
+		    <scope>test</scope>
+		</dependency>
     </dependencies>
     <distributionManagement>
         <downloadUrl>http://mvn.sems.uni-rostock.de</downloadUrl>   

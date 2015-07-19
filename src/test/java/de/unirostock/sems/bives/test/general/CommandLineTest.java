@@ -1,6 +1,10 @@
 package de.unirostock.sems.bives.test.general;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -8,12 +12,14 @@ import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.UUID;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import de.binfalse.bflog.LOGGER;
 import de.unirostock.sems.bives.Main;
 
 
@@ -24,6 +30,11 @@ import de.unirostock.sems.bives.Main;
  */
 public class CommandLineTest
 {
+	@BeforeClass
+	public static void setUpEnv ()
+	{
+		Logger.getRootLogger ().setLevel (Level.OFF);
+	}
 	
 	/**
 	 * The Class CommandLineResults.
@@ -141,6 +152,23 @@ public class CommandLineTest
 		{
 			fail ("wasn't ablt to read json: " + e.getMessage ());
 		}
+	}
+	
+	
+	@Test
+	public void testRemotes ()
+	{
+		String [] args = new String [] {"--SBML", "http://budhat.sems.uni-rostock.de/download?downloadModel=24", "http://budhat.sems.uni-rostock.de/download?downloadModel=25"};
+		CommandLineResults clr = CommandLineTest.runCommandLine (args);
+
+		ByteArrayOutputStream sysErr = clr.sysErr;
+		ByteArrayOutputStream sysOut = clr.sysOut;
+
+		System.out.println (clr.sysOut);
+		System.err.println (clr.sysErr);
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
+		assertFalse ("bives main doesn't sysout " + Arrays.toString (args) + ": " + sysOut.toString(), sysOut.toString().isEmpty());
 	}
 	
 	@Test
