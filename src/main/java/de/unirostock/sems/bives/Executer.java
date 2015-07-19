@@ -129,7 +129,7 @@ public class Executer
 
 	public static final String REQ_DEBUG = "debug";
 	public static final String REQ_DEBUGG = "debugg";
-	public static final String REQ_XML = "xm";
+	public static final String REQ_XML = "xml";
 	public static final String REQ_JSON = "json";
 	public static final String REQ_OUT = "out";
 	public static final String REQ_HELP = "help";

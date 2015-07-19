@@ -8,12 +8,14 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.UUID;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.jdom2.JDOMException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -21,6 +23,10 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.unirostock.sems.bives.Main;
+import de.unirostock.sems.xmlutils.ds.DocumentNode;
+import de.unirostock.sems.xmlutils.ds.TreeDocument;
+import de.unirostock.sems.xmlutils.exception.XmlDocumentParseException;
+import de.unirostock.sems.xmlutils.tools.XmlTools;
 
 
 /**
@@ -152,6 +158,32 @@ public class CommandLineTest
 		{
 			fail ("wasn't ablt to read json: " + e.getMessage ());
 		}
+		
+		
+		
+		args[0] = "--xml";
+		clr = CommandLineTest.runCommandLine (args);
+
+		sysErr = clr.sysErr;
+		sysOut = clr.sysOut;
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
+		
+		try
+		{
+			TreeDocument doc = new TreeDocument (XmlTools.readDocument (sysOut.toString ()), null);
+			DocumentNode root = doc.getRoot ();
+			assertEquals ("expected to get some results", add + options.length, root.getChildren ().size ());
+			for (String option : options){
+				assertEquals ("expected to get " + option, 1, root.getChildrenWithTag (option.substring (2)).size ());
+				assertNotNull ("expected to get " + option, root.getChildrenWithTag (option.substring (2)).get (0));
+			}
+			
+		}
+		catch (Exception e)
+		{
+			fail ("wasn't ablt to read xml results: " + e.getMessage ());
+		}
 	}
 	
 	
@@ -163,9 +195,6 @@ public class CommandLineTest
 
 		ByteArrayOutputStream sysErr = clr.sysErr;
 		ByteArrayOutputStream sysOut = clr.sysOut;
-
-		System.out.println (clr.sysOut);
-		System.err.println (clr.sysErr);
 		
 		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
 		assertFalse ("bives main doesn't sysout " + Arrays.toString (args) + ": " + sysOut.toString(), sysOut.toString().isEmpty());
