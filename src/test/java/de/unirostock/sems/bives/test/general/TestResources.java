@@ -41,7 +41,7 @@ public class TestResources
 		};
 	
 	/** The valid cell ml. */
-	private static String [] validCellML = new String []
+	public static String [] validCellML = new String []
 		{
 		"bhalla_iyengar_1999_j_v1.cellml",
 		"bhalla_iyengar_1999_j_v2.cellml",

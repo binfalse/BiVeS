@@ -464,19 +464,11 @@ public class Executer
     
     
     // compute results
-		if (line.hasOption (REQ_WANT_DIFF) || line.getOptions ().length == 0)
-			try
-			{
-				toReturn.put (Executer.REQ_WANT_DIFF, result (diff.getDiff ()));
-			}
-			catch (Exception e)
-			{
-				errors.add (e);
-			}
-		
+    boolean hasOption = false;
 		if (line.hasOption (REQ_WANT_REACTIONS_GRAPHML) || line.hasOption (REQ_WANT_REACTIONS_GRAPHML2))
 			try
 			{
+				hasOption = true;
 				toReturn.put (Executer.REQ_WANT_REACTIONS_GRAPHML, result (diff.getReactionsGraphML ()));
 				if (line.hasOption (REQ_WANT_REACTIONS_GRAPHML2))
 					toReturn.put (Executer.REQ_WANT_REACTIONS_GRAPHML2, result (diff.getReactionsGraphML ()));
@@ -489,6 +481,7 @@ public class Executer
 		if (line.hasOption (REQ_WANT_REACTIONS_DOT) || line.hasOption (REQ_WANT_REACTIONS_DOT2))
 			try
 			{
+				hasOption = true;
 				toReturn.put (Executer.REQ_WANT_REACTIONS_DOT, result (diff.getReactionsDotGraph ()));
 				if (line.hasOption (REQ_WANT_REACTIONS_DOT2))
 					toReturn.put (Executer.REQ_WANT_REACTIONS_DOT2, result (diff.getReactionsDotGraph ()));
@@ -501,6 +494,7 @@ public class Executer
 		if (line.hasOption (REQ_WANT_REACTIONS_JSON) || line.hasOption (REQ_WANT_REACTIONS_JSON2))
 			try
 			{
+				hasOption = true;
 				toReturn.put (Executer.REQ_WANT_REACTIONS_JSON, result (diff.getReactionsJsonGraph ()));
 				if (line.hasOption (REQ_WANT_REACTIONS_JSON2))
 					toReturn.put (Executer.REQ_WANT_REACTIONS_JSON2, result (diff.getReactionsJsonGraph ()));
@@ -513,6 +507,7 @@ public class Executer
 		if (line.hasOption (REQ_WANT_COMP_HIERARCHY_DOT))
 			try
 			{
+				hasOption = true;
 				toReturn.put (Executer.REQ_WANT_COMP_HIERARCHY_DOT, result (diff.getHierarchyDotGraph ()));
 			}
 			catch (Exception e)
@@ -523,6 +518,7 @@ public class Executer
 		if (line.hasOption (REQ_WANT_COMP_HIERARCHY_JSON))
 			try
 			{
+				hasOption = true;
 				toReturn.put (Executer.REQ_WANT_COMP_HIERARCHY_JSON, result (diff.getHierarchyJsonGraph ()));
 			}
 			catch (Exception e)
@@ -530,9 +526,10 @@ public class Executer
 				errors.add (e);
 			}
 		
-		if (line.hasOption (REQ_WANT_COMP_HIERARCHY_JSON))
+		if (line.hasOption (REQ_WANT_COMP_HIERARCHY_GRAPHML))
 			try
 			{
+				hasOption = true;
 				toReturn.put (Executer.REQ_WANT_COMP_HIERARCHY_GRAPHML, result (diff.getHierarchyGraphML ()));
 			}
 			catch (Exception e)
@@ -543,6 +540,7 @@ public class Executer
 		if (line.hasOption (REQ_WANT_REPORT_HTML) || line.hasOption (REQ_WANT_REPORT_HTML_FP))
 			try
 			{
+				hasOption = true;
 				String result = result (diff.getHTMLReport ());
 				if (line.hasOption (REQ_WANT_REPORT_HTML))
 					toReturn.put (Executer.REQ_WANT_REPORT_HTML, result);
@@ -560,6 +558,7 @@ public class Executer
 		if (line.hasOption (REQ_WANT_REPORT_MD))
 			try
 			{
+				hasOption = true;
 				toReturn.put (Executer.REQ_WANT_REPORT_MD, result (diff.getMarkDownReport ()));
 			}
 			catch (Exception e)
@@ -570,7 +569,18 @@ public class Executer
 		if (line.hasOption (REQ_WANT_REPORT_RST))
 			try
 			{
+				hasOption = true;
 				toReturn.put (Executer.REQ_WANT_REPORT_RST, result (diff.getReStructuredTextReport ()));
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
+		if (line.hasOption (REQ_WANT_DIFF) || !hasOption)
+			try
+			{
+				hasOption = true;
+				toReturn.put (Executer.REQ_WANT_DIFF, result (diff.getDiff ()));
 			}
 			catch (Exception e)
 			{

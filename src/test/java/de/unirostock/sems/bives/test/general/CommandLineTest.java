@@ -151,6 +151,8 @@ public class CommandLineTest
 		
 		if (!file1.exists ())
 			fail ("file not found: " + file1.getAbsolutePath ());
+		if (!file2.exists ())
+			fail ("file not found: " + file2.getAbsolutePath ());
 		
 		testCommandLineOptions (file1, file2, new String [] {"--reportHtml", "--xmlDiff"}, 0);
 		testCommandLineOptions (file1, file2, new String [] {"--crnGraphml"}, 1);
@@ -158,7 +160,96 @@ public class CommandLineTest
 		testCommandLineOptions (file1, file2, new String [] {"--reportHtml", "--reportMd"}, 0);
 		testCommandLineOptions (file1, file2, new String [] {"--reportHtml", "--reportHtmlFp"}, 0);
 		testCommandLineOptions (file1, file2, new String [] {"--reportHtml", "--reportHtmlFp", "--reactionsGraphml"}, 0);
-		LOGGER.closeLogger ();
+		testCommandLineOptions (file1, file2, new String [] {"--reportRST"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {}, 1);
+		testCommandLineOptions (file1, file2, new String [] {"--reportHtmlFp"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--crnDot"}, 1);
+		testCommandLineOptions (file1, file2, new String [] {"--crnDot", "--reactionsGraphml"}, 1);
+		testCommandLineOptions (file1, file2, new String [] {"--crnDot", "--reactionsDot"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--crnDot", "--crnGraphml"}, 2);
+		testCommandLineOptions (file1, file2, new String [] {"--reactionsJson", "--reactionsDot"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--reactionsJson", "--crnJson"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--crnJson"}, 1);
+		
+
+		file1 = new File ("test/" + TestResources.validCellML[0]);
+		file2 = new File ("test/" + TestResources.validCellML[1]);
+		
+		if (!file1.exists ())
+			fail ("file not found: " + file1.getAbsolutePath ());
+		if (!file2.exists ())
+			fail ("file not found: " + file2.getAbsolutePath ());
+		
+		testCommandLineOptions (file1, file2, new String [] {"--reportHtml", "--xmlDiff"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--crnGraphml"}, 1);
+		testCommandLineOptions (file1, file2, new String [] {"--reportMd"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--reportHtml", "--reportMd"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--reportHtml", "--reportHtmlFp"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--reportHtml", "--reportHtmlFp", "--reactionsGraphml"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--reportRST"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {}, 1);
+		testCommandLineOptions (file1, file2, new String [] {"--reportHtmlFp"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--crnDot"}, 1);
+		testCommandLineOptions (file1, file2, new String [] {"--crnDot", "--reactionsGraphml"}, 1);
+		testCommandLineOptions (file1, file2, new String [] {"--crnDot", "--reactionsDot"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--crnDot", "--crnGraphml"}, 2);
+		testCommandLineOptions (file1, file2, new String [] {"--reactionsJson", "--reactionsDot"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--reactionsJson", "--crnJson"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--crnJson"}, 1);
+		testCommandLineOptions (file1, file2, new String [] {"--compHierarchyDot"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--compHierarchyJson"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--compHierarchyGraphml"}, 0);
+		testCommandLineOptions (file1, file2, new String [] {"--compHierarchyGraphml", "--compHierarchyJson", "--compHierarchyDot"}, 0);
+		
+		
+		
+	}
+	
+	@Test
+	public void testTypeSwitches ()
+	{
+
+		File file1Sbml = new File ("test/" + TestResources.validSbml[0]);
+		File file2Sbml = new File ("test/" + TestResources.validSbml[1]);
+		File file1Cellml = new File ("test/" + TestResources.validCellML[0]);
+		File file2Cellml = new File ("test/" + TestResources.validCellML[1]);
+		
+		
+		
+		
+		String [] args = new String [] {"--SBML", file1Sbml.getAbsolutePath (), file2Sbml.getAbsolutePath ()};
+		CommandLineResults clr = CommandLineTest.runCommandLine (args);
+
+		ByteArrayOutputStream sysErr = clr.sysErr;
+		ByteArrayOutputStream sysOut = clr.sysOut;
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
+		assertFalse ("bives main doesn't sysout " + Arrays.toString (args) + ": " + sysOut.toString(), sysOut.toString().isEmpty());
+		
+		
+		
+		
+		args = new String [] {"--CellML", file1Cellml.getAbsolutePath (), file2Cellml.getAbsolutePath ()};
+		clr = CommandLineTest.runCommandLine (args);
+
+		sysErr = clr.sysErr;
+		sysOut = clr.sysOut;
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
+		assertFalse ("bives main doesn't sysout " + Arrays.toString (args) + ": " + sysOut.toString(), sysOut.toString().isEmpty());
+		
+		
+		
+		
+		args = new String [] {"--regular", file1Cellml.getAbsolutePath (), file1Sbml.getAbsolutePath ()};
+		clr = CommandLineTest.runCommandLine (args);
+
+		sysErr = clr.sysErr;
+		sysOut = clr.sysOut;
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
+		assertFalse ("bives main doesn't sysout " + Arrays.toString (args) + ": " + sysOut.toString(), sysOut.toString().isEmpty());
+
 	}
 	
 
