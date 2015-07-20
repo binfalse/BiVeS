@@ -3,7 +3,7 @@
     <groupId>de.unirostock.sems</groupId>
     <artifactId>BiVeS</artifactId>
     <packaging>jar</packaging>
-    <version>1.6.9</version>
+    <version>1.7</version>
     <name>BiVeS</name>
     <description>
         BiVeS - BioModel Version Control System
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>de.unirostock.sems</groupId>
             <artifactId>BiVeS-SBML</artifactId>
-            <version>1.5.2</version>
+            <version>1.5.3</version>
         </dependency>
         <dependency>
             <groupId>de.unirostock.sems</groupId>
