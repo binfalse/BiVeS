@@ -56,7 +56,13 @@ public class GeneralTest
 			
 			PatchProducer producer = new PatchProducer ();
 			producer.init (connections, treeA, treeB);
-			producer.produce ();
+			String xml = producer.produce ();
+			assertTrue ("XML patch should contain bives version", xml.contains ("BiVeS compiled with"));
+			assertTrue ("XML patch should contain bives FrameWork version", xml.contains ("FrameWork"));
+			assertTrue ("XML patch should contain bives Core version", xml.contains ("Core"));
+			assertTrue ("XML patch should contain bives SBML version", xml.contains ("SBML"));
+			assertTrue ("XML patch should contain bives CellML version", xml.contains ("CellML"));
+			
 			Patch patch = producer.getPatch ();
 			assertEquals ("same files must not result in a patch", 0, patch.getNumInserts () + patch.getNumDeletes () + patch.getNumMoves () + patch.getNumUpdates ());
 		}
