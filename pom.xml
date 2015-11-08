@@ -3,7 +3,7 @@
     <groupId>de.unirostock.sems</groupId>
     <artifactId>BiVeS</artifactId>
     <packaging>jar</packaging>
-    <version>1.7.3</version>
+    <version>1.8</version>
     <name>BiVeS</name>
     <description>
         BiVeS - BioModel Version Control System
@@ -36,17 +36,17 @@
         <dependency>
             <groupId>de.unirostock.sems</groupId>
             <artifactId>BiVeS-SBML</artifactId>
-            <version>1.5.6</version>
+            <version>1.7.1</version>
         </dependency>
         <dependency>
             <groupId>de.unirostock.sems</groupId>
             <artifactId>BiVeS-CellML</artifactId>
-            <version>1.4.4</version>
+            <version>1.6.2</version>
         </dependency>
         <dependency>
             <groupId>de.unirostock.sems</groupId>
             <artifactId>BiVeS-Core</artifactId>
-            <version>1.4.6</version>
+            <version>1.6.8</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
@@ -57,7 +57,6 @@
 		    <groupId>log4j</groupId>
 		    <artifactId>log4j</artifactId>
 		    <version>1.2.17</version>
-		    <scope>test</scope>
 		</dependency>
     </dependencies>
     <distributionManagement>

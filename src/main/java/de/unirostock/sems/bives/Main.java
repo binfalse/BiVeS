@@ -18,6 +18,8 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.json.simple.JSONObject;
@@ -78,6 +80,7 @@ public class Main
 	 */
 	public static void main (String[] args)
 	{
+		Logger.getRootLogger ().setLevel (Level.OFF);
 		LOGGER.setLogToStdErr (false);
 		LOGGER.setLogToStdOut (false);
 		LOGGER.setLevel (LOGGER.ERROR);

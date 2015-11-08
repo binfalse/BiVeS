@@ -8,9 +8,12 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import de.unirostock.sems.bives.test.general.CommandLineTest;
@@ -24,6 +27,11 @@ import de.unirostock.sems.bives.test.general.CommandLineTest.CommandLineResults;
  */
 public class ManchesterTest
 {
+	@BeforeClass
+	public static void setUpEnv ()
+	{
+		Logger.getRootLogger ().setLevel (Level.OFF);
+	}
 	
 	/**
 	 * Test command line used in SysMO/Seek. BiVeS is called from ruby using the command line:
