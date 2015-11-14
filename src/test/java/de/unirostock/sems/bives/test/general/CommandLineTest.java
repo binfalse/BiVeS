@@ -22,6 +22,7 @@ import org.json.simple.parser.ParseException;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import de.unirostock.sems.bives.Executer;
 import de.unirostock.sems.bives.Main;
 import de.unirostock.sems.xmlutils.ds.DocumentNode;
 import de.unirostock.sems.xmlutils.ds.TreeDocument;
@@ -128,7 +129,7 @@ public class CommandLineTest
 	}
 	
 	
-	public static void testCommandLineOptions (File file1, File file2, String [] options, int add)
+	public static String testCommandLineOptions (File file1, File file2, String [] options, int add)
 	{
 		String [] args = new String [options.length + 3];
 		System.arraycopy (options, 0, args, 3, options.length);
@@ -150,7 +151,8 @@ public class CommandLineTest
 			//System.out.println (json);
 			assertEquals ("expected to get some results", add + options.length, json.size ());
 			for (String option : options){
-				assertNotNull ("expected to get " + option, json.get (option.substring (2)));
+				if (!option.endsWith (Executer.REQ_INC_ANNO))
+					assertNotNull ("expected to get " + option, json.get (option.substring (2)));
 			}
 			
 		}
@@ -175,8 +177,11 @@ public class CommandLineTest
 			DocumentNode root = doc.getRoot ();
 			assertEquals ("expected to get some results", add + options.length, root.getChildren ().size ());
 			for (String option : options){
-				assertEquals ("expected to get " + option, 1, root.getChildrenWithTag (option.substring (2)).size ());
-				assertNotNull ("expected to get " + option, root.getChildrenWithTag (option.substring (2)).get (0));
+				if (!option.endsWith (Executer.REQ_INC_ANNO))
+				{
+					assertEquals ("expected to get " + option, 1, root.getChildrenWithTag (option.substring (2)).size ());
+					assertNotNull ("expected to get " + option, root.getChildrenWithTag (option.substring (2)).get (0));
+				}
 			}
 			
 		}
@@ -184,6 +189,21 @@ public class CommandLineTest
 		{
 			fail ("wasn't ablt to read xml results: " + e.getMessage ());
 		}
+		
+		
+		
+		
+//		args[0] = "";
+		String [] args2 = new String [args.length - 1];
+		System.arraycopy (args, 1, args2, 0, args2.length);
+		clr = CommandLineTest.runCommandLine (args2);
+
+		sysErr = clr.sysErr;
+		sysOut = clr.sysOut;
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args) + ": " + sysErr.toString(), sysErr.toString().isEmpty());
+		
+		return sysOut.toString ();
 	}
 	
 	public static void testCommandLineOptions (File file1, String [] options, int add)
@@ -360,6 +380,31 @@ public class CommandLineTest
 		
 		
 		
+	}
+	
+	@Test
+	public void testAnnotationCommandLineOptions ()
+	{
+		File file1 = new File ("test/" + TestResources.validSbml[0]);
+		File file2 = new File ("test/" + TestResources.validSbml[1]);
+		
+		if (!file1.exists ())
+			fail ("file not found: " + file1.getAbsolutePath ());
+		if (!file2.exists ())
+			fail ("file not found: " + file2.getAbsolutePath ());
+		
+		
+		// diff shouldn't contain annotations by default
+		String diff = testCommandLineOptions (file1, file2, new String [] {"--xmlDiff"}, 0);
+//		System.out.println (diff);
+		assertFalse ("expected prov: about bives in diff", diff.contains ("prov:"));
+		assertFalse ("expected comodi: in diff", diff.contains ("comodi:"));
+		
+		// diff should contation annotations if asked for it
+		diff = testCommandLineOptions (file1, file2, new String [] {"--xmlDiff", "--inclAnnotations"}, -1);
+//		System.out.println (diff);
+		assertTrue ("expected prov: about bives in diff", diff.contains ("prov:"));
+		assertTrue ("expected comodi: in diff", diff.contains ("comodi:"));
 	}
 	
 	@Test

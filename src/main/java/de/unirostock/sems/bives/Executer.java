@@ -130,6 +130,7 @@ public class Executer
 	public static final String REQ_DEBUG = "debug";
 	public static final String REQ_DEBUGG = "debugg";
 	public static final String REQ_XML = "xml";
+	public static final String REQ_INC_ANNO = "inclAnnotations";
 	public static final String REQ_JSON = "json";
 	public static final String REQ_OUT = "out";
 	public static final String REQ_HELP = "help";
@@ -173,9 +174,11 @@ public class Executer
 			.addOption (Option.builder ("j").longOpt (REQ_JSON).desc ("encode results in JSON").build ()));
 		options.addOption (Option.builder ("o").longOpt (REQ_OUT).hasArg ().desc ("write output to a file").build ());
 		options.addOption (Option.builder ("h").longOpt (REQ_HELP).desc ("help").build ());
+		options.addOption (Option.builder ().longOpt (REQ_INC_ANNO).desc ("include annotaions in the patch").build ());
 		
 		
 		options.addOption (Option.builder ().longOpt (REQ_WANT_DIFF).desc ("get the diff encoded in XML format").build ());
+		options.addOption (Option.builder ().longOpt (REQ_INC_ANNO).desc ("include annotaions in the patch").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REPORT_MD).desc ("get the report of changes encoded in MarkDown").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REPORT_RST).desc ("get the report of changes encoded in ReStructuredText").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REPORT_HTML).desc ("get the report of changes encoded in HTML").build ());
@@ -580,7 +583,7 @@ public class Executer
 			try
 			{
 				hasOption = true;
-				toReturn.put (Executer.REQ_WANT_DIFF, result (diff.getDiff ()));
+				toReturn.put (Executer.REQ_WANT_DIFF, result (diff.getDiff (line.hasOption (REQ_INC_ANNO))));
 			}
 			catch (Exception e)
 			{
