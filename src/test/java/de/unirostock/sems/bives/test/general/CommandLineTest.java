@@ -408,6 +408,46 @@ public class CommandLineTest
 	}
 	
 	@Test
+	public void testSepAnnotationCommandLineOptions ()
+	{
+		File file1 = new File ("test/" + TestResources.validSbml[0]);
+		File file2 = new File ("test/" + TestResources.validSbml[1]);
+		
+		if (!file1.exists ())
+			fail ("file not found: " + file1.getAbsolutePath ());
+		if (!file2.exists ())
+			fail ("file not found: " + file2.getAbsolutePath ());
+		
+		
+		// diff shouldn't contain annotations by default
+		String diff = testCommandLineOptions (file1, file2, new String [] {"--xmlDiff"}, 0);
+//		System.out.println (diff);
+		assertFalse ("did not expect prov: about bives in diff", diff.contains ("prov:"));
+		assertFalse ("did not expect comodi: in diff", diff.contains ("comodi:"));
+		assertTrue ("did expect xml", diff.contains ("<?xml"));
+		assertTrue ("did expect xml bives", diff.contains ("<bives"));
+		assertTrue ("did expect xml update", diff.contains ("<update"));
+		
+		// diff should contation annotations if asked for it
+		diff = testCommandLineOptions (file1, file2, new String [] {"--xmlDiff", "--separateAnnotations"}, 0);
+//		System.out.println (diff);
+		assertTrue ("expected prov: about bives in diff", diff.contains ("prov:"));
+		assertTrue ("expected comodi: in diff", diff.contains ("comodi:"));
+		assertTrue ("did expect xml", diff.contains ("<?xml"));
+		assertTrue ("did expect xml bives", diff.contains ("<bives"));
+		assertTrue ("did expect xml update", diff.contains ("<update"));
+		
+		// diff should contation annotations if asked for it
+		diff = testCommandLineOptions (file1, file2, new String [] {"--separateAnnotations"}, 0);
+//		System.out.println (diff);
+		assertTrue ("expected prov: about bives in diff", diff.contains ("prov:"));
+		assertTrue ("expected comodi: in diff", diff.contains ("comodi:"));
+		assertFalse ("did not expect xml", diff.contains ("<?xml"));
+		assertFalse ("did not expect xml bives", diff.contains ("<bives"));
+		assertFalse ("did not expect xml update", diff.contains ("<update"));
+	}
+	
+	@Test
 	public void testTypeSwitches ()
 	{
 
