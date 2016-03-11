@@ -133,6 +133,7 @@ public class Executer
 	public static final String REQ_INC_ANNO = "inclAnnotations";
 	public static final String REQ_SEP_ANNO = "separateAnnotations";
 	public static final String REQ_JSON = "json";
+	public static final String REQ_CA = "combinearchive";
 	public static final String REQ_OUT = "out";
 	public static final String REQ_HELP = "help";
 
