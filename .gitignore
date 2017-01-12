@@ -5,3 +5,7 @@ dist
 testfiles
 target
 lib
+.settings
+src/log4j.properties
+.project
+.classpath
