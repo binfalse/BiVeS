@@ -81,6 +81,9 @@ public class Executer
 	public static final String REQ_WANT_REACTIONS_DOT = "reactionsDot";
 	public static final String REQ_WANT_REACTIONS_DOT2 = "crnDot";
 	
+	/** The Constant REQ_WANT_REACTIONS_SBGN_JSON. */
+	public static final String REQ_WANT_REACTIONS_SBGN_JSON = "reactionsSbgnJson";
+	
 	/** The Constant REQ_WANT_REACTIONS_JSON. */
 	public static final String REQ_WANT_REACTIONS_JSON = "reactionsJson";
 	public static final String REQ_WANT_REACTIONS_JSON2 = "crnJson";
@@ -188,6 +191,7 @@ public class Executer
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REACTIONS_GRAPHML).desc ("get the highlighted reaction network encoded in GraphML").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REACTIONS_DOT).desc ("get the highlighted reaction network encoded in DOT language").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REACTIONS_JSON).desc ("get the highlighted reaction network encoded in JSON").build ());
+		options.addOption (Option.builder ().longOpt (REQ_WANT_REACTIONS_SBGN_JSON).desc ("get the highlighted reaction network encoded in an SBGN-JSON format").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REACTIONS_GRAPHML2).desc ("get the highlighted reaction network encoded in GraphML (deprecated version)").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REACTIONS_DOT2).desc ("get the highlighted reaction network encoded in DOT language (deprecated version)").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REACTIONS_JSON2).desc ("get the highlighted reaction network encoded in JSON (deprecated version)").build ());
@@ -503,6 +507,17 @@ public class Executer
 				toReturn.put (Executer.REQ_WANT_REACTIONS_JSON, result (diff.getReactionsJsonGraph ()));
 				if (line.hasOption (REQ_WANT_REACTIONS_JSON2))
 					toReturn.put (Executer.REQ_WANT_REACTIONS_JSON2, result (diff.getReactionsJsonGraph ()));
+			}
+			catch (Exception e)
+			{
+				errors.add (e);
+			}
+		
+		if (line.hasOption (REQ_WANT_REACTIONS_SBGN_JSON))
+			try
+			{
+				hasOption = true;
+				toReturn.put (Executer.REQ_WANT_REACTIONS_SBGN_JSON, result (diff.getReactionsSbgnJsonGraph ()));
 			}
 			catch (Exception e)
 			{
