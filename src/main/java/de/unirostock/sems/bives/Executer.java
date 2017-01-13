@@ -83,10 +83,7 @@ public class Executer
 	
 	/** The Constant REQ_WANT_REACTIONS_SBGN_JSON. */
 	public static final String REQ_WANT_REACTIONS_SBGN_JSON = "reactionsSbgnJson";
-	
-	/** The Constant REQ_WANT_REACTIONS_JSON. */
-	public static final String REQ_WANT_REACTIONS_SBGN_JSON = "reactionsSbgnJson";
-	
+		
 	/** The Constant REQ_WANT_REACTIONS_JSON. */
 	public static final String REQ_WANT_REACTIONS_JSON = "reactionsJson";
 	public static final String REQ_WANT_REACTIONS_JSON2 = "crnJson";
