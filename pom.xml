@@ -41,12 +41,12 @@
         <dependency>
             <groupId>de.unirostock.sems</groupId>
             <artifactId>BiVeS-CellML</artifactId>
-            <version>1.7.0</version>
+            <version>1.7.1</version>
         </dependency>
         <dependency>
             <groupId>de.unirostock.sems</groupId>
             <artifactId>BiVeS-Core</artifactId>
-            <version>1.8.0</version>
+            <version>1.8.1</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
