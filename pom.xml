@@ -58,12 +58,6 @@
             <artifactId>log4j</artifactId>
             <version>1.2.17</version>
         </dependency>
-        <dependency>
-        	<groupId>de.unirostock.sems</groupId>
-        	<artifactId>BiVeS</artifactId>
-        	<version>1.9.1</version>
-        	<scope>provided</scope>
-        </dependency>
     </dependencies>
     <distributionManagement>
         <downloadUrl>http://mvn.sems.uni-rostock.de</downloadUrl>   
