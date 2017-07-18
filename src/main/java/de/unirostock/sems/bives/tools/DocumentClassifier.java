@@ -12,6 +12,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.jena.atlas.json.JsonArray;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import de.unirostock.sems.bives.cellml.parser.CellMLDocument;
 import de.unirostock.sems.bives.sbml.parser.SBMLDocument;
 import de.unirostock.sems.xmlutils.ds.TreeDocument;
@@ -239,6 +243,27 @@ public class DocumentClassifier
 		if (ret.length () > 0)
 		return ret.substring (0, ret.length () - 1);
 		return "unknown type";
+	}
+
+	/**
+	 * Human readable.
+	 *
+	 * @param type the type
+	 * @return the string
+	 */
+	public static JSONArray asJson (int type)
+	{
+		JSONArray json = new JSONArray ();
+		if ((type & XML) != 0)
+			json.add ("XML");
+		if ((type & CELLML) != 0)
+			json.add ("CellML");
+		if ((type & SBML) != 0)
+			json.add ("SBML");
+		if (json.size () > 0)
+			return json;
+		json.add ("unknown type");
+		return json;
 	}
 	
 }

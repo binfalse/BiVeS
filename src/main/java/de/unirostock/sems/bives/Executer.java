@@ -237,7 +237,7 @@ public class Executer
 	 * @throws Exception the exception
 	 */
 	@SuppressWarnings("unchecked")
-	public void executeSingle (String document, HashMap<String, String> toReturn, CommandLine line, List<Exception> errors) throws Exception
+	public void executeSingle (String document, JSONObject toReturn, CommandLine line, List<Exception> errors) throws Exception
 	{
 		TreeDocument td = null;
 		if (XML_PATTERN.matcher (document).find ())
@@ -280,7 +280,7 @@ public class Executer
 				//ret += "nodestats:" + doc.getNodeStats () + ";";
   			json.put ("nodestats", doc.getNodeStats ());
 			}
-			toReturn.put (Executer.REQ_WANT_META, json.toJSONString ());
+			toReturn.put (Executer.REQ_WANT_META, json);
   	}
   	
   	if (line.hasOption (REQ_WANT_DOCUMENTTYPE))
@@ -289,7 +289,7 @@ public class Executer
   		classifier = new DocumentClassifier ();
   		int type = classifier.classify (td);
 			
-			toReturn.put (Executer.REQ_WANT_DOCUMENTTYPE, DocumentClassifier.humanReadable (type));
+			toReturn.put (Executer.REQ_WANT_DOCUMENTTYPE, DocumentClassifier.asJson (type));
   	}
 			
   	if (
@@ -426,7 +426,8 @@ public class Executer
 	 * @param errors the errors
 	 * @throws Exception the exception
 	 */
-	public void executeCompare (String document1, String document2, HashMap<String, String> toReturn, CommandLine line, List<Exception> errors) throws Exception
+	@SuppressWarnings("unchecked")
+	public void executeCompare (String document1, String document2, JSONObject toReturn, CommandLine line, List<Exception> errors) throws Exception
 	{
 		TreeDocument td1 = null, td2 = null;
 		if (XML_PATTERN.matcher (document1).find ())
@@ -648,6 +649,11 @@ public class Executer
 	}
 	
 	
+	/**
+	 * Static string to start an HTML page.
+	 *
+	 * @return the string
+	 */
 	public static String htmlPageStart ()
 	{
 		return "<!DOCTYPE html>"
@@ -673,6 +679,11 @@ public class Executer
 
 	}
 	
+	/**
+	 * Static string to close an HTML page.
+	 *
+	 * @return the string
+	 */
 	public static String htmlPageEnd ()
 	{
 		return "</body></html>";

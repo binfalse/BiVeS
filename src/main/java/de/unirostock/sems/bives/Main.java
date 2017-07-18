@@ -76,7 +76,9 @@ public class Main
 	}
 	
 	/**
-	 * @param args 
+	 * The main method.
+	 *
+	 * @param args the arguments
 	 */
 	public static void main (String[] args)
 	{
@@ -101,13 +103,11 @@ public class Main
 		}
 	}
 	
+	/**
+	 * The Class HelpException.
+	 */
 	public static class HelpException extends Exception
-	{
-
-		/**
-		 * 
-		 */
-		private static final long	serialVersionUID	= 1L;}
+	{	private static final long	serialVersionUID	= 1L;}
 	
 	/**
 	 * The Class ExecutionException.
@@ -142,6 +142,15 @@ public class Main
 	}
 	
 	
+	/**
+	 * Parses the command line.
+	 *
+	 * @param args given arguments
+	 * @param exe the executer
+	 * @return the command line
+	 * @throws HelpException the help exception
+	 * @throws ExecutionException the execution exception
+	 */
 	public static CommandLine parseCommandLine (String[] args, Executer exe) throws HelpException, ExecutionException
 	{
     Options options = exe.getOptions ();
@@ -173,7 +182,7 @@ public class Main
 	{
     String file1 = null, file2 = null;
     int output = 0;
-    HashMap<String, String> toReturn = new HashMap<String, String> ();
+    JSONObject toReturn = new JSONObject ();
     File outFile = null;
 
     CommandLine line = parseCommandLine (args, exe);
@@ -256,7 +265,7 @@ public class Main
     	for (Exception e : errors)
     		System.err.println ("ERROR: " + e);
     	
-    	for (String ret : toReturn.keySet ())
+    	for (Object ret : toReturn.keySet ())
     		out.println (toReturn.get (ret));
     }
     else if (output == 1)
@@ -265,10 +274,10 @@ public class Main
     	Element root =  new Element ("bivesResult");
     	Document document = new Document (root);
 
-    	for (String ret : toReturn.keySet ())
+    	for (Object ret : toReturn.keySet ())
     	{
-    		Element el = new Element (ret);
-    		el.setText (toReturn.get (ret));
+    		Element el = new Element (ret.toString ());
+    		el.setText (toReturn.get (ret).toString ());
     		root.addContent (el);
     	}
     	
@@ -277,10 +286,10 @@ public class Main
     else
     {
     	// json
-    	JSONObject json = new JSONObject ();
-    	for (String ret : toReturn.keySet ())
-    		json.put (ret, toReturn.get (ret));
-    	out.println (json);
+    	/*JSONObject json = new JSONObject ();
+    	for (Object ret : toReturn.keySet ())
+    		json.put (ret, toReturn.get (ret));*/
+    	out.println (toReturn);
     }
     
     if (outFile != null)
