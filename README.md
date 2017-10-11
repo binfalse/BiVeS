@@ -21,5 +21,6 @@ An XSD schema for the XML can be found in [res/bives-diff-schema.xsd](res/bives-
 
 BiVeS supports other output formats and flags to activate special merge strategies, just call it with `--help` to get a full list of available options.
 
-
+There is also a Web Application that happily accepts thrown models and returns comparison results.
+Just have a look at [BiVeS-WS](https://github.com/SemsProject/BiVeS-WS) and its demo instance at [bives.bio.informatik.uni-rostock.de](https://bives.bio.informatik.uni-rostock.de/).
 
