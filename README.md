@@ -7,6 +7,8 @@ The Algorithm implemented in BiVeS was published as
 > [An algorithm to detect and communicate the differences in computational models describing biological systems.](https://doi.org/10.1093/bioinformatics/btv484)
 > *Bioinformatics* 32 (4): 563-570;
 
+**More documentation on the BiVeS framework** can be found and the [GitHub pages of the SEMS project](https://semsproject.github.io/BiVeS/).
+
 ## BiVeS consists of several modules
 
 ![bives modules](art/dependency-graph.png)
@@ -40,7 +42,7 @@ An XSD schema for the XML can be found in [res/bives-diff-schema.xsd](res/bives-
 BiVeS supports other output formats and flags to activate special merge strategies, just call it with `--help` to get a full list of available options.
 
 There is also a Web Application that happily accepts thrown models and returns comparison results.
-Just have a look at [BiVeS-WS](https://github.com/SemsProject/BiVeS-WS) and its demo instance at [bives.bio.informatik.uni-rostock.de](https://bives.bio.informatik.uni-rostock.de/).
+Just have a look at [BiVeS-WebApp](https://github.com/binfalse/BiVeS-WebApp) and its demo instance at [bives.bio.informatik.uni-rostock.de](https://bives.bio.informatik.uni-rostock.de/).
 
 
 ## LICENSE
