@@ -7,16 +7,25 @@ The Algorithm implemented in BiVeS was published as
 > [An algorithm to detect and communicate the differences in computational models describing biological systems.](https://doi.org/10.1093/bioinformatics/btv484)
 > *Bioinformatics* 32 (4): 563-570;
 
+## BiVeS consists of several modules
 
 ![bives modules](art/dependency-graph.png)
 
 BiVeS itself consists of a number of modules:
 
+* [xmlutils](https://github.com/binfalse/xmlutils) is a library for advanced XML handling
+* [jCOMODI](https://github.com/binfalse/jCOMODI/) provides programmatic access to the [COMODI ontology](http://purl.uni-rostock.de/comodi/)
+* [BiVeS-Core](https://github.com/binfalse/BiVeS-Core) is the core library for comparison of computational models
+* [BiVeS-SBML](https://github.com/binfalse/BiVeS-SBML/) is a module providing special strategies for models encoded in SBML
+* [BiVeS-CellML](https://github.com/binfalse/BiVeS-CellML) is a module providing special strategies for models encoded in CellML
+* [BiVeS](https://github.com/binfalse/BiVeS) ties all modules together and provides command line access
+* [BiVeS-WebApp](https://github.com/binfalse/BiVeS-WebApp) is a web interface to access BiVeS through the network
+* [BiVeS-WebApp-Client](https://github.com/binfalse/BiVeS-WebApp-Client) provides a Java library for comparing models using the BiVeS-WebApp
 
 
 
 
-## Usage
+## Usage of BiVeS
 
 BiVeS currently supports different flavours of XML documents.
 It supports special comparison strategies for computational models encoded in SBML (though [BiVeS-SBML](https://github.com/binfalse/BiVeS-SBML)) or CellML (through [BiVeS-CellML](https://github.com/binfalse/BiVeS-CellML)).
