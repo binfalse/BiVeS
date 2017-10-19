@@ -7,9 +7,14 @@ The Algorithm implemented in BiVeS was published as
 > [An algorithm to detect and communicate the differences in computational models describing biological systems.](https://doi.org/10.1093/bioinformatics/btv484)
 > *Bioinformatics* 32 (4): 563-570;
 
+
+![bives modules](art/dependency-graph.png)
+
 BiVeS itself consists of a number of modules:
 
-![bives modules]()
+
+
+
 
 ## Usage
 
