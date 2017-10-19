@@ -25,8 +25,6 @@ BiVeS itself consists of a number of modules:
 * [BiVeS-WebApp-Client](https://github.com/binfalse/BiVeS-WebApp-Client) provides a Java library for comparing models using the BiVeS-WebApp
 
 
-<a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
-
 ## Usage of BiVeS
 
 BiVeS currently supports different flavours of XML documents.
@@ -47,9 +45,9 @@ Just have a look at [BiVeS-WebApp](https://github.com/binfalse/BiVeS-WebApp) and
 
 ## LICENSE
 
-Artwork and text etc is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/) ![Creative Commons License](https://i.creativecommons.org/l/by-sa/4.0/88x31.png).
+Artwork and text etc is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/) ![Creative Commons License](https://i.creativecommons.org/l/by-sa/4.0/80x15.png).
 
-The code is licensed under an Apache 2.0 license:
+The code is licensed under an [Apache 2.0 license](LICENSE):
 
     Copyright martin scharm <https://binfalse.de/contact/>
 
