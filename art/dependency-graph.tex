@@ -1,0 +1,222 @@
+\documentclass[11pt,x11names]{scrbook}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usetikzlibrary{positioning,fit,calc, shapes,decorations.pathmorphing}
+\usetikzlibrary{shapes,arrows,trees,decorations.pathmorphing,backgrounds,fit,shapes,arrows,chains, decorations.markings,shapes.arrows}
+%%%<
+\usepackage{verbatim}
+\usepackage{lmodern}
+
+\usepackage[active,tightpage]{preview}
+
+
+
+\renewcommand{\tiny}{\fontsize{12}{14}\selectfont}
+\renewcommand{\scriptsize}{\fontsize{14.4}{18}\selectfont}   
+\renewcommand{\footnotesize}{\fontsize{17.28}{22}\selectfont}
+\renewcommand{\small}{\fontsize{20.74}{25}\selectfont}
+\renewcommand{\normalsize}{\fontsize{24.88}{30}\selectfont}
+\renewcommand{\large}{\fontsize{29.86}{37}\selectfont}
+\renewcommand{\Large}{\fontsize{35.83}{45}\selectfont}
+\renewcommand{\LARGE}{\fontsize{43}{54}\selectfont}
+\renewcommand{\huge}{\fontsize{51.6}{64}\selectfont}
+\renewcommand{\Huge}{\fontsize{61.92}{77}\selectfont}
+\newcommand{\veryHuge}{\fontsize{74.3}{93}\selectfont}
+\newcommand{\VeryHuge}{\fontsize{89.16}{112}\selectfont}
+\newcommand{\VERYHuge}{\fontsize{107}{134}\selectfont}
+
+
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{5mm}%
+
+\definecolor{bivesmap}{rgb}{.8,.8,.8}
+\definecolor{bivesmap2}{rgb}{.8,.8,.8}
+\definecolor{bivesins}{cmyk}{1.00, 0.75, 0.00, 0.00}
+\definecolor{bivesdel}{rgb}{1,0,0}
+\definecolor{bivesmod}{RGB}{255,165,0}
+
+\definecolor{dgreen}{HTML}{116B2F}
+\definecolor{dgreen}{HTML}{0C9B2A}
+\definecolor{violett}{HTML}{8b2b91}
+
+\definecolor{optmodules}{HTML}{fbe815}
+% fbe815
+% 0e68a6
+
+
+
+\tikzset{trans/.style={->,shorten >=5pt,shorten <=5pt,>=latex,ultra thick,line width=3mm,line cap=round
+}}
+\begin{document}
+\begin{tikzpicture}[
+  node distance=1mm,
+  innermacromolecule/.style={rectangle, rounded corners, draw=black,minimum height=11mm},
+  macromolecule/.style={rectangle, rounded corners, draw=black,line width=.5mm},
+  complex/.style={chamfered rectangle, chamfered rectangle angle=45,draw=black,line width=.5mm},
+  reaction/.style={inner sep=5pt,draw,line width=.6mm},
+  document/.style={inner sep=20pt,draw=black,fill=white,line width=.6mm},
+  transdiff/.style={->,shorten >=5pt,shorten <=5pt,>=latex,line width=1mm,line cap=round,dgreen,dashed,dash pattern=on 6pt off 6pt},
+  %transmeta/.style={->,shorten >=5pt,shorten <=5pt,>=latex,line width=1mm,line cap=round,violett,dashed,dash pattern=on 1pt off 6pt},
+  future/.style={->,shorten >=5pt,shorten <=5pt,>=latex,line width=3mm,line cap=round},%,dashed,dash pattern=on 16pt off 12pt},
+%   font=\small\sffamily,
+  dependency/.style={->,shorten >=5pt,shorten <=5pt,>=latex,line width=.4mm,line cap=round},
+  module/.style={ellipse},
+  idid/.style={draw=black,line width=.4mm,},
+  ->,>=latex,font=\sffamily\bfseries
+]
+\node[white,module,idid,fill=bivesins] (bives) at (0,0) {BiVeS};
+\node[module,idid] (sbml) at (-5,-3) {BiVeS-SBML};
+\node[module,idid] (cellml) at (5.5,-3) {BiVeS-CellML};
+\node[module,idid] (core) at (1,-6) {BiVeS-Core};
+
+\node[module,idid] (jcomodi) at (-3,-9) {jCOMODI};
+
+\node[module,idid] (xmlutils) at (6,-9) {xmlutils};
+\node[module,idid] (bflog) at (2,-12) {BFLog};
+\node[module,idid] (bfutils) at (11,-12) {BFUtils};
+
+
+
+\node[module,idid] (ws) at (7,2) {BiVeS-WS};
+\node[module,idid] (wsc) at (15,-1.5) {BiVeS-WS-Client};
+
+\draw[dependency] (bives) -- (cellml);
+\draw[dependency] (bives) -- (sbml);
+\draw[dependency] (bives) -- (core);
+
+
+\draw[dependency] (cellml) -- (core);
+\draw[dependency] (sbml) -- (core);
+
+\draw[dependency] (core) -- (xmlutils);
+\draw[dependency] (core) -- (jcomodi);
+
+\draw[dependency] (xmlutils) -- (bflog);
+\draw[dependency] (xmlutils) -- (bfutils);
+
+\draw[dependency] (ws) -- (bives);
+\draw[dependency,loosely dashed,-,bivesins] (ws) -- (wsc) node [midway, above, sloped, fill=white] {\footnotesize HTTP};
+
+
+
+% \node (doc) at (-7.8,0) {\includegraphics[height=5cm]{docicon}};
+
+% \node (release07) at (0,0) {\includegraphics[width=4em]{../../pixel-doc/heart-candidates/model-versions/c-2.pdf}};
+% \node[yshift=-.1cm] at (release07.south) {\footnotesize June 2007};
+% 
+% \node (release13) at (14,0) {\includegraphics[width=4em]{../../pixel-doc/heart-candidates/model-versions/c-3.pdf}};
+% \node[yshift=-.1cm] at (release13.south) {\footnotesize June 2013};
+% 
+% \node (latest) at (30,0) {\includegraphics[width=4em]{../../pixel-doc/heart-candidates/model-versions/c-3.pdf}};
+% \node[yshift=-.1cm] at (latest.south) {\footnotesize April 2015};
+% 
+% \node (mod13) at (22.55,-10) {\includegraphics[width=4em]{../../pixel-doc/heart-candidates/model-versions/c-4.pdf}};
+% \node[yshift=-.1cm] at (mod13.south) {\footnotesize November 2013};
+% 
+% \node[anchor=west] (future) at (38,0) {\includegraphics[width=4em]{../../pixel-doc/heart-candidates/model-versions/c-4.pdf}};
+% \node[yshift=-.1cm,text width=4cm,font=\footnotesize] at (future.south) {\begin{center}
+%                                                                           Latest Version in BioModels
+%                                                                          \end{center}
+%  };
+% 
+% % 
+% % 
+% % \node[document] (jun07) at (0,0) {\includegraphics{version-jun-2007.pdf}};
+% % 
+% % \node[document] (oct13) at (15,0) {\includegraphics{version-oct-2013.pdf}};
+% % 
+% % \node[document] (feb14) at (37,0) {\includegraphics{version-feb-2014.pdf}};
+% % 
+% % \node[document] (nov13) at (30,-10) {\includegraphics{version-nov-2013.pdf}};
+% 
+% 
+% 
+% 
+% % \draw[trans] (doc) -- (release07);
+% \draw[trans] (release07) -- (release13);
+% \draw[trans] (release13) -- (mod13);
+% \draw[trans] (release13.east) -- (latest);
+% 
+% \draw[transdiff] (release07) to [out=90] (release13);
+% \draw[transdiff,shorten <=15pt] (release13) to [out=270,in=180] (mod13);
+% \draw[transdiff] (release13) to [in=90] (latest);
+% 
+% 
+% \node[document,draw=dgreen] (diff07-13) at (7,6) {\includegraphics{version-jun-2007}};
+% \node[transdiff,baseline,scale=1.2] (diff07-13-descr) [above=-.1cm  of diff07-13] {\footnotesize SBML code has changed\strut};
+% 
+% \node[document,draw=dgreen] (diff13-14) at (22,6) {\includegraphics{version-feb-2014.pdf}};
+% \node[transdiff,baseline,scale=1.2] (diff13-14-descr) [above=-.15cm  of diff13-14] {\footnotesize No modifications\strut};
+% 
+% \node[document,draw=dgreen,anchor=south] (diff13) at (12,-13) {\includegraphics{diff-sum-nov-2013}};
+% \node[transdiff,scale=1.2] (diff13-descr) [below=0.1cm of diff13] {\footnotesize Model was corrected\strut};
+% 
+% % 
+% % \begin{scope}[shift={(1,-4)}]
+% % \input{docicon}
+% % \end{scope}
+% % 
+% % \begin{scope}[shift={(32,-12)}]
+% % \input{docicon}
+% % \end{scope}
+% % 
+% % \begin{scope}[shift={(17,8)}]
+% % \input{docicon}
+% % \end{scope}
+% % 
+% % \begin{scope}[shift={(36,-3)}]
+% % \input{docicon}
+% % \end{scope}
+% 
+% %\node (meta1) at (4,-6) {\includegraphics{docicon}};
+% %\node (meta2) at (19,8) {\includegraphics{docicon}};
+% %\node (meta3) at (35,-13) {\includegraphics{docicon}};
+% %\node (meta4) at (29,-3) {\includegraphics{docicon}};
+% %\node (meta4) at (38,5) {\includegraphics{docicon}};
+% 
+% %\draw[transmeta] (meta1) to [out=180,in=270] (release07);
+% %\draw[transmeta] (meta2) to [out=180,in=90] (release13);
+% %\draw[transmeta] (meta3) to [out=180,in=270] (mod13);
+% %\draw[transmeta] (meta4) to [out=180,in=45] (latest);
+% 
+% 
+% \draw[future] (latest) -- (38,0);
+% \draw[future] (mod13.east) to [out=0,in=180] (38,0);
+% 
+% 
+% \begin{scope}[shift={(41,0)}]
+% 
+% %\node[anchor=base west,baseline] (legend1) at (-3,-9) {\large model history};
+% \node[anchor=base west
+% %,dgreen
+% ,baseline] (legend2) at (-3,-11) {\footnotesize differences\strut};
+% %\node[anchor=base west,violett,baseline] (legend3) at (0,-15) {\large provenance information};
+% %\node[anchor=base west,baseline] (legend4) at (-3,-9) {\large future};
+% %\node[anchor=west,red] (legend4) at (0,-16) {differences};
+% 
+% 
+% %\draw[trans] (-7.8,-8.8) -- (-3,-8.8);
+% %\draw[future] (-7.8,-8.8) -- (-3,-8.8);
+% \draw[transdiff] (-7.8,-10.8) -- (-3,-10.8);
+% %\draw[transmeta] (-3,-14.8) -- (0,-14.8);
+% 
+% \node[anchor=base west,baseline] (legend5) at (-3,-12) {\footnotesize modifications\strut};
+% \node[anchor=base west,baseline] (legend6) at (-3,-13) {\footnotesize inserts\strut};
+% \node[anchor=base west,baseline] (legend7) at (-3,-14) {\footnotesize deletes\strut};
+% 
+% \draw[bivesmod,-,line width=1mm,shorten >=5pt,shorten <=5pt] (-7.8,-11.8) -- (-3,-11.8);
+% \draw[bivesins,-,line width=1mm,shorten >=5pt,shorten <=5pt] (-7.8,-12.8) -- (-3,-12.8);
+% \draw[bivesdel,-,line width=1mm,shorten >=5pt,shorten <=5pt] (-7.8,-13.8) -- (-3,-13.8);
+% 
+% \end{scope}
+
+
+%\draw[transmeta] (-3,-14.8) -- (0,-14.8);
+
+%\draw[trans] (-5,-17) -- (43,-17);
+%\node[anchor=east] at (43,-18.1) {\LARGE \emph{time}};
+
+\end{tikzpicture}
+\end{document}
