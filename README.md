@@ -45,7 +45,7 @@ Just have a look at [BiVeS-WebApp](https://github.com/binfalse/BiVeS-WebApp) and
 
 ## LICENSE
 
-Artwork and text etc is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/) ![Creative Commons License](https://i.creativecommons.org/l/by-sa/4.0/80x15.png).
+Artwork and text etc is licensed under a [Creative Commons Attribution-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-sa/4.0/) ![Creative Commons License](https://i.creativecommons.org/l/by-sa/4.0/80x15.png)
 
 The code is licensed under an [Apache 2.0 license](LICENSE):
 
