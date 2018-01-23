@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>de.unirostock.sems</groupId>
+    <groupId>de.uni-rostock.sbi</groupId>
     <artifactId>BiVeS</artifactId>
     <packaging>jar</packaging>
-    <version>1.11.1</version>
+    <version>1.11.2</version>
     <name>BiVeS</name>
     <description>
         BiVeS - BioModel Version Control System
@@ -14,6 +14,17 @@
         <name>SEMS project @ University of Rostock</name>
         <url>http://sems.uni-rostock.de</url>
     </organization>
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/binfalse/BiVeS</url>
+        <connection>https://github.com/binfalse/BiVeS.git</connection>
+        <developerConnection>scm:git:ssh://github.com:binfalse/BiVeS.git</developerConnection>
+    </scm>
     <developers>
         <developer>
             <name>Martin Scharm</name>
@@ -34,19 +45,19 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>de.unirostock.sems</groupId>
+            <groupId>de.uni-rostock.sbi</groupId>
             <artifactId>BiVeS-SBML</artifactId>
-            <version>1.8.2</version>
-        </dependency>
-        <dependency>
-            <groupId>de.unirostock.sems</groupId>
-            <artifactId>BiVeS-CellML</artifactId>
-            <version>1.7.3</version>
-        </dependency>
-        <dependency>
-            <groupId>de.unirostock.sems</groupId>
-            <artifactId>BiVeS-Core</artifactId>
             <version>1.8.3</version>
+        </dependency>
+        <dependency>
+            <groupId>de.uni-rostock.sbi</groupId>
+            <artifactId>BiVeS-CellML</artifactId>
+            <version>1.7.4</version>
+        </dependency>
+        <dependency>
+            <groupId>de.uni-rostock.sbi</groupId>
+            <artifactId>BiVeS-Core</artifactId>
+            <version>1.8.4</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
@@ -60,32 +71,16 @@
         </dependency>
     </dependencies>
     <distributionManagement>
-        <downloadUrl>http://mvn.sems.uni-rostock.de</downloadUrl>   
         <snapshotRepository>
-            <uniqueVersion>false</uniqueVersion>
-            <id>sems-maven-repository</id>
-            <name>SEMS Maven Release Repository</name>
-            <url>scp://sems.uni-rostock.de:/home/stuff/web/mvn/snapshots/</url>
-            <layout>default</layout>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </snapshotRepository>
-
         <repository>
-            <uniqueVersion>false</uniqueVersion>
-            <id>sems-maven-repository</id>
-            <name>Enterprise Systems Maven Repository</name>
-            <url>scp://sems.uni-rostock.de:/home/stuff/web/mvn/releases/</url>
-            <layout>default</layout>
+            <id>ossrh</id>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>
     <build>
-        <extensions>
-            <!-- enables ssh/scp support for maven deployment -->
-            <extension>
-                <groupId>org.apache.maven.wagon</groupId>
-                <artifactId>wagon-ssh</artifactId>
-                <version>2.10</version>
-            </extension>
-        </extensions>
         <resources>
             <resource>
                 <targetPath>${project.build.outputDirectory}/res</targetPath>
@@ -128,49 +123,68 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <releaseProfiles>release</releaseProfiles>
+                    <goals>deploy</goals>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>1.6.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.2.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-    <profiles>
-        <!-- deployment profile -->
-        <profile>
-            <id>release</id>
-            <!-- build plugin configuration for the deploy -->
-            <!-- not necessary to always nclude the sources and javadocs -->
-            <build>
-                <plugins>
-                    <!-- attach sources -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-source-plugin</artifactId>
-
-                        <configuration>
-                            <attach>true</attach>
-                        </configuration>
-                        <executions>
-                            <execution>
-                                <id>attach-sources</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
-                    <!-- attach javadoc -->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-javadoc-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-javadocs</id>
-                                <goals>
-                                    <goal>jar</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

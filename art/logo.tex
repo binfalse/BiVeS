@@ -1,0 +1,110 @@
+\documentclass[x11names]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,trees,decorations.pathmorphing,backgrounds,fit,shapes,arrows,chains, decorations.markings,shapes.arrows}
+
+\usepackage{verbatim}
+\usepackage{lmodern}
+\usepackage[active,tightpage]{preview}
+\usepackage{amssymb} 
+\PreviewEnvironment{tikzpicture}
+\setlength\PreviewBorder{1mm}%
+\usepackage{amsmath}
+%\usepackage[margin=0in,paperwidth=32mm,paperheight=32mm]{geometry}
+
+
+\begin{document}
+\fontfamily{lmss}\fontseries{m}\fontshape{n}\selectfont
+%\renewcommand*{\familydefault}{\ttfamily}
+%\renewcommand*\rmdefault{iwona}
+%\renewcommand*\rmdefault{ppl}
+%\fontfamily{qcr}%\fontseries{mc}\fontshape{n}
+%\fontfamily{cmtt}
+%\selectfont
+% =================================================
+% Set up a few colours
+\definecolor{blau}{cmyk}{1,0.55,0,0.44}
+\definecolor{string}{HTML}{D09631}
+\definecolor{default}{rgb}{0,0,0}
+\definecolor{grau}{rgb}{0.6,0.6,0.6}
+\definecolor{package}{HTML}{FFFFFF}
+\definecolor{insert}{HTML}{B5D045}
+\definecolor{delete}{HTML}{F47E7D}
+\definecolor{update}{HTML}{FFFA5F}
+\definecolor{blau}{HTML}{7DAAF4}
+% -------------------------------------------------
+% Set up a new layer for the debugging marks, and make sure it is on
+% top
+\pgfdeclarelayer{marx}
+\pgfdeclarelayer{bg} 
+\pgfsetlayers{bg,main,marx}
+
+% A macro for marking coordinates (specific to the coordinate naming
+% scheme used here). Swap the following 2 definitions to deactivate
+% marks.
+\providecommand{\cmark}[2][]{%
+  \begin{pgfonlayer}{marx}
+    \node [nmark] at (c#2#1) {#2};
+  \end{pgfonlayer}{marx}
+  } 
+\providecommand{\cmark}[2][]{\relax} 
+% -------------------------------------------------
+% Start the picture
+\tikzset{
+  treenode/.style = {align=center, inner sep=2pt, text centered,
+    font=\sffamily,circle,draw},
+  moves/.style = {treenode, fill=move},
+  inserts/.style = {treenode, fill=insert},
+  deletes/.style = {treenode, fill=delete},
+  updates/.style = {treenode, fill=update}
+}
+\tikzstyle{vecArrow} = [thick, decoration={markings,mark=at position
+   1 with {\arrow[thick]{open triangle 60}}},
+   double distance=5.4pt, shorten >= 5.5pt,
+   preaction = {decorate},
+   postaction = {draw,line width=5.4pt, white,shorten >= 4.5pt}]
+\tikzstyle{innerWhite} = [semithick, white,line width=5.4pt, shorten >= 4.5pt]
+\begin{tikzpicture}[>=stealth',%level/.style={sibling distance = 2cm/#1},
+  level distance = .9cm, 
+  level 1/.style={sibling distance=1.7cm},
+  level 2/.style={sibling distance=.7cm},
+  oe/.style={line width=.5em,shorten >=-3pt,shorten <=-3pt},
+  ie/.style={line width=.2em,shorten >=-3pt,shorten <=-3pt},
+  species/.style={circle, ultra thick, line width=.3em, inner sep=.8em, draw=black},
+  reaction/.style={rectangle, ultra thick, inner sep=.5em, draw=black},
+%>=latex
+]
+
+
+\node[reaction, fill=update] (react) at (0,0) {};
+\node[species, fill=white] (left) at (-1,0) {};
+\node[species, fill=blau] (top) at (.65,0.65) {};
+\node[species, fill=delete] (bottom) at (0,-1) {};
+
+%\draw (-1.5,1.2) -- (1.2,1.2) -- (1.2,-1.5) -- (-1.5,-1.5) -- (-1.5,1.2);
+
+\begin{pgfonlayer}{bg}
+\draw[oe] (left) -- (react);
+\draw[oe] (react) -- (top);
+\draw[oe] (react) -- (bottom);
+\draw[ie,draw=white] (left) -- (react);
+\draw[ie,draw=blau] (react) -- (top);
+\draw[ie,draw=delete] (react) -- (bottom);
+
+% 
+% \draw[oe] (top) -- (1.5,0.65);
+% \draw[oe] (top) -- (0.65,1.5);
+% \draw[ie,draw=blau] (top) -- (1.5,0.65);
+% \draw[ie,draw=white] (top) -- (0.65,1.5);
+% 
+% \draw[oe] (left) -- (-2,1);
+% \draw[ie,draw=blau] (left) -- (-2,1);
+
+
+
+
+\end{pgfonlayer}
+
+\end{tikzpicture}
+\end{document}
