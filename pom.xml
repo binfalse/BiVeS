@@ -3,7 +3,7 @@
     <groupId>de.uni-rostock.sbi</groupId>
     <artifactId>BiVeS</artifactId>
     <packaging>jar</packaging>
-    <version>1.11.4</version>
+    <version>1.12.0</version>
     <name>BiVeS</name>
     <properties>
         <maven.compiler.source>1.6</maven.compiler.source>
@@ -51,17 +51,17 @@
         <dependency>
             <groupId>de.uni-rostock.sbi</groupId>
             <artifactId>BiVeS-SBML</artifactId>
-            <version>1.8.5</version>
+            <version>1.9.1</version>
         </dependency>
         <dependency>
             <groupId>de.uni-rostock.sbi</groupId>
             <artifactId>BiVeS-CellML</artifactId>
-            <version>1.7.6</version>
+            <version>1.8.0</version>
         </dependency>
         <dependency>
             <groupId>de.uni-rostock.sbi</groupId>
             <artifactId>BiVeS-Core</artifactId>
-            <version>1.8.6</version>
+            <version>1.9.1</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>
