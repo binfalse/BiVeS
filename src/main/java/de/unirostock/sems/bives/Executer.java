@@ -12,6 +12,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
+import org.json.simple.JSONObject;
 
 import de.unirostock.sems.bives.Main.ExecutionException;
 import de.unirostock.sems.bives.api.Diff;
@@ -152,6 +153,11 @@ public class Executer
 	private Options options;
 
 	
+	/**
+	 * Get available (command-line) options.
+	 *
+	 * @return the options
+	 */
 	public Options getOptions ()
 	{
 		return options;
@@ -230,7 +236,8 @@ public class Executer
 	 * @param errors the errors
 	 * @throws Exception the exception
 	 */
-	public void executeSingle (String document, HashMap<String, String> toReturn, CommandLine line, List<Exception> errors) throws Exception
+	@SuppressWarnings("unchecked")
+	public void executeSingle (String document, JSONObject toReturn, CommandLine line, List<Exception> errors) throws Exception
 	{
 		TreeDocument td = null;
 		if (XML_PATTERN.matcher (document).find ())
@@ -247,25 +254,33 @@ public class Executer
   		// meta
   		classifier = new DocumentClassifier ();
   		int type = classifier.classify (td);
+    	JSONObject json = new JSONObject ();
 
-			String ret = "";
+			//String ret = "";
 			
   		if ((type & DocumentClassifier.SBML) > 0)
   		{
   			SBMLDocument doc = classifier.getSbmlDocument ();
-  			ret += "sbmlVersion:" + doc.getVersion () + ";sbmlLevel:" + doc.getLevel () + ";modelId:" + doc.getModel ().getID () + ";modelName:" + doc.getModel ().getName () + ";";
+  			//ret += "sbmlVersion:" + doc.getVersion () + ";sbmlLevel:" + doc.getLevel () + ";modelId:" + doc.getModel ().getID () + ";modelName:" + doc.getModel ().getName () + ";";
+  			json.put ("sbmlVersion", doc.getVersion ());
+  			json.put ("sbmlLevel", doc.getLevel ());
+  			json.put ("modelId", doc.getModel ().getID ());
+  			json.put ("modelName", doc.getModel ().getName ());
   		}
   		if ((type & DocumentClassifier.CELLML) > 0)
   		{
   			CellMLDocument doc = classifier.getCellMlDocument ();
-  			ret += "containsImports:" + doc.containsImports () + ";modelName:" + doc.getModel ().getName () + ";";
+  			//ret += "containsImports:" + doc.containsImports () + ";modelName:" + doc.getModel ().getName () + ";";
+  			json.put ("containsImports", doc.containsImports ());
+  			json.put ("modelName", doc.getModel ().getName ());
   		}
 			if ((type & DocumentClassifier.XML) > 0)
 			{
 				TreeDocument doc = classifier.getXmlDocument ();
-				ret += "nodestats:" + doc.getNodeStats () + ";";
+				//ret += "nodestats:" + doc.getNodeStats () + ";";
+  			json.put ("nodestats", doc.getNodeStats ());
 			}
-			toReturn.put (Executer.REQ_WANT_META, ret);
+			toReturn.put (Executer.REQ_WANT_META, json);
   	}
   	
   	if (line.hasOption (REQ_WANT_DOCUMENTTYPE))
@@ -274,7 +289,7 @@ public class Executer
   		classifier = new DocumentClassifier ();
   		int type = classifier.classify (td);
 			
-			toReturn.put (Executer.REQ_WANT_DOCUMENTTYPE, DocumentClassifier.humanReadable (type));
+			toReturn.put (Executer.REQ_WANT_DOCUMENTTYPE, DocumentClassifier.asJson (type));
   	}
 			
   	if (
@@ -411,7 +426,8 @@ public class Executer
 	 * @param errors the errors
 	 * @throws Exception the exception
 	 */
-	public void executeCompare (String document1, String document2, HashMap<String, String> toReturn, CommandLine line, List<Exception> errors) throws Exception
+	@SuppressWarnings("unchecked")
+	public void executeCompare (String document1, String document2, JSONObject toReturn, CommandLine line, List<Exception> errors) throws Exception
 	{
 		TreeDocument td1 = null, td2 = null;
 		if (XML_PATTERN.matcher (document1).find ())
@@ -633,6 +649,11 @@ public class Executer
 	}
 	
 	
+	/**
+	 * Static string to start an HTML page.
+	 *
+	 * @return the string
+	 */
 	public static String htmlPageStart ()
 	{
 		return "<!DOCTYPE html>"
@@ -658,6 +679,11 @@ public class Executer
 
 	}
 	
+	/**
+	 * Static string to close an HTML page.
+	 *
+	 * @return the string
+	 */
 	public static String htmlPageEnd ()
 	{
 		return "</body></html>";

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="bives">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="update"/>
+        <xs:element ref="delete"/>
+        <xs:element ref="insert"/>
+        <xs:element ref="move"/>
+      </xs:sequence>
+      <xs:attribute name="id" use="required" type="xs:NCName"/>
+      <xs:attribute name="type" use="required" type="xs:NCName"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="update">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="attribute"/>
+        <xs:element ref="text"/>
+        <xs:element ref="node"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="delete">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="attribute"/>
+        <xs:element ref="node"/>
+        <xs:element ref="text"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="insert">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="attribute"/>
+        <xs:element ref="node"/>
+        <xs:element ref="text"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="move">
+    <xs:complexType>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element ref="node"/>
+        <xs:element ref="text"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="attribute">
+    <xs:complexType>
+      <xs:attribute name="id" use="required" type="xs:integer"/>
+      <xs:attribute name="name" use="required" type="xs:NCName"/>
+      <xs:attribute name="newPath"/>
+      <xs:attribute name="newValue"/>
+      <xs:attribute name="oldPath"/>
+      <xs:attribute name="oldValue"/>
+      <xs:attribute name="triggeredBy" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="text">
+    <xs:complexType>
+      <xs:attribute name="id" use="required" type="xs:integer"/>
+      <xs:attribute name="newChildNo" type="xs:integer"/>
+      <xs:attribute name="newParent"/>
+      <xs:attribute name="newPath"/>
+      <xs:attribute name="newText"/>
+      <xs:attribute name="oldChildNo" type="xs:integer"/>
+      <xs:attribute name="oldParent"/>
+      <xs:attribute name="oldPath"/>
+      <xs:attribute name="oldText"/>
+      <xs:attribute name="triggeredBy" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="node">
+    <xs:complexType>
+      <xs:attribute name="id" use="required" type="xs:integer"/>
+      <xs:attribute name="newChildNo" type="xs:integer"/>
+      <xs:attribute name="newParent"/>
+      <xs:attribute name="newPath"/>
+      <xs:attribute name="newTag" type="xs:NCName"/>
+      <xs:attribute name="oldChildNo" type="xs:integer"/>
+      <xs:attribute name="oldParent"/>
+      <xs:attribute name="oldPath"/>
+      <xs:attribute name="oldTag" type="xs:NCName"/>
+      <xs:attribute name="triggeredBy" type="xs:integer"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
