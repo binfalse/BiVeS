@@ -62,6 +62,9 @@ public class Executer
 	public static final String REQ_WANT_NEGLECT_NAMES = "neglect-names";
 	public static final String REQ_WANT_STRICT_NAMES = "strict-names";
 	
+	/** The Constant REQ_WANT_MERGE. */
+	public static final String REQ_WANT_MERGE = "merge";
+	
 	/** The Constant REQ_WANT_REPORT_MD. */
 	public static final String REQ_WANT_REPORT_MD = "reportMd";
 	
@@ -190,6 +193,7 @@ public class Executer
 		
 		
 		options.addOption (Option.builder ().longOpt (REQ_WANT_DIFF).desc ("get the diff encoded in XML format").build ());
+		options.addOption (Option.builder ().longOpt (REQ_WANT_DIFF).desc ("merge the files").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REPORT_MD).desc ("get the report of changes encoded in MarkDown").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REPORT_RST).desc ("get the report of changes encoded in ReStructuredText").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REPORT_HTML).desc ("get the report of changes encoded in HTML").build ());
