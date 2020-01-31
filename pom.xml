@@ -96,7 +96,7 @@
 		</dependency>
 		<dependency>			
 		<groupId>de.uni-rostock.sbi</groupId>
-		  <artifactId>BiVeS-Merge</artifactId>
+		  <artifactId>BiVeS-Merger</artifactId>
 		  <version>0.1.0</version>
 		</dependency>
     </dependencies>
