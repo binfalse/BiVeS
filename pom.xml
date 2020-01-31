@@ -3,11 +3,12 @@
     <groupId>de.uni-rostock.sbi</groupId>
     <artifactId>BiVeS</artifactId>
     <packaging>jar</packaging>
-    <version>1.12.1</version>
+    <version>1.13.0</version>
     <name>BiVeS</name>
     <properties>
-        <maven.compiler.source>1.6</maven.compiler.source>
-        <maven.compiler.target>1.6</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <source>1.8</source>
     </properties>
     <description>
         BiVeS - BioModel Version Control System
@@ -92,6 +93,11 @@
 		  <groupId>com.sun.xml.bind</groupId>
 		  <artifactId>jaxb-impl</artifactId>
 		  <version>2.3.0</version>
+		</dependency>
+		<dependency>			
+		<groupId>de.uni-rostock.sbi</groupId>
+		  <artifactId>BiVeS-Merge</artifactId>
+		  <version>0.1.0</version>
 		</dependency>
     </dependencies>
     <distributionManagement>

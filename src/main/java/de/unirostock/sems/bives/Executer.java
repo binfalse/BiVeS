@@ -12,6 +12,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
+import org.jdom2.Document;
 import org.json.simple.JSONObject;
 
 import de.unirostock.sems.bives.Main.ExecutionException;
@@ -22,6 +23,7 @@ import de.unirostock.sems.bives.cellml.api.CellMLDiff;
 import de.unirostock.sems.bives.cellml.api.CellMLSingle;
 import de.unirostock.sems.bives.cellml.parser.CellMLDocument;
 import de.unirostock.sems.bives.markup.Typesetting;
+import de.unirostock.sems.bives.merge.algorithm.ModelMerger;
 import de.unirostock.sems.bives.sbml.api.SBMLDiff;
 import de.unirostock.sems.bives.sbml.api.SBMLSingle;
 import de.unirostock.sems.bives.sbml.parser.SBMLDocument;
@@ -193,7 +195,7 @@ public class Executer
 		
 		
 		options.addOption (Option.builder ().longOpt (REQ_WANT_DIFF).desc ("get the diff encoded in XML format").build ());
-		options.addOption (Option.builder ().longOpt (REQ_WANT_DIFF).desc ("merge the files").build ());
+		options.addOption (Option.builder ().longOpt (REQ_WANT_MERGE).desc ("merge the files").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REPORT_MD).desc ("get the report of changes encoded in MarkDown").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REPORT_RST).desc ("get the report of changes encoded in ReStructuredText").build ());
 		options.addOption (Option.builder ().longOpt (REQ_WANT_REPORT_HTML).desc ("get the report of changes encoded in HTML").build ());
@@ -433,24 +435,32 @@ public class Executer
 	@SuppressWarnings("unchecked")
 	public void executeCompare (String document1, String document2, JSONObject toReturn, CommandLine line, List<Exception> errors) throws Exception
 	{
+		Document doc1 = null, doc2 = null;
 		TreeDocument td1 = null, td2 = null;
-		if (XML_PATTERN.matcher (document1).find ())
-			td1 = new TreeDocument (XmlTools.readDocument (document1), null);
+		if (XML_PATTERN.matcher (document1).find ()) {
+			doc1 = XmlTools.readDocument (document1);
+			td1 = new TreeDocument (doc1, null);
+		}
 		else
 		{
 			URL url = new URL (document1);
-			td1 = new TreeDocument (XmlTools.readDocument (url), url.toURI ());
+			doc1 = XmlTools.readDocument (url);
+			td1 = new TreeDocument (doc1, url.toURI ());
 		}
-		if (XML_PATTERN.matcher (document2).find ())
-			td2 = new TreeDocument (XmlTools.readDocument (document2), null);
+		if (XML_PATTERN.matcher (document2).find ()) {
+			doc2 = XmlTools.readDocument (document2);
+			td2 = new TreeDocument (doc2, null);
+
+		}
 		else
 		{
 			URL url = new URL (document2);
-			td2 = new TreeDocument (XmlTools.readDocument (url), url.toURI ());
+			doc2 = XmlTools.readDocument (url);
+			td2 = new TreeDocument (doc2, url.toURI ());
 		}
 		
   	// compare mode
-		Diff diff = null;
+	Diff diff = null;
   	DocumentClassifier classifier = null;
     
     // decide which kind of mapper to use
@@ -626,6 +636,17 @@ public class Executer
 			{
 				errors.add (e);
 			}
+		if (line.hasOption (REQ_WANT_MERGE) ) {
+			try {
+				hasOption = true;
+				ModelMerger merger =  new ModelMerger(doc1, doc2, diff);
+				toReturn.put(Executer.REQ_WANT_MERGE, result(merger.getMerge()));			
+			}
+			catch (Exception e) {
+				errors.add (e);
+			}
+			
+		}
 		if (line.hasOption (REQ_WANT_DIFF) || !hasOption)
 			try
 			{
