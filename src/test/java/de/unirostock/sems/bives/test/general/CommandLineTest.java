@@ -553,4 +553,40 @@ public class CommandLineTest
 		assertFalse ("invalid files don't produce error", sysErr.toString().isEmpty());
 	}
 	
+	/**
+	 * Test valid json.
+	 */
+	@Test
+	public void testMerge()
+	{
+		File file1 = new File ("test/" + TestResources.validSbml[1]);
+		File file2 = new File ("test/" + TestResources.validSbml[2]);
+		
+		if (!file1.exists ())
+			fail ("file not found: " + file1.getAbsolutePath ());
+		if (!file2.exists ())
+			fail ("file not found: " + file2.getAbsolutePath ());
+		
+		String [] args = new String [] {"--merge", "--json", file1.getAbsolutePath (), file2.getAbsolutePath ()};
+
+		CommandLineResults clr = CommandLineTest.runCommandLine (args);
+		
+
+		ByteArrayOutputStream sysErr = clr.sysErr;
+		ByteArrayOutputStream sysOut = clr.sysOut;
+		
+		assertTrue ("bives main reports error for " + Arrays.toString (args), sysErr.toString().isEmpty());
+		
+		try
+		{
+			JSONObject json = (JSONObject) new JSONParser ().parse (sysOut.toString ());
+			assertTrue ("expected to get some results", json.size () > 0);
+			assertNotNull ("expected to get merged model", json.get ("merge"));
+		}
+		catch (ParseException e)
+		{
+			fail ("wasn't able to get merged model: " + e.getMessage ());
+		}
+	}
+	
 }
