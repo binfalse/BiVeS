@@ -3,7 +3,7 @@
     <groupId>de.uni-rostock.sbi</groupId>
     <artifactId>BiVeS</artifactId>
     <packaging>jar</packaging>
-    <version>1.13.2</version>
+    <version>1.13.3</version>
     <name>BiVeS</name>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -52,7 +52,7 @@
         <dependency>
             <groupId>de.uni-rostock.sbi</groupId>
             <artifactId>BiVeS-SBML</artifactId>
-            <version>[1.9.4,)</version>
+            <version>[1.9.5,)</version>
         </dependency>
         <dependency>
             <groupId>de.uni-rostock.sbi</groupId>
